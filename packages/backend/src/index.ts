@@ -5,6 +5,7 @@ import { logger } from "hono/logger"
 import { prettyJSON } from "hono/pretty-json"
 import { describeRoute, openAPISpecs } from "hono-openapi"
 import { resolver } from "hono-openapi/valibot"
+import { Scalar } from "@scalar/hono-api-reference"
 import * as v from "valibot"
 import { taskRepository } from "@/infrastructure/repositories/task"
 import { userRepository } from "@/infrastructure/repositories/user"
@@ -41,7 +42,7 @@ const dependencies = {
 } as const satisfies Dependencies
 
 // Create Hono app with OpenAPI support
-const app = new Hono().basePath("/api")
+const app = new Hono()
 
 // Middleware
 app.use("*", logger())
@@ -62,6 +63,7 @@ app.get(
   "/health",
   describeRoute({
     description: "Health check endpoint",
+    tags: ["health"],
     responses: {
       200: {
         description: "API is healthy",
@@ -91,77 +93,63 @@ app.get(
 // API Routes
 app.route("/tasks", createTaskRoutes(dependencies))
 
-// OpenAPI specification
-app.get("/openapi", (c) => {
-  return c.json(
-    openAPISpecs(app, {
-      documentation: {
-        info: {
-          title: "TODO API",
-          version: "1.0.0",
-          description:
-            "A comprehensive TODO application API with hierarchical projects and tasks, built with Hono, PostgreSQL, and Drizzle ORM",
-        },
-        servers: [
-          {
-            url:
-              process.env.NODE_ENV === "production"
-                ? "https://api.example.com/api"
-                : "http://localhost:3000/api",
-            description:
-              process.env.NODE_ENV === "production"
-                ? "Production server"
-                : "Development server",
-          },
-        ],
-        tags: [
-          {
-            name: "health",
-            description: "Health check operations",
-          },
-          {
-            name: "tasks",
-            description: "Task management operations",
-          },
-          {
-            name: "projects",
-            description: "Project management operations",
-          },
-          {
-            name: "labels",
-            description: "Label management operations",
-          },
-          {
-            name: "comments",
-            description: "Comment management operations",
-          },
-        ],
+// OpenAPI specification endpoint
+app.get(
+  "/openapi",
+  openAPISpecs(app, {
+    documentation: {
+      info: {
+        title: "TODO API",
+        version: "1.0.0",
+        description:
+          "A comprehensive TODO application API with hierarchical projects and tasks, built with Hono, PostgreSQL, and Drizzle ORM",
       },
-    }),
-  )
-})
+      servers: [
+        {
+          url:
+            process.env.NODE_ENV === "production"
+              ? "https://api.example.com/api"
+              : "http://localhost:3000/api",
+          description:
+            process.env.NODE_ENV === "production"
+              ? "Production server"
+              : "Development server",
+        },
+      ],
+      tags: [
+        {
+          name: "health",
+          description: "Health check operations",
+        },
+        {
+          name: "tasks",
+          description: "Task management operations",
+        },
+        {
+          name: "projects",
+          description: "Project management operations",
+        },
+        {
+          name: "labels",
+          description: "Label management operations",
+        },
+        {
+          name: "comments",
+          description: "Comment management operations",
+        },
+      ],
+    },
+  }),
+)
 
-// API documentation UI
-app.get("/docs", (c) => {
-  return c.html(`
-    <!DOCTYPE html>
-    <html>
-      <head>
-        <title>TODO API Documentation</title>
-        <meta charset="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-      </head>
-      <body>
-        <script
-          id="api-reference"
-          data-url="/api/openapi"
-          data-configuration='{"theme":"kepler"}'
-        ></script>
-        <script src="https://cdn.jsdelivr.net/npm/@scalar/api-reference"></script>
-      </body>
-    </html>
-  `)
-})
+// API documentation UI with Scalar
+app.get(
+  "/docs",
+  Scalar({
+    theme: "saturn",
+    url: "/api/openapi",
+  }),
+)
 
 // Create main app with API routes
 const mainApp = new Hono()
