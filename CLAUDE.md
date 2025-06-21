@@ -127,9 +127,10 @@ The todos table uses UUID primary keys with:
 
 ### Code Quality
 
-- **Before implementation**: Search the web for the latest information about libraries, frameworks, and best practices to ensure up-to-date implementation
+- **CRITICAL - Always Search First**: Before ANY implementation, library installation, or code changes, ALWAYS search the web for the latest information about libraries, frameworks, and best practices to ensure up-to-date implementation. This is MANDATORY and must never be skipped.
 - **When problems occur**: Do not force fixes immediately. Instead, analyze the current situation, search the web for related issues and solutions, then implement the proper fix
 - **IMPORTANT**: Always use Bun commands, never npm or npx. Use `bun x` instead of `npx`
+- **Web Search Required**: Every development task must begin with web search to verify current best practices, library versions, and implementation patterns
 - Implement unit tests and integration tests for every new feature or implementation
 - Use Storybook for frontend UI component development and quality assurance
 - Run code quality checks with Biome after implementation
