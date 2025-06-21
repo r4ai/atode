@@ -78,9 +78,8 @@ packages/backend/src/
 │   └── repositories/        # Database functions
 ├── presentation/            # HTTP Layer
 │   ├── controllers/         # HTTP handler functions
-│   └── routes/              # Route definitions
-├── lib/                     # Utilities
-│   └── dependencies.ts      # Simple dependency composition
+│   ├── routes/              # Route definitions
+│   └── dependencies.ts      # Simple dependency composition for controllers
 ├── schemas/                 # Validation schemas
 └── index.ts                 # Application entry point
 ```
