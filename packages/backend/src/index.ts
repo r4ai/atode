@@ -1,12 +1,12 @@
 import { serve } from "@hono/node-server"
+import { Scalar } from "@scalar/hono-api-reference"
 import { Hono } from "hono"
 import { cors } from "hono/cors"
 import { logger } from "hono/logger"
 import { prettyJSON } from "hono/pretty-json"
 import { describeRoute, openAPISpecs } from "hono-openapi"
-import { resolver } from "hono-openapi/valibot"
-import { Scalar } from "@scalar/hono-api-reference"
-import * as v from "valibot"
+import { resolver } from "hono-openapi/zod"
+import { z } from "zod"
 import { taskRepository } from "@/infrastructure/repositories/task"
 import { userRepository } from "@/infrastructure/repositories/user"
 import type { Dependencies } from "@/presentation/dependencies"
@@ -70,10 +70,10 @@ app.get(
         content: {
           "application/json": {
             schema: resolver(
-              v.object({
-                status: v.literal("ok"),
-                timestamp: v.string(),
-                version: v.string(),
+              z.object({
+                status: z.literal("ok"),
+                timestamp: z.string(),
+                version: z.string(),
               }),
             ),
           },

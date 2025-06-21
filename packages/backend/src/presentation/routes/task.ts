@@ -1,8 +1,7 @@
-import { vValidator } from "@hono/valibot-validator"
 import { Hono } from "hono"
 import { describeRoute } from "hono-openapi"
-import { resolver } from "hono-openapi/valibot"
-import * as v from "valibot"
+import { resolver, validator as zValidator } from "hono-openapi/zod"
+import { z } from "zod"
 import type { CreateTaskData, UpdateTaskData } from "@/domain/entities/task"
 import type { UserId } from "@/domain/entities/user"
 import type { TaskFilters } from "@/domain/repositories/task"
@@ -55,7 +54,7 @@ export const createTaskRoutes = (deps: Dependencies) => {
         },
       },
     }),
-    vValidator("query", TaskFilterSchema),
+    zValidator("query", TaskFilterSchema),
     async (c) => {
       const filters = c.req.valid("query")
 
@@ -118,7 +117,7 @@ export const createTaskRoutes = (deps: Dependencies) => {
         },
       },
     }),
-    vValidator("json", CreateTaskSchema),
+    zValidator("json", CreateTaskSchema),
     async (c) => {
       const data = c.req.valid("json")
 
@@ -184,7 +183,7 @@ export const createTaskRoutes = (deps: Dependencies) => {
         },
       },
     }),
-    vValidator("param", v.object({ id: IdSchema })),
+    zValidator("param", z.object({ id: IdSchema })),
     async (c) => {
       const { id } = c.req.valid("param")
 
@@ -245,8 +244,8 @@ export const createTaskRoutes = (deps: Dependencies) => {
         },
       },
     }),
-    vValidator("param", v.object({ id: IdSchema })),
-    vValidator("json", UpdateTaskSchema),
+    zValidator("param", z.object({ id: IdSchema })),
+    zValidator("json", UpdateTaskSchema),
     async (c) => {
       const { id } = c.req.valid("param")
       const data = c.req.valid("json")
@@ -319,7 +318,7 @@ export const createTaskRoutes = (deps: Dependencies) => {
         },
       },
     }),
-    vValidator("param", v.object({ id: IdSchema })),
+    zValidator("param", z.object({ id: IdSchema })),
     async (c) => {
       const { id } = c.req.valid("param")
 
@@ -370,8 +369,8 @@ export const createTaskRoutes = (deps: Dependencies) => {
             "application/json": {
               schema: resolver(
                 ApiResponseSchema(
-                  v.object({
-                    success: v.boolean(),
+                  z.object({
+                    success: z.boolean(),
                   }),
                 ),
               ),
@@ -388,7 +387,7 @@ export const createTaskRoutes = (deps: Dependencies) => {
         },
       },
     }),
-    vValidator("param", v.object({ id: IdSchema })),
+    zValidator("param", z.object({ id: IdSchema })),
     async (c) => {
       const { id } = c.req.valid("param")
 
