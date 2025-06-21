@@ -2,9 +2,12 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+**Current Year: 2025** - Always consider this when searching for latest information and best practices.
+
 ## Project Overview
 
 This is a monorepo TODO application built with:
+
 - **Frontend**: Vite + React + TanStack Router + shadcn/ui
 - **Backend**: Hono + PostgreSQL + Drizzle ORM
 - **Deployment**: Docker Compose
@@ -26,6 +29,7 @@ todo/
 ## Development Commands
 
 ### Root Level (Monorepo)
+
 ```bash
 bun install              # Install all dependencies
 bun dev                  # Start both frontend and backend
@@ -42,6 +46,7 @@ bun frontend:build       # Build only frontend
 ```
 
 ### Backend (packages/backend)
+
 ```bash
 cd packages/backend
 bun install              # Install backend dependencies
@@ -54,14 +59,16 @@ bun run db:studio       # Open Drizzle Studio
 ```
 
 ### Frontend (packages/frontend)
+
 ```bash
 cd packages/frontend
-bun install             # Install frontend dependencies  
+bun install             # Install frontend dependencies
 bun run dev            # Start Vite development server
 bun run build          # Build for production
 ```
 
 ### Docker
+
 ```bash
 docker-compose up -d    # Start all services
 docker-compose down     # Stop all services
@@ -70,6 +77,7 @@ docker-compose down     # Stop all services
 ## Architecture
 
 ### Backend Structure (packages/backend)
+
 - **src/index.ts**: Main Hono server with middleware (CORS, logging)
 - **src/db/**: Database configuration and schema
   - **schema.ts**: Drizzle ORM schema definition for todos table
@@ -79,12 +87,15 @@ docker-compose down     # Stop all services
 - **src/routes/**: API route handlers (todos endpoints)
 
 ### Frontend Structure (packages/frontend)
+
 - **src/**: React application source code
 - **vite.config.ts**: Vite configuration
 - **package.json**: Frontend dependencies and scripts
 
 ### Database Schema
+
 The todos table uses UUID primary keys with:
+
 - id (UUID, auto-generated)
 - title (text, required)
 - description (text, optional)
@@ -92,6 +103,7 @@ The todos table uses UUID primary keys with:
 - createdAt/updatedAt (timestamps)
 
 ### API Endpoints
+
 - GET /api/todos - List all todos
 - POST /api/todos - Create new todo
 - PUT /api/todos/:id - Update existing todo
@@ -100,11 +112,13 @@ The todos table uses UUID primary keys with:
 ## Configuration
 
 ### Environment Variables
+
 - DATABASE_URL: PostgreSQL connection string (defaults to local development)
 - PORT: Backend server port (defaults to 3000)
 - NODE_ENV: Environment (affects CORS origins)
 
 ### Port Allocation
+
 - Frontend: 3001 (production), 5173 (Vite dev)
 - Backend: 3000
 - PostgreSQL: 5432
@@ -112,6 +126,7 @@ The todos table uses UUID primary keys with:
 ## Development Standards
 
 ### Code Quality
+
 - **Before implementation**: Search the web for the latest information about libraries, frameworks, and best practices to ensure up-to-date implementation
 - **When problems occur**: Do not force fixes immediately. Instead, analyze the current situation, search the web for related issues and solutions, then implement the proper fix
 - **IMPORTANT**: Always use Bun commands, never npm or npx. Use `bun x` instead of `npx`
@@ -120,12 +135,14 @@ The todos table uses UUID primary keys with:
 - Run code quality checks with Biome after implementation
 
 ### Code Style
+
 - Use `type` instead of `interface` for type definitions
 - Use arrow functions instead of function declarations
 - Use kebab-case for all file names
 - Use named exports instead of default exports
 
 ### Testing Commands
+
 ```bash
 # Root level (all packages)
 bun test           # Run tests on all packages
