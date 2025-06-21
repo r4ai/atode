@@ -34,5 +34,8 @@ export type CreateTaskData = {
 }
 
 export type UpdateTaskData = Partial<
-  Omit<CreateTaskData, "userId" | "projectId">
+  Omit<CreateTaskData, "userId" | "projectId"> & {
+    status?: TaskStatus
+    completedAt?: Date
+  }
 >

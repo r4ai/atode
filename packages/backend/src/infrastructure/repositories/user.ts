@@ -1,17 +1,28 @@
 import { eq } from "drizzle-orm"
-import type { CreateUserData, User, UserId } from "../../domain/entities/user"
-import type { UserRepository } from "../../domain/repositories/user"
-import { db } from "../database/connection"
-import { users } from "../database/schema"
+import type { CreateUserData, User, UserId } from "@/domain/entities/user"
+import type { UserRepository } from "@/domain/repositories/user"
+import { db } from "@/infrastructure/database/connection"
+import type { User as DbUser } from "@/infrastructure/database/schema"
+import { users } from "@/infrastructure/database/schema"
+
+// Helper function to convert DB user to domain user
+const toDomainUser = (dbUser: DbUser): User => ({
+  id: dbUser.id,
+  email: dbUser.email,
+  displayName: dbUser.displayName,
+  createdAt: dbUser.createdAt,
+  updatedAt: dbUser.updatedAt,
+  deletedAt: dbUser.deletedAt,
+})
 
 export const findUserById = async (id: UserId): Promise<User | null> => {
   const result = await db.select().from(users).where(eq(users.id, id))
-  return ((result as any[])[0] as User) ?? null
+  return result[0] ? toDomainUser(result[0]) : null
 }
 
 export const findUserByEmail = async (email: string): Promise<User | null> => {
   const result = await db.select().from(users).where(eq(users.email, email))
-  return ((result as any[])[0] as User) ?? null
+  return result[0] ? toDomainUser(result[0]) : null
 }
 
 export const createUser = async (data: CreateUserData): Promise<User> => {
@@ -24,7 +35,7 @@ export const createUser = async (data: CreateUserData): Promise<User> => {
       updatedAt: new Date(),
     })
     .returning()
-  return (result as any[])[0] as User
+  return toDomainUser(result[0])
 }
 
 export const updateUser = async (
@@ -39,7 +50,7 @@ export const updateUser = async (
     })
     .where(eq(users.id, id))
     .returning()
-  return ((result as any[])[0] as User) ?? null
+  return result[0] ? toDomainUser(result[0]) : null
 }
 
 export const deleteUser = async (id: UserId): Promise<boolean> => {

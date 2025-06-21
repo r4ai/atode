@@ -6,9 +6,39 @@ import { prettyJSON } from "hono/pretty-json"
 import { describeRoute, openAPISpecs } from "hono-openapi"
 import { resolver } from "hono-openapi/valibot"
 import * as v from "valibot"
+import { taskRepository } from "@/infrastructure/repositories/task"
+import { userRepository } from "@/infrastructure/repositories/user"
+import type { Dependencies } from "@/presentation/dependencies"
+// Import routes and dependencies
+import { createTaskRoutes } from "@/presentation/routes/task"
 
-// Import routes
-import { taskRoutes } from "./presentation/routes/task"
+const dependencies = {
+  repository: {
+    task: taskRepository,
+    user: userRepository,
+    // TODO: Implement project repository
+    project: {
+      create: async () => {
+        throw new Error("Project repository not implemented")
+      },
+      delete: async () => {
+        throw new Error("Project repository not implemented")
+      },
+      findById: async () => {
+        throw new Error("Project repository not implemented")
+      },
+      findByUserId: async () => {
+        throw new Error("Project repository not implemented")
+      },
+      update: async () => {
+        throw new Error("Project repository not implemented")
+      },
+      findChildren: async () => {
+        throw new Error("Project repository not implemented")
+      },
+    },
+  },
+} as const satisfies Dependencies
 
 // Create Hono app with OpenAPI support
 const app = new Hono().basePath("/api")
@@ -59,7 +89,7 @@ app.get(
 )
 
 // API Routes
-app.route("/tasks", taskRoutes)
+app.route("/tasks", createTaskRoutes(dependencies))
 
 // OpenAPI specification
 app.get("/openapi", (c) => {

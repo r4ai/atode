@@ -1,12 +1,12 @@
 import {
+  type AnyPgColumn,
   bigint,
   integer,
   pgTable,
+  primaryKey,
   text,
   timestamp,
   varchar,
-  primaryKey,
-  type AnyPgColumn,
 } from "drizzle-orm/pg-core"
 
 // Users table

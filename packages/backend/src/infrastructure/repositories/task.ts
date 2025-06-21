@@ -9,14 +9,34 @@ import type {
 import type { UserId } from "@/domain/entities/user"
 import type { TaskFilters, TaskRepository } from "@/domain/repositories/task"
 import { db } from "@/infrastructure/database/connection"
+import type { Task as DbTask } from "@/infrastructure/database/schema"
 import { tasks } from "@/infrastructure/database/schema"
+
+// Helper function to convert DB task to domain task
+const toDomainTask = (dbTask: DbTask): Task => ({
+  id: dbTask.id,
+  userId: dbTask.userId,
+  projectId: dbTask.projectId,
+  parentTaskId: dbTask.parentTaskId,
+  title: dbTask.title,
+  description: dbTask.description,
+  status: dbTask.status,
+  priority: dbTask.priority,
+  dueDate: dbTask.dueDate,
+  completedAt: dbTask.completedAt,
+  path: dbTask.path,
+  depth: dbTask.depth,
+  createdAt: dbTask.createdAt,
+  updatedAt: dbTask.updatedAt,
+  deletedAt: dbTask.deletedAt,
+})
 
 export const findTaskById = async (id: TaskId): Promise<Task | null> => {
   const result = await db
     .select()
     .from(tasks)
     .where(and(eq(tasks.id, id), isNull(tasks.deletedAt)))
-  return (result[0] as Task) ?? null
+  return result[0] ? toDomainTask(result[0]) : null
 }
 
 export const findTasksByProjectId = async (
@@ -27,7 +47,7 @@ export const findTasksByProjectId = async (
     .from(tasks)
     .where(and(eq(tasks.projectId, projectId), isNull(tasks.deletedAt)))
     .orderBy(tasks.createdAt)
-  return result as Task[]
+  return result.map(toDomainTask)
 }
 
 export const findTasksByUserId = async (
@@ -67,11 +87,11 @@ export const findTasksByUserId = async (
   if (filters?.limit) {
     const offset = filters.page ? (filters.page - 1) * filters.limit : 0
     const result = await query.limit(filters.limit).offset(offset)
-    return result as Task[]
+    return result.map(toDomainTask)
   }
 
   const result = await query
-  return result as Task[]
+  return result.map(toDomainTask)
 }
 
 export const findTaskChildren = async (taskId: TaskId): Promise<Task[]> => {
@@ -80,7 +100,7 @@ export const findTaskChildren = async (taskId: TaskId): Promise<Task[]> => {
     .from(tasks)
     .where(and(eq(tasks.parentTaskId, taskId), isNull(tasks.deletedAt)))
     .orderBy(tasks.createdAt)
-  return result as Task[]
+  return result.map(toDomainTask)
 }
 
 export const createTask = async (data: CreateTaskData): Promise<Task> => {
@@ -100,7 +120,7 @@ export const createTask = async (data: CreateTaskData): Promise<Task> => {
       updatedAt: new Date(),
     })
     .returning()
-  return (result as any[])[0] as Task
+  return toDomainTask(result[0])
 }
 
 export const updateTask = async (
@@ -115,7 +135,7 @@ export const updateTask = async (
     })
     .where(eq(tasks.id, id))
     .returning()
-  return ((result as any[])[0] as Task) ?? null
+  return result[0] ? toDomainTask(result[0]) : null
 }
 
 export const markTaskCompleted = async (id: TaskId): Promise<Task | null> => {
@@ -128,7 +148,7 @@ export const markTaskCompleted = async (id: TaskId): Promise<Task | null> => {
     })
     .where(eq(tasks.id, id))
     .returning()
-  return ((result as any[])[0] as Task) ?? null
+  return result[0] ? toDomainTask(result[0]) : null
 }
 
 export const deleteTask = async (id: TaskId): Promise<boolean> => {

@@ -1,215 +1,418 @@
-import { Hono } from "hono"
 import { vValidator } from "@hono/valibot-validator"
+import { Hono } from "hono"
 import { describeRoute } from "hono-openapi"
 import { resolver } from "hono-openapi/valibot"
 import * as v from "valibot"
+import type { CreateTaskData, UpdateTaskData } from "@/domain/entities/task"
+import type { UserId } from "@/domain/entities/user"
+import type { TaskFilters } from "@/domain/repositories/task"
 import {
-  TaskSchema,
-  CreateTaskSchema,
-  UpdateTaskSchema,
-  TaskFilterSchema,
-  ApiResponseSchema,
-  PaginatedResponseSchema,
-  ApiErrorSchema,
-  IdSchema,
-} from "../schema"
-import { dependencies } from "../dependencies"
-import {
-  getTask,
-  createTask,
-  updateTask,
-  getTasks,
   completeTask,
+  createTask,
   deleteTask,
-} from "../controllers/task"
+  getTaskById,
+  getTasksByUser,
+  updateTask,
+} from "@/domain/use-cases/task"
+import type { Dependencies } from "@/presentation/dependencies"
+import {
+  ApiErrorSchema,
+  ApiResponseSchema,
+  CreateTaskSchema,
+  IdSchema,
+  PaginatedResponseSchema,
+  TaskFilterSchema,
+  TaskSchema,
+  UpdateTaskSchema,
+} from "@/presentation/schema"
 
-const taskRoutes = new Hono()
+export const createTaskRoutes = (deps: Dependencies) => {
+  const taskRoutes = new Hono()
 
-// GET /tasks - List tasks with filtering
-taskRoutes.get(
-  "/",
-  describeRoute({
-    tags: ["tasks"],
-    summary: "List tasks",
-    description: "Get a paginated list of tasks with optional filtering",
-    responses: {
-      200: {
-        description: "List of tasks",
-        content: {
-          "application/json": {
-            schema: resolver(PaginatedResponseSchema(TaskSchema)),
+  // GET /tasks - List tasks with filtering
+  taskRoutes.get(
+    "/",
+    describeRoute({
+      tags: ["tasks"],
+      summary: "List tasks",
+      description: "Get a paginated list of tasks with optional filtering",
+      responses: {
+        200: {
+          description: "List of tasks",
+          content: {
+            "application/json": {
+              schema: resolver(PaginatedResponseSchema(TaskSchema)),
+            },
+          },
+        },
+        400: {
+          description: "Invalid request parameters",
+          content: {
+            "application/json": {
+              schema: resolver(ApiErrorSchema),
+            },
           },
         },
       },
-      400: {
-        description: "Invalid request parameters",
-        content: {
-          "application/json": {
-            schema: resolver(ApiErrorSchema),
+    }),
+    vValidator("query", TaskFilterSchema),
+    async (c) => {
+      const filters = c.req.valid("query")
+
+      try {
+        const userId = 1 as UserId // TODO: Get from authenticated user
+        const taskFilters: TaskFilters = {
+          projectId: filters.projectId,
+          status: filters.status,
+          search: filters.search,
+          page: filters.page ?? 1,
+          limit: filters.limit ?? 50,
+        }
+
+        const tasks = await getTasksByUser(deps, userId, taskFilters)
+
+        return c.json({
+          data: tasks,
+          total: tasks.length, // TODO: Implement proper count
+          page: filters.page ?? 1,
+          limit: filters.limit ?? 50,
+          totalPages: Math.ceil(tasks.length / (filters.limit ?? 50)),
+          success: true,
+        })
+      } catch (error) {
+        return c.json(
+          {
+            success: false,
+            error: "Failed to fetch tasks",
+            message: error instanceof Error ? error.message : "Unknown error",
           },
-        },
-      },
+          500,
+        )
+      }
     },
-  }),
-  vValidator("query", TaskFilterSchema),
-  getTasks(dependencies),
-)
+  )
 
-// POST /tasks - Create new task
-taskRoutes.post(
-  "/",
-  describeRoute({
-    tags: ["tasks"],
-    summary: "Create task",
-    description: "Create a new task",
-    responses: {
-      201: {
-        description: "Task created successfully",
-        content: {
-          "application/json": {
-            schema: resolver(ApiResponseSchema(TaskSchema)),
+  // POST /tasks - Create new task
+  taskRoutes.post(
+    "/",
+    describeRoute({
+      tags: ["tasks"],
+      summary: "Create task",
+      description: "Create a new task",
+      responses: {
+        201: {
+          description: "Task created successfully",
+          content: {
+            "application/json": {
+              schema: resolver(ApiResponseSchema(TaskSchema)),
+            },
+          },
+        },
+        400: {
+          description: "Invalid request data",
+          content: {
+            "application/json": {
+              schema: resolver(ApiErrorSchema),
+            },
           },
         },
       },
-      400: {
-        description: "Invalid request data",
-        content: {
-          "application/json": {
-            schema: resolver(ApiErrorSchema),
+    }),
+    vValidator("json", CreateTaskSchema),
+    async (c) => {
+      const data = c.req.valid("json")
+
+      try {
+        const userId = 1 as UserId // TODO: Get from authenticated user
+
+        const taskData: CreateTaskData = {
+          userId,
+          projectId: data.projectId,
+          parentTaskId: data.parentId,
+          title: data.title,
+          description: data.description,
+          priority: data.priority,
+          dueDate: data.dueDate ? new Date(data.dueDate) : undefined,
+        }
+
+        const task = await createTask(deps, taskData)
+
+        return c.json(
+          {
+            data: task,
+            success: true,
+            message: "Task created successfully",
           },
-        },
-      },
+          201,
+        )
+      } catch (error) {
+        return c.json(
+          {
+            success: false,
+            error: "Failed to create task",
+            message: error instanceof Error ? error.message : "Unknown error",
+          },
+          500,
+        )
+      }
     },
-  }),
-  vValidator("json", CreateTaskSchema),
-  createTask(dependencies),
-)
+  )
 
-// GET /tasks/:id - Get task with details
-taskRoutes.get(
-  "/:id",
-  describeRoute({
-    tags: ["tasks"],
-    summary: "Get task",
-    description: "Get a specific task by ID",
-    responses: {
-      200: {
-        description: "Task details",
-        content: {
-          "application/json": {
-            schema: resolver(ApiResponseSchema(TaskSchema)),
+  // GET /tasks/:id - Get task with details
+  taskRoutes.get(
+    "/:id",
+    describeRoute({
+      tags: ["tasks"],
+      summary: "Get task",
+      description: "Get a specific task by ID",
+      responses: {
+        200: {
+          description: "Task details",
+          content: {
+            "application/json": {
+              schema: resolver(ApiResponseSchema(TaskSchema)),
+            },
+          },
+        },
+        404: {
+          description: "Task not found",
+          content: {
+            "application/json": {
+              schema: resolver(ApiErrorSchema),
+            },
           },
         },
       },
-      404: {
-        description: "Task not found",
-        content: {
-          "application/json": {
-            schema: resolver(ApiErrorSchema),
+    }),
+    vValidator("param", v.object({ id: IdSchema })),
+    async (c) => {
+      const { id } = c.req.valid("param")
+
+      try {
+        const task = await getTaskById(deps, id)
+
+        if (!task) {
+          return c.json(
+            {
+              success: false,
+              error: "Task not found",
+              message: `Task with ID ${id} not found`,
+            },
+            404,
+          )
+        }
+
+        return c.json({
+          data: task,
+          success: true,
+        })
+      } catch (error) {
+        return c.json(
+          {
+            success: false,
+            error: "Failed to fetch task",
+            message: error instanceof Error ? error.message : "Unknown error",
           },
-        },
-      },
+          500,
+        )
+      }
     },
-  }),
-  vValidator("param", v.object({ id: IdSchema })),
-  getTask(dependencies),
-)
+  )
 
-// PUT /tasks/:id - Update task
-taskRoutes.put(
-  "/:id",
-  describeRoute({
-    tags: ["tasks"],
-    summary: "Update task",
-    description: "Update an existing task",
-    responses: {
-      200: {
-        description: "Task updated successfully",
-        content: {
-          "application/json": {
-            schema: resolver(ApiResponseSchema(TaskSchema)),
+  // PUT /tasks/:id - Update task
+  taskRoutes.put(
+    "/:id",
+    describeRoute({
+      tags: ["tasks"],
+      summary: "Update task",
+      description: "Update an existing task",
+      responses: {
+        200: {
+          description: "Task updated successfully",
+          content: {
+            "application/json": {
+              schema: resolver(ApiResponseSchema(TaskSchema)),
+            },
+          },
+        },
+        404: {
+          description: "Task not found",
+          content: {
+            "application/json": {
+              schema: resolver(ApiErrorSchema),
+            },
           },
         },
       },
-      404: {
-        description: "Task not found",
-        content: {
-          "application/json": {
-            schema: resolver(ApiErrorSchema),
+    }),
+    vValidator("param", v.object({ id: IdSchema })),
+    vValidator("json", UpdateTaskSchema),
+    async (c) => {
+      const { id } = c.req.valid("param")
+      const data = c.req.valid("json")
+
+      try {
+        const userId = 1 as UserId // TODO: Get from authenticated user
+
+        const updateData: UpdateTaskData = {
+          parentTaskId: data.parentId,
+          title: data.title,
+          description: data.description,
+          priority: data.priority,
+          dueDate: data.dueDate ? new Date(data.dueDate) : undefined,
+        }
+
+        const task = await updateTask(deps, id, updateData, userId)
+
+        if (!task) {
+          return c.json(
+            {
+              success: false,
+              error: "Task not found",
+              message: `Task with ID ${id} not found`,
+            },
+            404,
+          )
+        }
+
+        return c.json({
+          data: task,
+          success: true,
+          message: "Task updated successfully",
+        })
+      } catch (error) {
+        return c.json(
+          {
+            success: false,
+            error: "Failed to update task",
+            message: error instanceof Error ? error.message : "Unknown error",
           },
-        },
-      },
+          500,
+        )
+      }
     },
-  }),
-  vValidator("param", v.object({ id: IdSchema })),
-  vValidator("json", UpdateTaskSchema),
-  updateTask(dependencies),
-)
+  )
 
-// POST /tasks/:id/complete - Mark task complete
-taskRoutes.post(
-  "/:id/complete",
-  describeRoute({
-    tags: ["tasks"],
-    summary: "Complete task",
-    description: "Mark a task as completed",
-    responses: {
-      200: {
-        description: "Task completed successfully",
-        content: {
-          "application/json": {
-            schema: resolver(ApiResponseSchema(TaskSchema)),
+  // POST /tasks/:id/complete - Mark task complete
+  taskRoutes.post(
+    "/:id/complete",
+    describeRoute({
+      tags: ["tasks"],
+      summary: "Complete task",
+      description: "Mark a task as completed",
+      responses: {
+        200: {
+          description: "Task completed successfully",
+          content: {
+            "application/json": {
+              schema: resolver(ApiResponseSchema(TaskSchema)),
+            },
+          },
+        },
+        404: {
+          description: "Task not found",
+          content: {
+            "application/json": {
+              schema: resolver(ApiErrorSchema),
+            },
           },
         },
       },
-      404: {
-        description: "Task not found",
-        content: {
-          "application/json": {
-            schema: resolver(ApiErrorSchema),
+    }),
+    vValidator("param", v.object({ id: IdSchema })),
+    async (c) => {
+      const { id } = c.req.valid("param")
+
+      try {
+        const userId = 1 as UserId // TODO: Get from authenticated user
+        const task = await completeTask(deps, id, userId)
+
+        if (!task) {
+          return c.json(
+            {
+              success: false,
+              error: "Task not found",
+              message: `Task with ID ${id} not found`,
+            },
+            404,
+          )
+        }
+
+        return c.json({
+          data: task,
+          success: true,
+          message: "Task completed successfully",
+        })
+      } catch (error) {
+        return c.json(
+          {
+            success: false,
+            error: "Failed to complete task",
+            message: error instanceof Error ? error.message : "Unknown error",
           },
-        },
-      },
+          500,
+        )
+      }
     },
-  }),
-  vValidator("param", v.object({ id: IdSchema })),
-  completeTask(dependencies),
-)
+  )
 
-// DELETE /tasks/:id - Delete task
-taskRoutes.delete(
-  "/:id",
-  describeRoute({
-    tags: ["tasks"],
-    summary: "Delete task",
-    description: "Soft delete a task",
-    responses: {
-      200: {
-        description: "Task deleted successfully",
-        content: {
-          "application/json": {
-            schema: resolver(
-              ApiResponseSchema(
-                v.object({
-                  success: v.boolean(),
-                }),
+  // DELETE /tasks/:id - Delete task
+  taskRoutes.delete(
+    "/:id",
+    describeRoute({
+      tags: ["tasks"],
+      summary: "Delete task",
+      description: "Soft delete a task",
+      responses: {
+        200: {
+          description: "Task deleted successfully",
+          content: {
+            "application/json": {
+              schema: resolver(
+                ApiResponseSchema(
+                  v.object({
+                    success: v.boolean(),
+                  }),
+                ),
               ),
-            ),
+            },
+          },
+        },
+        404: {
+          description: "Task not found",
+          content: {
+            "application/json": {
+              schema: resolver(ApiErrorSchema),
+            },
           },
         },
       },
-      404: {
-        description: "Task not found",
-        content: {
-          "application/json": {
-            schema: resolver(ApiErrorSchema),
-          },
-        },
-      },
-    },
-  }),
-  vValidator("param", v.object({ id: IdSchema })),
-  deleteTask(dependencies),
-)
+    }),
+    vValidator("param", v.object({ id: IdSchema })),
+    async (c) => {
+      const { id } = c.req.valid("param")
 
-export { taskRoutes }
+      try {
+        const userId = 1 as UserId // TODO: Get from authenticated user
+        await deleteTask(deps, id, userId)
+
+        return c.json({
+          data: { success: true },
+          success: true,
+          message: "Task deleted successfully",
+        })
+      } catch (error) {
+        return c.json(
+          {
+            success: false,
+            error: "Failed to delete task",
+            message: error instanceof Error ? error.message : "Unknown error",
+          },
+          500,
+        )
+      }
+    },
+  )
+
+  return taskRoutes
+}
