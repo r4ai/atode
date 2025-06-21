@@ -1,0 +1,33 @@
+{
+  "name": "todo-app",
+  "version": "1.0.0",
+  "description": "TODO application monorepo with React frontend and Hono backend",
+  "packageManager": "bun@1.2.16",
+  "private": true,
+  "scripts": {
+    "dev": "bun run --filter=\"*\" dev",
+    "build": "bun run --filter=\"*\" build",
+    "check": "biome check packages/*/src",
+    "check:write": "biome check --write packages/*/src",
+    "format": "biome format packages/*/src",
+    "format:write": "biome format --write packages/*/src",
+    "lint": "biome lint packages/*/src",
+    "lint:write": "biome lint --write packages/*/src",
+    "typecheck": "bun run --filter=\"*\" typecheck",
+    "test": "bun run --filter=\"*\" test",
+    "backend:dev": "bun --cwd packages/backend run dev",
+    "frontend:dev": "bun --cwd packages/frontend run dev",
+    "backend:build": "bun --cwd packages/backend run build",
+    "frontend:build": "bun --cwd packages/frontend run build"
+  },
+  "workspaces": [
+    "packages/*"
+  ],
+  "dependencies": {},
+  "devDependencies": {
+    "@biomejs/biome": "2.0.0"
+  },
+  "trustedDependencies": [
+    "es5-ext"
+  ]
+}
