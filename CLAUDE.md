@@ -134,6 +134,9 @@ packages/backend/src/
 - **Runtime**: Use Bun directly for TypeScript execution (no tsx needed)
   - ✅ `bun --watch src/index.ts`
   - ❌ `tsx watch src/index.ts`
+- **Imports**: Use `@/` path aliases instead of relative imports
+  - ✅ `import { component } from "@/components/ui/button"`
+  - ❌ `import { component } from "../../components/ui/button"`
 
 ## Development Notes
 
