@@ -1,20 +1,17 @@
 import { serve } from "@hono/node-server"
-import { swaggerUI } from "@hono/swagger-ui"
-import { apiReference } from "@scalar/hono-api-reference"
 import { Hono } from "hono"
 import { cors } from "hono/cors"
 import { logger } from "hono/logger"
 import { prettyJSON } from "hono/pretty-json"
-import { describeRoute } from "hono-openapi"
+import { describeRoute, openAPISpecs } from "hono-openapi"
 import { resolver } from "hono-openapi/valibot"
 import * as v from "valibot"
+
 // Import routes
 import { taskRoutes } from "./presentation/routes/task"
-// Import schemas
-import { ApiResponseSchema } from "./schemas/valibot"
 
-// Create Hono app
-const app = new Hono()
+// Create Hono app with OpenAPI support
+const app = new Hono().basePath("/api")
 
 // Middleware
 app.use("*", logger())
@@ -30,69 +27,22 @@ app.use(
   }),
 )
 
-// API Routes
-app.route("/api/tasks", taskRoutes)
-
-// OpenAPI documentation endpoint
-app.get("/openapi.json", (c) => {
-  return c.json({
-    openapi: "3.0.0",
-    info: {
-      title: "TODO API",
-      version: "1.0.0",
-      description:
-        "A comprehensive TODO application API with hierarchical projects and tasks",
-    },
-    servers: [
-      {
-        url:
-          process.env.NODE_ENV === "production"
-            ? "https://api.example.com"
-            : "http://localhost:3000",
-        description:
-          process.env.NODE_ENV === "production"
-            ? "Production server"
-            : "Development server",
-      },
-    ],
-    paths: {},
-    components: {
-      schemas: {},
-    },
-  })
-})
-
-// API Documentation with Scalar
-app.get(
-  "/docs",
-  apiReference({
-    theme: "kepler",
-    spec: { url: "/openapi.json" },
-  } as any),
-)
-
-// Swagger UI as alternative
-app.get("/swagger", swaggerUI({ url: "/openapi.json" }))
-
 // Health check endpoint
 app.get(
-  "/",
+  "/health",
   describeRoute({
-    summary: "Health check",
-    description: "Check if the API server is running",
+    description: "Health check endpoint",
     responses: {
       200: {
-        description: "API server status",
+        description: "API is healthy",
         content: {
           "application/json": {
             schema: resolver(
-              ApiResponseSchema(
-                v.object({
-                  message: v.string(),
-                  version: v.string(),
-                  status: v.string(),
-                }),
-              ),
+              v.object({
+                status: v.literal("ok"),
+                timestamp: v.string(),
+                version: v.string(),
+              }),
             ),
           },
         },
@@ -101,48 +51,109 @@ app.get(
   }),
   (c) => {
     return c.json({
-      data: {
-        message: "TODO API Server",
-        version: "1.0.0",
-        status: "running",
-      },
-      status: "success",
+      status: "ok" as const,
+      timestamp: new Date().toISOString(),
+      version: "1.0.0",
     })
   },
 )
 
-// Error handling
-app.onError((err, c) => {
-  console.error("Error:", err)
+// API Routes
+app.route("/tasks", taskRoutes)
+
+// OpenAPI specification
+app.get("/openapi", (c) => {
   return c.json(
-    {
-      error: "Internal Server Error",
-      message: err.message ?? "An unexpected error occurred",
-      status: "error",
-    },
-    500,
+    openAPISpecs(app, {
+      documentation: {
+        info: {
+          title: "TODO API",
+          version: "1.0.0",
+          description:
+            "A comprehensive TODO application API with hierarchical projects and tasks, built with Hono, PostgreSQL, and Drizzle ORM",
+        },
+        servers: [
+          {
+            url:
+              process.env.NODE_ENV === "production"
+                ? "https://api.example.com/api"
+                : "http://localhost:3000/api",
+            description:
+              process.env.NODE_ENV === "production"
+                ? "Production server"
+                : "Development server",
+          },
+        ],
+        tags: [
+          {
+            name: "health",
+            description: "Health check operations",
+          },
+          {
+            name: "tasks",
+            description: "Task management operations",
+          },
+          {
+            name: "projects",
+            description: "Project management operations",
+          },
+          {
+            name: "labels",
+            description: "Label management operations",
+          },
+          {
+            name: "comments",
+            description: "Comment management operations",
+          },
+        ],
+      },
+    }),
   )
 })
 
-// 404 handler
-app.notFound((c) => {
-  return c.json(
-    {
-      error: "Not Found",
-      message: "The requested resource was not found",
-      status: "error",
-    },
-    404,
-  )
+// API documentation UI
+app.get("/docs", (c) => {
+  return c.html(`
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <title>TODO API Documentation</title>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+      </head>
+      <body>
+        <script
+          id="api-reference"
+          data-url="/api/openapi"
+          data-configuration='{"theme":"kepler"}'
+        ></script>
+        <script src="https://cdn.jsdelivr.net/npm/@scalar/api-reference"></script>
+      </body>
+    </html>
+  `)
 })
 
-const port = parseInt(process.env.PORT ?? "3000")
+// Create main app with API routes
+const mainApp = new Hono()
+mainApp.route("/api", app)
 
-console.log(`Server is running on http://localhost:${port}`)
-console.log(`API Documentation available at http://localhost:${port}/docs`)
-console.log(`OpenAPI JSON available at http://localhost:${port}/openapi.json`)
+// Root health check
+mainApp.get("/", (c) => {
+  return c.json({
+    message: "TODO API Server",
+    version: "1.0.0",
+    docs: "/api/docs",
+    openapi: "/api/openapi",
+  })
+})
+
+const port = Number(process.env.PORT) || 3000
+
+console.log(`Server is running on port ${port}`)
+console.log(`API Documentation: http://localhost:${port}/api/docs`)
+console.log(`OpenAPI Spec: http://localhost:${port}/api/openapi`)
 
 serve({
-  fetch: app.fetch,
+  fetch: mainApp.fetch,
   port,
 })

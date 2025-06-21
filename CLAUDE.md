@@ -79,8 +79,8 @@ packages/backend/src/
 ├── presentation/            # HTTP Layer
 │   ├── controllers/         # HTTP handler functions
 │   ├── routes/              # Route definitions
-│   └── dependencies.ts      # Simple dependency composition for controllers
-├── schemas/                 # Validation schemas
+│   ├── dependencies.ts      # Simple dependency composition for controllers
+│   └── schema.ts            # Validation schemas
 └── index.ts                 # Application entry point
 ```
 

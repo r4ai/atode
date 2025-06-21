@@ -229,10 +229,10 @@ Response: { comment: Comment }
 
 - [x] Initialize Bun workspace monorepo structure
 - [x] Set up Vite + React frontend with TypeScript
-- [ ] Configure Hono backend with OpenAPI integration (https://openapi-ts.dev/, https://hono.dev/examples/hono-openapi)
-- [ ] Create PostgreSQL database schema with migrations
-- [ ] Set up Docker Compose development environment
-- [ ] Configure Valibot schemas for API validation
+- [x] Configure Hono backend with OpenAPI integration (https://openapi-ts.dev/, https://hono.dev/examples/hono-openapi)
+- [x] Create PostgreSQL database schema with migrations
+- [x] Set up Docker Compose development environment
+- [x] Configure Valibot schemas for API validation
 
 **Week 2 - OIDC Integration (Auth0 + GitHub)**
 
