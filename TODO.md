@@ -18,6 +18,12 @@ This comprehensive implementation plan details building a production-ready TODO 
 - **Hierarchical data model** supports unlimited nesting of projects and tasks
 - **Event-driven architecture** enables real-time updates and audit trails
 - **Microservice-ready design** allows future scaling while maintaining monolith simplicity
+- **Clean Architecture for Backend** following Domain-Driven Design principles:
+  - **Domain Layer**: Core business logic, entities, and use cases (independent of frameworks)
+  - **Application Layer**: Application services, DTOs, and orchestration logic
+  - **Infrastructure Layer**: Database repositories, external services, and framework-specific code
+  - **Presentation Layer**: HTTP controllers, middleware, and API endpoints
+  - **Dependency Injection**: Loose coupling between layers with dependency inversion
 
 ## Database Schema Design
 

@@ -1,0 +1,276 @@
+version: "3"
+
+vars:
+  PROJECT_NAME: todo-app
+  DOCKER_COMPOSE_DEV: docker-compose -f docker-compose.yml -f docker-compose.dev.yml
+  DOCKER_COMPOSE_PROD: docker-compose -f docker-compose.yml -f docker-compose.prod.yml
+
+tasks:
+  default:
+    aliases: [help]
+    desc: Show available tasks
+    summary: |
+      Display all available tasks with their descriptions.
+      This is the default task when running 'task' without arguments.
+    silent: true
+    cmds:
+      - task --list
+
+  # Development Environment
+  dev:
+    desc: Start development environment
+    summary: |
+      Start the complete development environment with:
+      - PostgreSQL database with health checks
+      - Backend API server with hot reload
+      - Frontend development server with hot reload
+      - Redis for caching
+
+      Services will be available at:
+      - Frontend: http://localhost:5173
+      - Backend API: http://localhost:3000
+      - API Documentation: http://localhost:3000/docs
+      - Swagger UI: http://localhost:3000/swagger
+    cmds:
+      - "{{.DOCKER_COMPOSE_DEV}} up -d"
+      - echo "🚀 Development environment started!"
+      - 'echo "📱 Frontend: http://localhost:5173"'
+      - 'echo "🔧 Backend API: http://localhost:3000"'
+      - 'echo "📚 API Docs: http://localhost:3000/docs"'
+      - 'echo "📋 Swagger: http://localhost:3000/swagger"'
+
+  # Production Environment
+  prod:
+    desc: Start production environment
+    summary: |
+      Start the production environment with:
+      - Optimized Docker containers
+      - Production builds
+      - Load balancing with Nginx
+
+      Services will be available at:
+      - Application: http://localhost:3001
+      - Backend API: http://localhost:3000
+    cmds:
+      - "{{.DOCKER_COMPOSE_PROD}} up -d"
+      - 'echo "🚀 Production environment started!"'
+      - 'echo "🌐 Application: http://localhost:3001"'
+      - 'echo "⚡ Backend API: http://localhost:3000"'
+
+  # Container Management
+  build:
+    desc: Build all Docker containers
+    summary: |
+      Build all Docker containers for both development and production.
+      This includes frontend, backend, and related services.
+    cmds:
+      - docker-compose build
+      - echo "✅ All containers built successfully"
+
+  stop:
+    desc: Stop all containers
+    summary: |
+      Stop all running Docker containers and services.
+      This preserves volumes and networks.
+    cmds:
+      - docker-compose down
+      - echo "🛑 All containers stopped"
+
+  clean:
+    desc: Clean all containers, volumes, and networks
+    summary: |
+      Stop and remove all containers, volumes, and networks.
+      ⚠️  WARNING: This will delete all data including the database!
+    prompt: "This will delete all data including the database. Continue?"
+    cmds:
+      - docker-compose down -v --remove-orphans
+      - docker system prune -f
+      - echo "🧹 Environment cleaned successfully"
+
+  # Logs and Monitoring
+  logs:
+    desc: Show logs for all services
+    summary: |
+      Display and follow logs from all Docker services.
+      Use Ctrl+C to stop following logs.
+    cmds:
+      - docker-compose logs -f
+
+  logs:backend:
+    desc: Show backend logs
+    summary: Show logs for the backend API service only
+    cmds:
+      - docker-compose logs -f backend
+
+  logs:frontend:
+    desc: Show frontend logs
+    summary: Show logs for the frontend development server only
+    cmds:
+      - docker-compose logs -f frontend
+
+  logs:postgres:
+    desc: Show PostgreSQL logs
+    summary: Show logs for the PostgreSQL database service only
+    cmds:
+      - docker-compose logs -f postgres
+
+  # Testing and Quality
+  test:
+    desc: Run tests for all packages
+    summary: |
+      Run the complete test suite including:
+      - Backend unit tests
+      - Frontend component tests
+      - Integration tests where applicable
+    deps: [test:backend, test:frontend]
+    cmds:
+      - echo "✅ All tests completed successfully"
+
+  test:backend:
+    desc: Run backend tests
+    summary: Run unit and integration tests for the backend API
+    dir: packages/backend
+    cmds:
+      - bun run test
+
+  test:frontend:
+    desc: Run frontend tests
+    summary: Run component and unit tests for the frontend
+    dir: packages/frontend
+    cmds:
+      - bun run test
+
+  typecheck:
+    desc: Run TypeScript type checking
+    summary: |
+      Run TypeScript type checking across all packages.
+      Ensures type safety and catches compilation errors.
+    deps: [typecheck:backend, typecheck:frontend]
+    cmds:
+      - echo "✅ Type checking completed successfully"
+
+  typecheck:backend:
+    desc: Run backend type checking
+    dir: packages/backend
+    cmds:
+      - bun run typecheck
+
+  typecheck:frontend:
+    desc: Run frontend type checking
+    dir: packages/frontend
+    cmds:
+      - bun run typecheck
+
+  lint:
+    desc: Run linting and formatting
+    summary: |
+      Run Biome linting and formatting across all packages.
+      Automatically fixes formatting issues and enforces code style.
+    cmds:
+      - bun check:write
+      - echo "✅ Linting and formatting completed"
+
+  # Database Management
+  db:migrate:
+    desc: Run database migrations
+    summary: |
+      Run all pending database migrations using drizzle-kit.
+      PostgreSQL extensions are automatically handled by Docker initialization.
+    cmds:
+      - docker-compose exec backend bun run db:migrate
+      - echo "✅ Database migrations completed"
+
+  db:generate:
+    desc: Generate new migration
+    summary: |
+      Generate a new database migration based on schema changes.
+      Run this after modifying the Drizzle schema.
+    cmds:
+      - docker-compose exec backend bun run db:generate
+      - echo "✅ Migration generated successfully"
+
+  db:studio:
+    desc: Open Drizzle Studio
+    summary: |
+      Open Drizzle Studio for database management and exploration.
+      Available at http://localhost:4983
+    cmds:
+      - docker-compose exec backend bun run db:studio
+
+  db:shell:
+    desc: Open PostgreSQL shell
+    summary: |
+      Open an interactive PostgreSQL shell connected to the database.
+      Useful for direct database queries and administration.
+    cmds:
+      - docker-compose exec postgres psql -U postgres -d todoapp
+
+  # Development Shells
+  shell:backend:
+    desc: Open backend container shell
+    summary: Access the backend container with an interactive shell
+    cmds:
+      - docker-compose exec backend sh
+
+  shell:frontend:
+    desc: Open frontend container shell
+    summary: Access the frontend container with an interactive shell
+    cmds:
+      - docker-compose exec frontend sh
+
+  # Setup and Installation
+  setup:
+    desc: Initial project setup
+    summary: |
+      Complete initial setup including:
+      - Building all containers
+      - Running database migrations
+      - Installing dependencies
+    deps: [build]
+    cmds:
+      - task: db:migrate
+      - echo "🎉 Project setup completed successfully!"
+      - echo ""
+      - echo "Next steps:"
+      - echo "  - Run 'task dev' to start development environment"
+      - echo "  - Visit http://localhost:5173 for the frontend"
+      - echo "  - Visit http://localhost:3000/docs for API documentation"
+
+  # Quality Assurance
+  ci:
+    desc: Run full CI pipeline
+    summary: |
+      Run the complete CI pipeline including:
+      - Type checking
+      - Linting and formatting
+      - All tests
+
+      This is equivalent to what runs in CI/CD.
+    deps: [typecheck, lint, test]
+    cmds:
+      - echo "✅ CI pipeline completed successfully"
+
+  # Utility Commands
+  status:
+    desc: Show Docker container status
+    summary: Display the current status of all Docker containers
+    cmds:
+      - docker-compose ps
+
+  restart:
+    desc: Restart all services
+    summary: |
+      Stop and restart all Docker services.
+      Preserves volumes and data.
+    cmds:
+      - task: stop
+      - task: dev
+
+  update:
+    desc: Update dependencies
+    summary: |
+      Update all dependencies across packages.
+      Runs bun update in all workspace packages.
+    cmds:
+      - bun update
+      - echo "✅ Dependencies updated"

@@ -28,6 +28,22 @@ todo/
 
 ## Development Commands
 
+### Prerequisites
+
+- [Bun](https://bun.sh/) (latest version)
+- [Docker](https://www.docker.com/) and Docker Compose
+- [Task](https://taskfile.dev/) task runner
+
+**Install Task:**
+
+```bash
+# macOS/Linux (via script)
+sh -c "$(curl --location https://taskfile.dev/install.sh)" -- -d -b ~/.local/bin
+
+# Go users
+go install github.com/go-task/task/v3/cmd/task@latest
+```
+
 ### Root Level (Monorepo)
 
 ```bash
@@ -45,83 +61,38 @@ bun backend:build        # Build only backend
 bun frontend:build       # Build only frontend
 ```
 
-### Backend (packages/backend)
-
-```bash
-cd packages/backend
-bun install              # Install backend dependencies
-bun run dev             # Start development server (tsx watch)
-bun run build           # Build TypeScript to JavaScript
-bun run start           # Run production build
-bun run db:generate     # Generate Drizzle migrations
-bun run db:migrate      # Run database migrations
-bun run db:studio       # Open Drizzle Studio
-```
-
-### Frontend (packages/frontend)
-
-```bash
-cd packages/frontend
-bun install             # Install frontend dependencies
-bun run dev            # Start Vite development server
-bun run build          # Build for production
-```
-
-### Docker
-
-```bash
-docker-compose up -d    # Start all services
-docker-compose down     # Stop all services
-```
-
 ## Architecture
 
-### Backend Structure (packages/backend)
+### Backend Structure (Functional & Pragmatic)
 
-- **src/index.ts**: Main Hono server with middleware (CORS, logging)
-- **src/db/**: Database configuration and schema
-  - **schema.ts**: Drizzle ORM schema definition for todos table
-  - **connection.ts**: PostgreSQL connection setup
-  - **migrate.ts**: Migration runner
-- **src/models/todo.ts**: TodoModel class with CRUD operations
-- **src/routes/**: API route handlers (todos endpoints)
+```
+packages/backend/src/
+├── domain/                  # Business Logic
+│   ├── entities/            # Type definitions (User, Task, Project, Label)
+│   ├── repositories/        # Repository interfaces
+│   └── use-cases/           # Pure business functions
+├── infrastructure/          # External Integrations
+│   ├── database/            # Database configuration and schema
+│   │   ├── connection.ts    # PostgreSQL connection
+│   │   └── schema.ts        # Drizzle ORM schema
+│   └── repositories/        # Database functions
+├── presentation/            # HTTP Layer
+│   ├── controllers/         # HTTP handler functions
+│   └── routes/              # Route definitions
+├── lib/                     # Utilities
+│   └── dependencies.ts      # Simple dependency composition
+├── schemas/                 # Validation schemas
+└── index.ts                 # Application entry point
+```
 
-### Frontend Structure (packages/frontend)
+**Functional Programming Principles:**
 
-- **src/**: React application source code
-- **vite.config.ts**: Vite configuration
-- **package.json**: Frontend dependencies and scripts
-
-### Database Schema
-
-The todos table uses UUID primary keys with:
-
-- id (UUID, auto-generated)
-- title (text, required)
-- description (text, optional)
-- completed (boolean, default false)
-- createdAt/updatedAt (timestamps)
-
-### API Endpoints
-
-- GET /api/todos - List all todos
-- POST /api/todos - Create new todo
-- PUT /api/todos/:id - Update existing todo
-- DELETE /api/todos/:id - Delete todo
-
-## Configuration
-
-### Environment Variables
-
-- DATABASE_URL: PostgreSQL connection string (defaults to local development)
-- PORT: Backend server port (defaults to 3000)
-- NODE_ENV: Environment (affects CORS origins)
-
-### Port Allocation
-
-- Frontend: 3001 (production), 5173 (Vite dev)
-- Backend: 3000
-- PostgreSQL: 5432
+- **Pure Functions**: Business logic implemented as pure functions without side effects
+- **Function Composition**: Dependencies passed as parameters instead of class injection
+- **Immutability**: Data structures are immutable, functions return new values
+- **No Classes**: Everything implemented as functions and type definitions
+- **Simple Dependencies**: Plain object composition instead of complex DI containers
+- **Pragmatic Structure**: Organized by feature/concern, not rigid architectural layers
 
 ## Development Standards
 
@@ -134,38 +105,36 @@ The todos table uses UUID primary keys with:
 - Implement unit tests and integration tests for every new feature or implementation
 - Use Storybook for frontend UI component development and quality assurance
 - Run code quality checks with Biome after implementation
+- **CRITICAL - Implementation Verification**: After completing any implementation, ALWAYS run and verify that all of the following pass without errors:
+  - `bun run test` - All tests must pass
+  - `bun run typecheck` - TypeScript type checking must pass on all packages
+  - `bun run check:write` - Biome linting and formatting must pass
 
 ### Code Style
 
-- Use `type` instead of `interface` for type definitions
-- Use arrow functions instead of function declarations
-- Use kebab-case for all file names
-- Use named exports instead of default exports
-
-### Testing Commands
-
-```bash
-# Root level (all packages)
-bun test           # Run tests on all packages
-bun typecheck      # Run TypeScript type checking on all packages
-bun check          # Run Biome check on all packages
-bun check:write    # Apply Biome fixes on all packages
-bun format         # Check formatting on all packages
-bun format:write   # Apply formatting on all packages
-bun lint           # Run linter on all packages
-bun lint:write     # Apply lint fixes on all packages
-
-# Backend tests
-cd packages/backend
-bun run test        # Run unit tests
-bun run test:integration  # Run integration tests
-
-# Frontend tests and Storybook
-cd packages/frontend
-bun run test        # Run component tests
-bun run storybook   # Start Storybook development server
-bun run build-storybook  # Build Storybook
-```
+- **Commit messages**: Use conventional commits in English
+  - ✅ `git commit -m "feat: add new feature"`
+  - ❌ `git commit -m "●●の機能を追加した"`
+- **Comments**: Write code comments in English
+- **Functional Programming**: Prefer pure functions over classes
+  - ✅ `export const createUser = (deps, data) => { ... }`
+  - ❌ `class UserService { createUser(data) { ... } }`
+- **Functions**: Use arrow functions with implicit returns when possible
+  - ✅ `const handleClick = () => "clicked"`
+  - ❌ `function handleClick() { return "clicked"; }`
+- **Types**: Prefer `type` over `interface`
+  - ✅ `type User = { name: string; age: number; }`
+  - ❌ `interface User { name: string; age: number; }`
+- **Exports**: Use named exports by default (avoid default exports unless necessary)
+- **File naming**: Use kebab-case for all filenames
+  - ✅ `my-component.tsx`, `my-context.tsx`
+  - ❌ `MyComponent.tsx`, `my_context.tsx`
+- **Null coalescing**: Use `??` instead of `||` for null/undefined checks
+  - ✅ `const port = process.env.PORT ?? "3000"`
+  - ❌ `const port = process.env.PORT || "3000"`
+- **Runtime**: Use Bun directly for TypeScript execution (no tsx needed)
+  - ✅ `bun --watch src/index.ts`
+  - ❌ `tsx watch src/index.ts`
 
 ## Development Notes
 

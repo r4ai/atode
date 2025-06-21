@@ -4,13 +4,13 @@ import * as schema from "./schema"
 
 const pool = new Pool({
   connectionString:
-    process.env.DATABASE_URL ||
+    process.env.DATABASE_URL ??
     "postgresql://postgres:password@localhost:5432/todoapp",
 })
 
 export const db = drizzle(pool, { schema })
 
-export async function testConnection() {
+export const testConnection = async () => {
   try {
     const client = await pool.connect()
     console.log("✅ Database connection successful")

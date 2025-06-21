@@ -18,14 +18,24 @@
     "backend:dev": "bun --cwd packages/backend run dev",
     "frontend:dev": "bun --cwd packages/frontend run dev",
     "backend:build": "bun --cwd packages/backend run build",
-    "frontend:build": "bun --cwd packages/frontend run build"
+    "frontend:build": "bun --cwd packages/frontend run build",
+    "docker:dev": "task dev",
+    "docker:prod": "task prod",
+    "docker:build": "task build",
+    "docker:stop": "task stop",
+    "docker:clean": "task clean",
+    "docker:logs": "task logs",
+    "docker:migrate": "task db:migrate",
+    "setup": "task setup",
+    "ci": "task ci"
   },
   "workspaces": [
     "packages/*"
   ],
   "dependencies": {},
   "devDependencies": {
-    "@biomejs/biome": "2.0.0"
+    "@biomejs/biome": "2.0.0",
+    "@types/bun": "^1.2.17"
   },
   "trustedDependencies": [
     "es5-ext"
