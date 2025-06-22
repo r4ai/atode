@@ -2,18 +2,18 @@
 
 ## Project Overview and Architecture
 
-This comprehensive implementation plan details building a production-ready TODO application with all Todoist features except recurring tasks. The application uses a modern tech stack with **OIDC authentication via Auth0 (supporting GitHub login)**, featuring a React frontend, Hono backend, and PostgreSQL database, all deployable via Docker Compose on home servers.
+This comprehensive implementation plan details building a production-ready TODO application with all Todoist features except recurring tasks. The application uses a modern tech stack with **Auth.js authentication (supporting GitHub OAuth)**, featuring a React frontend, Hono backend, and PostgreSQL database, all deployable via Docker Compose on home servers.
 
 **Core Technology Stack:**
 
 - **Frontend**: Vite + React + TanStack Router + shadcn/ui + OpenAPI TypeScript + TanStack Query
-- **Backend**: Hono + PostgreSQL + OIDC authentication (Auth0/GitHub OAuth) + Hono OpenAPI + Valibot
+- **Backend**: Hono + PostgreSQL + Auth.js authentication (GitHub OAuth) + Hono OpenAPI + Zod
 - **Deployment**: Docker Compose for home server deployment
 - **Package Manager**: Bun with workspaces monorepo structure
 
 **Key Architecture Decisions:**
 
-- **OIDC-based authentication via Auth0** offloads user credentials to a trusted provider, eliminating in-app password handling and enabling secure social login (e.g., GitHub)
+- **Auth.js-based authentication** offloads user credentials to trusted OAuth providers, eliminating in-app password handling and enabling secure social login (e.g., GitHub)
 - **OpenAPI-driven development** ensures type safety between frontend and backend
 - **Hierarchical data model** supports unlimited nesting of projects and tasks
 - **Event-driven architecture** enables real-time updates and audit trails
@@ -129,20 +129,20 @@ CREATE INDEX idx_comments_polymorphic ON comments (commentable_type, commentable
 
 ### Authentication Endpoints
 
-**OIDC (Auth0/GitHub) Authentication:**
+**Auth.js (GitHub OAuth) Authentication:**
 
 ```typescript
-// GET /auth/login - Initiate OIDC login via Auth0 (GitHub OAuth)
-GET /auth/login
-Response: 302 Redirect to Auth0 authorization URL
+// GET /auth/signin - Initiate GitHub OAuth login
+GET /auth/signin
+Response: 302 Redirect to GitHub authorization URL
 
-// GET /auth/callback - OIDC callback endpoint
-GET /auth/callback?code={code}&state={state}
+// GET /auth/callback/github - OAuth callback endpoint
+GET /auth/callback/github?code={code}&state={state}
 Response: Set session cookie; Redirect to frontend (e.g., /dashboard)
 
-// GET /auth/logout - Log out user
-GET /auth/logout
-Response: Clear session cookie; Redirect to Auth0 logout or home page
+// GET /auth/signout - Log out user
+GET /auth/signout
+Response: Clear session cookie; Redirect to home page
 ```
 
 ### Core Resource Endpoints
@@ -234,18 +234,18 @@ Response: { comment: Comment }
 - [x] Set up Docker Compose development environment
 - [x] Configure Valibot schemas for API validation
 
-**Week 2 - OIDC Integration (Auth0 + GitHub)**
+**Week 2 - Auth.js Integration (GitHub OAuth)**
 
-- [ ] Integrate OIDC authentication using hono-oidc middleware (Auth0 tenant configuration for GitHub login)
-- [ ] Set up Auth0 application and GitHub social login provider
-- [ ] Implement OIDC callback endpoint and create user entry on first login
-- [ ] Configure JWT session cookie handling for OIDC (client ID/secret, redirect URI, scopes)
-- [ ] Implement frontend login/logout UI (e.g., "Sign in with GitHub" button and logout action)
-- [ ] Apply OIDC security best practices (PKCE, state parameter validation, secure token storage)
+- [x] Integrate Auth.js authentication with GitHub OAuth provider
+- [x] Set up GitHub OAuth application and configure client credentials
+- [x] Implement OAuth callback endpoint and create user entry on first login
+- [x] Configure JWT session handling with Auth.js (client ID/secret, redirect URI, scopes)
+- [x] Implement frontend login/logout UI with protected routes
+- [x] Apply OAuth security best practices (CSRF protection, secure session handling)
 
 **Deliverables:**
 
-- Working authentication system with OIDC (Auth0/GitHub) login support
+- Working authentication system with Auth.js (GitHub OAuth) login support
 - Database schema with proper indexing
 - Basic API structure with OpenAPI documentation
 - Docker development environment
@@ -311,7 +311,7 @@ Response: { comment: Comment }
 - [ ] Unit tests for all React components with React Testing Library
 - [ ] Integration tests for API endpoints with database
 - [ ] End-to-end tests for complete user workflows
-- [ ] OIDC authentication flow testing with Auth0 dev environment
+- [ ] Auth.js authentication flow testing with GitHub OAuth
 - [ ] Performance testing for hierarchical queries
 - [ ] Cross-browser compatibility testing
 
@@ -442,14 +442,14 @@ afterAll(async () => {
 
 ### End-to-End Testing (10% Coverage)
 
-**Playwright OIDC Authentication:**
+**Playwright Auth.js Authentication:**
 
 ```typescript
-test.describe("OIDC Authentication Flow", () => {
-  test("should log in via Auth0 and redirect back to app", async ({ page }) => {
+test.describe("Auth.js Authentication Flow", () => {
+  test("should log in via GitHub OAuth and redirect back to app", async ({ page }) => {
     await page.goto("/");
     await page.click('button:has-text("Sign in with GitHub")');
-    // After Auth0 login is completed, user should be redirected back to the app
+    // After GitHub OAuth login is completed, user should be redirected back to the app
     await page.waitForURL("/dashboard");
     await expect(page).toHaveURL("/dashboard");
   });
@@ -458,21 +458,21 @@ test.describe("OIDC Authentication Flow", () => {
 
 ## Security Considerations
 
-### OIDC Implementation Security
+### Auth.js Implementation Security
 
 **Authorization Flow Security:**
 
 - Use the OAuth 2.0 Authorization Code Flow with PKCE to prevent interception of authorization codes
 - Validate the `state` parameter on the callback to protect against CSRF attacks during the login redirect flow
-- Strictly enforce the registered redirect URI (Auth0 callback URL) to prevent malicious redirection
+- Strictly enforce the registered redirect URI (GitHub OAuth callback URL) to prevent malicious redirection
 
 **Token Handling and Validation:**
 
-- Delegate user authentication to Auth0, so no passwords or credentials are stored in our database, reducing exposure
-- Verify the ID token’s signature and claims (issuer, audience, expiration) using Auth0’s published public keys to ensure tokens are valid
-- Use secure, HTTP-only cookies for session tokens (managed by hono-oidc) and require HTTPS for all OIDC callbacks and token exchanges
-- Request only necessary scopes (e.g., `openid profile email`) and handle minimal user data (email, display name) to limit exposed information
-- Enforce short-lived sessions (e.g., 15-minute refresh intervals, 1-day expiration) and revoke tokens on logout to minimize the impact of leaked credentials
+- Delegate user authentication to GitHub OAuth, so no passwords or credentials are stored in our database, reducing exposure
+- Verify the access token's validity using GitHub's API endpoints to ensure tokens are valid and active
+- Use secure, HTTP-only cookies for session tokens (managed by Auth.js) and require HTTPS for all OAuth callbacks and token exchanges
+- Request only necessary scopes (e.g., `user:email`) and handle minimal user data (email, display name) to limit exposed information
+- Enforce short-lived sessions with Auth.js configuration and revoke tokens on logout to minimize the impact of leaked credentials
 
 ### Application Security Hardening
 

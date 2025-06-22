@@ -1,3 +1,5 @@
+import GitHub from "@auth/core/providers/github"
+import { initAuthConfig, verifyAuth } from "@hono/auth-js"
 import { serve } from "@hono/node-server"
 import { Scalar } from "@scalar/hono-api-reference"
 import { Hono } from "hono"
@@ -10,7 +12,7 @@ import { z } from "zod"
 import { taskRepository } from "@/infrastructure/repositories/task"
 import { userRepository } from "@/infrastructure/repositories/user"
 import type { Dependencies } from "@/presentation/dependencies"
-// Import routes and dependencies
+import { createAuthRoutes } from "@/presentation/routes/auth"
 import { createTaskRoutes } from "@/presentation/routes/task"
 
 const dependencies = {
@@ -57,6 +59,73 @@ app.use(
     credentials: true,
   }),
 )
+app.use(
+  "*",
+  initAuthConfig((c) => ({
+    secret: c.env.AUTH_SECRET,
+    trustHost: true,
+    providers: [
+      GitHub({
+        clientId: c.env.GITHUB_ID,
+        clientSecret: c.env.GITHUB_SECRET,
+      }),
+    ],
+    callbacks: {
+      // Handle successful sign in
+      async signIn({ user }) {
+        console.log("Sign in callback:", { user })
+        return true
+      },
+      // Handle session data
+      async session({ session, user, token }) {
+        console.log("Session callback:", { session, user, token })
+
+        // Sync user with database on session creation
+        if (session?.user?.email) {
+          try {
+            const email = session.user.email
+            const name = session.user.name ?? session.user.email.split("@")[0]
+
+            // Check if user exists in database
+            let user = await dependencies.repository.user.findByEmail(email)
+
+            if (!user) {
+              // Create new user on first login
+              user = await dependencies.repository.user.create({
+                email,
+                displayName: name,
+              })
+              console.log("Created new user:", user)
+            } else if (user.deletedAt) {
+              // Reactivate soft-deleted user
+              user = await dependencies.repository.user.create({
+                email,
+                displayName: name,
+              })
+              console.log("Reactivated user:", user)
+            } else {
+              // Update display name if changed
+              if (name && name !== user.displayName) {
+                user = await dependencies.repository.user.update(user.id, {
+                  displayName: name,
+                })
+                console.log("Updated user:", user)
+              }
+            }
+          } catch (error) {
+            console.error("Failed to sync user with database:", error)
+          }
+        }
+
+        return session
+      },
+      redirect({ url }) {
+        console.log("Redirect callback:", { url })
+        return url
+      },
+    },
+  })),
+)
 
 // Health check endpoint
 app.get(
@@ -90,7 +159,11 @@ app.get(
   },
 )
 
-// API Routes
+// Auth routes (authentication handled within auth routes)
+app.route("/auth", createAuthRoutes())
+
+// Protected API Routes
+app.use("/tasks/*", verifyAuth())
 app.route("/tasks", createTaskRoutes(dependencies))
 
 // OpenAPI specification endpoint
@@ -120,6 +193,10 @@ app.get(
         {
           name: "health",
           description: "Health check operations",
+        },
+        {
+          name: "auth",
+          description: "Authentication operations",
         },
         {
           name: "tasks",
@@ -154,16 +231,6 @@ app.get(
 // Create main app with API routes
 const mainApp = new Hono()
 mainApp.route("/api", app)
-
-// Root health check
-mainApp.get("/", (c) => {
-  return c.json({
-    message: "TODO API Server",
-    version: "1.0.0",
-    docs: "/api/docs",
-    openapi: "/api/openapi",
-  })
-})
 
 const port = Number(process.env.PORT) || 3000
 

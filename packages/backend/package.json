@@ -4,7 +4,7 @@
   "description": "TODO app backend with Hono and PostgreSQL",
   "main": "dist/index.js",
   "scripts": {
-    "dev": "bun --watch src/index.ts",
+    "dev": "bun --hot src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js",
     "test": "vitest run",
@@ -26,6 +26,8 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
+    "@auth/core": "^0.39.1",
+    "@hono/auth-js": "^1.0.17",
     "@hono/node-server": "^1.8.0",
     "@hono/swagger-ui": "^0.5.2",
     "@hono/zod-validator": "^0.7.0",

@@ -26,7 +26,29 @@ export const findUserByEmail = async (email: string): Promise<User | null> => {
 }
 
 export const createUser = async (data: CreateUserData): Promise<User> => {
-  const result = await db
+  const existingUser = await findUserByEmail(data.email)
+
+  // If user exists but is deleted, we can restore them
+  if (existingUser?.deletedAt) {
+    const updatedUser = await db
+      .update(users)
+      .set({
+        ...data,
+        deletedAt: null,
+        updatedAt: new Date(),
+      })
+      .where(eq(users.id, existingUser.id))
+      .returning()
+    return toDomainUser(updatedUser[0])
+  }
+
+  // If user exists and is active, throw an error
+  if (existingUser) {
+    throw new Error(`User with email ${data.email} already exists`)
+  }
+
+  // If user does not exist, create a new one
+  const createdUser = await db
     .insert(users)
     .values({
       email: data.email,
@@ -35,7 +57,7 @@ export const createUser = async (data: CreateUserData): Promise<User> => {
       updatedAt: new Date(),
     })
     .returning()
-  return toDomainUser(result[0])
+  return toDomainUser(createdUser[0])
 }
 
 export const updateUser = async (

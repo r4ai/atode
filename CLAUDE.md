@@ -2,7 +2,7 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-**Current Year: 2025** - Always consider this when searching for latest information and best practices.
+**Current Year: 2025**
 
 **CRITICAL - Always Search First**: Before ANY implementation, library installation, or code changes, ALWAYS search the web for the latest information about libraries, frameworks, and best practices to ensure up-to-date implementation. This is MANDATORY and must never be skipped.
 

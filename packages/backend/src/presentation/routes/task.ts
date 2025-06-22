@@ -3,7 +3,6 @@ import { describeRoute } from "hono-openapi"
 import { resolver, validator as zValidator } from "hono-openapi/zod"
 import { z } from "zod"
 import type { CreateTaskData, UpdateTaskData } from "@/domain/entities/task"
-import type { UserId } from "@/domain/entities/user"
 import type { TaskFilters } from "@/domain/repositories/task"
 import {
   completeTask,
@@ -59,7 +58,31 @@ export const createTaskRoutes = (deps: Dependencies) => {
       const filters = c.req.valid("query")
 
       try {
-        const userId = 1 as UserId // TODO: Get from authenticated user
+        const session = c.get("authUser")
+        if (!session?.user?.email) {
+          return c.json(
+            {
+              success: false,
+              error: "Unauthorized",
+              message: "User not authenticated",
+            },
+            401,
+          )
+        }
+
+        // Get user from database to get the ID
+        const user = await deps.repository.user.findByEmail(session.user.email)
+        if (!user || user.deletedAt) {
+          return c.json(
+            {
+              success: false,
+              error: "User not found",
+              message: "User not found in database",
+            },
+            404,
+          )
+        }
+
         const taskFilters: TaskFilters = {
           projectId: filters.projectId,
           status: filters.status,
@@ -68,7 +91,7 @@ export const createTaskRoutes = (deps: Dependencies) => {
           limit: filters.limit ?? 50,
         }
 
-        const tasks = await getTasksByUser(deps, userId, taskFilters)
+        const tasks = await getTasksByUser(deps, user.id, taskFilters)
 
         return c.json({
           data: tasks,
@@ -122,10 +145,33 @@ export const createTaskRoutes = (deps: Dependencies) => {
       const data = c.req.valid("json")
 
       try {
-        const userId = 1 as UserId // TODO: Get from authenticated user
+        const session = c.get("authUser")
+        if (!session?.user?.email) {
+          return c.json(
+            {
+              success: false,
+              error: "Unauthorized",
+              message: "User not authenticated",
+            },
+            401,
+          )
+        }
+
+        // Get user from database to get the ID
+        const user = await deps.repository.user.findByEmail(session.user.email)
+        if (!user || user.deletedAt) {
+          return c.json(
+            {
+              success: false,
+              error: "User not found",
+              message: "User not found in database",
+            },
+            404,
+          )
+        }
 
         const taskData: CreateTaskData = {
-          userId,
+          userId: user.id,
           projectId: data.projectId,
           parentTaskId: data.parentId,
           title: data.title,
@@ -251,7 +297,30 @@ export const createTaskRoutes = (deps: Dependencies) => {
       const data = c.req.valid("json")
 
       try {
-        const userId = 1 as UserId // TODO: Get from authenticated user
+        const session = c.get("authUser")
+        if (!session?.user?.email) {
+          return c.json(
+            {
+              success: false,
+              error: "Unauthorized",
+              message: "User not authenticated",
+            },
+            401,
+          )
+        }
+
+        // Get user from database to get the ID
+        const user = await deps.repository.user.findByEmail(session.user.email)
+        if (!user || user.deletedAt) {
+          return c.json(
+            {
+              success: false,
+              error: "User not found",
+              message: "User not found in database",
+            },
+            404,
+          )
+        }
 
         const updateData: UpdateTaskData = {
           parentTaskId: data.parentId,
@@ -261,7 +330,7 @@ export const createTaskRoutes = (deps: Dependencies) => {
           dueDate: data.dueDate ? new Date(data.dueDate) : undefined,
         }
 
-        const task = await updateTask(deps, id, updateData, userId)
+        const task = await updateTask(deps, id, updateData, user.id)
 
         if (!task) {
           return c.json(
@@ -323,8 +392,32 @@ export const createTaskRoutes = (deps: Dependencies) => {
       const { id } = c.req.valid("param")
 
       try {
-        const userId = 1 as UserId // TODO: Get from authenticated user
-        const task = await completeTask(deps, id, userId)
+        const session = c.get("authUser")
+        if (!session?.user?.email) {
+          return c.json(
+            {
+              success: false,
+              error: "Unauthorized",
+              message: "User not authenticated",
+            },
+            401,
+          )
+        }
+
+        // Get user from database to get the ID
+        const user = await deps.repository.user.findByEmail(session.user.email)
+        if (!user || user.deletedAt) {
+          return c.json(
+            {
+              success: false,
+              error: "User not found",
+              message: "User not found in database",
+            },
+            404,
+          )
+        }
+
+        const task = await completeTask(deps, id, user.id)
 
         if (!task) {
           return c.json(
@@ -392,8 +485,32 @@ export const createTaskRoutes = (deps: Dependencies) => {
       const { id } = c.req.valid("param")
 
       try {
-        const userId = 1 as UserId // TODO: Get from authenticated user
-        await deleteTask(deps, id, userId)
+        const session = c.get("authUser")
+        if (!session?.user?.email) {
+          return c.json(
+            {
+              success: false,
+              error: "Unauthorized",
+              message: "User not authenticated",
+            },
+            401,
+          )
+        }
+
+        // Get user from database to get the ID
+        const user = await deps.repository.user.findByEmail(session.user.email)
+        if (!user || user.deletedAt) {
+          return c.json(
+            {
+              success: false,
+              error: "User not found",
+              message: "User not found in database",
+            },
+            404,
+          )
+        }
+
+        await deleteTask(deps, id, user.id)
 
         return c.json({
           data: { success: true },
