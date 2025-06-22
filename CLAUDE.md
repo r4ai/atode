@@ -4,6 +4,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **Current Year: 2025** - Always consider this when searching for latest information and best practices.
 
+**CRITICAL - Always Search First**: Before ANY implementation, library installation, or code changes, ALWAYS search the web for the latest information about libraries, frameworks, and best practices to ensure up-to-date implementation. This is MANDATORY and must never be skipped.
+
 ## Project Overview
 
 This is a monorepo TODO application built with:
@@ -28,22 +30,6 @@ todo/
 
 ## Development Commands
 
-### Prerequisites
-
-- [Bun](https://bun.sh/) (latest version)
-- [Docker](https://www.docker.com/) and Docker Compose
-- [Task](https://taskfile.dev/) task runner
-
-**Install Task:**
-
-```bash
-# macOS/Linux (via script)
-sh -c "$(curl --location https://taskfile.dev/install.sh)" -- -d -b ~/.local/bin
-
-# Go users
-go install github.com/go-task/task/v3/cmd/task@latest
-```
-
 ### Root Level (Monorepo)
 
 ```bash
@@ -51,7 +37,7 @@ bun install              # Install all dependencies
 bun dev                  # Start both frontend and backend
 bun build                # Build all packages
 bun check                # Run Biome check on all packages
-bun check:fix            # Fix Biome issues on all packages
+bun check:write          # Fix Biome issues on all packages
 bun test                 # Run tests on all packages
 
 # Individual package commands

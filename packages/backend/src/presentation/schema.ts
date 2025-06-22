@@ -93,13 +93,10 @@ export const TaskSchema = z
       .optional()
       .openapi({ example: "Task description" }),
     status: TaskStatusSchema,
-    priority: z
-      .number()
-      .int()
-      .openapi({
-        example: 1,
-        description: "Task priority (higher = more important)",
-      }),
+    priority: z.number().int().openapi({
+      example: 1,
+      description: "Task priority (higher = more important)",
+    }),
     dueDate: TimestampSchema.nullable().optional(),
     completedAt: TimestampSchema.nullable().optional(),
     path: z
@@ -156,14 +153,10 @@ export const CommentSchema = z
   .object({
     id: IdSchema,
     userId: IdSchema,
-    commentableType: z
-      .string()
-      .min(1)
-      .max(50)
-      .openapi({
-        example: "task",
-        description: "Type of entity being commented on",
-      }),
+    commentableType: z.string().min(1).max(50).openapi({
+      example: "task",
+      description: "Type of entity being commented on",
+    }),
     commentableId: IdSchema,
     parentCommentId: IdSchema.nullable().optional(),
     content: z.string().min(1).openapi({ example: "This is a comment" }),
