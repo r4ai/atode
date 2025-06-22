@@ -8,7 +8,7 @@ import type {
 } from "@/domain/entities/task"
 import type { UserId } from "@/domain/entities/user"
 import type { TaskFilters, TaskRepository } from "@/domain/repositories/task"
-import { db } from "@/infrastructure/database/connection"
+import type { DB } from "@/infrastructure/database/connection"
 import type { Task as DbTask } from "@/infrastructure/database/schema"
 import { tasks } from "@/infrastructure/database/schema"
 
@@ -31,146 +31,158 @@ const toDomainTask = (dbTask: DbTask): Task => ({
   deletedAt: dbTask.deletedAt,
 })
 
-export const findTaskById = async (id: TaskId): Promise<Task | null> => {
-  const result = await db
-    .select()
-    .from(tasks)
-    .where(and(eq(tasks.id, id), isNull(tasks.deletedAt)))
-  return result[0] ? toDomainTask(result[0]) : null
+type Dependencies = {
+  db: DB
 }
 
-export const findTasksByProjectId = async (
-  projectId: ProjectId,
-): Promise<Task[]> => {
-  const result = await db
-    .select()
-    .from(tasks)
-    .where(and(eq(tasks.projectId, projectId), isNull(tasks.deletedAt)))
-    .orderBy(tasks.createdAt)
-  return result.map(toDomainTask)
-}
-
-export const findTasksByUserId = async (
-  userId: UserId,
-  filters?: TaskFilters,
-): Promise<Task[]> => {
-  const conditions = [eq(tasks.userId, userId), isNull(tasks.deletedAt)]
-
-  if (filters?.projectId) {
-    conditions.push(eq(tasks.projectId, filters.projectId))
+export const findTaskById =
+  ({ db }: Dependencies) =>
+  async (id: TaskId): Promise<Task | null> => {
+    const result = await db
+      .select()
+      .from(tasks)
+      .where(and(eq(tasks.id, id), isNull(tasks.deletedAt)))
+    return result[0] ? toDomainTask(result[0]) : null
   }
 
-  if (filters?.status) {
-    conditions.push(eq(tasks.status, filters.status))
-  }
-
-  if (filters?.dueBefore) {
-    conditions.push(lte(tasks.dueDate, filters.dueBefore))
-  }
-
-  if (filters?.search) {
-    const searchCondition = or(
-      ilike(tasks.title, `%${filters.search}%`),
-      ilike(tasks.description, `%${filters.search}%`),
-    )
-    if (searchCondition) {
-      conditions.push(searchCondition)
-    }
-  }
-
-  const query = db
-    .select()
-    .from(tasks)
-    .where(and(...conditions))
-    .orderBy(tasks.createdAt)
-
-  if (filters?.limit) {
-    const offset = filters.page ? (filters.page - 1) * filters.limit : 0
-    const result = await query.limit(filters.limit).offset(offset)
+export const findTasksByProjectId =
+  ({ db }: Dependencies) =>
+  async (projectId: ProjectId): Promise<Task[]> => {
+    const result = await db
+      .select()
+      .from(tasks)
+      .where(and(eq(tasks.projectId, projectId), isNull(tasks.deletedAt)))
+      .orderBy(tasks.createdAt)
     return result.map(toDomainTask)
   }
 
-  const result = await query
-  return result.map(toDomainTask)
-}
+export const findTasksByUserId =
+  ({ db }: Dependencies) =>
+  async (userId: UserId, filters?: TaskFilters): Promise<Task[]> => {
+    const conditions = [eq(tasks.userId, userId), isNull(tasks.deletedAt)]
 
-export const findTaskChildren = async (taskId: TaskId): Promise<Task[]> => {
-  const result = await db
-    .select()
-    .from(tasks)
-    .where(and(eq(tasks.parentTaskId, taskId), isNull(tasks.deletedAt)))
-    .orderBy(tasks.createdAt)
-  return result.map(toDomainTask)
-}
+    if (filters?.projectId) {
+      conditions.push(eq(tasks.projectId, filters.projectId))
+    }
 
-export const createTask = async (data: CreateTaskData): Promise<Task> => {
-  const result = await db
-    .insert(tasks)
-    .values({
-      userId: data.userId,
-      projectId: data.projectId,
-      parentTaskId: data.parentTaskId,
-      title: data.title,
-      description: data.description,
-      status: "pending",
-      priority: data.priority ?? 0,
-      dueDate: data.dueDate,
-      depth: 0, // Will be calculated based on parent
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    })
-    .returning()
-  return toDomainTask(result[0])
-}
+    if (filters?.status) {
+      conditions.push(eq(tasks.status, filters.status))
+    }
 
-export const updateTask = async (
-  id: TaskId,
-  data: UpdateTaskData,
-): Promise<Task | null> => {
-  const result = await db
-    .update(tasks)
-    .set({
-      ...data,
-      updatedAt: new Date(),
-    })
-    .where(eq(tasks.id, id))
-    .returning()
-  return result[0] ? toDomainTask(result[0]) : null
-}
+    if (filters?.dueBefore) {
+      conditions.push(lte(tasks.dueDate, filters.dueBefore))
+    }
 
-export const markTaskCompleted = async (id: TaskId): Promise<Task | null> => {
-  const result = await db
-    .update(tasks)
-    .set({
-      status: "completed",
-      completedAt: new Date(),
-      updatedAt: new Date(),
-    })
-    .where(eq(tasks.id, id))
-    .returning()
-  return result[0] ? toDomainTask(result[0]) : null
-}
+    if (filters?.search) {
+      const searchCondition = or(
+        ilike(tasks.title, `%${filters.search}%`),
+        ilike(tasks.description, `%${filters.search}%`),
+      )
+      if (searchCondition) {
+        conditions.push(searchCondition)
+      }
+    }
 
-export const deleteTask = async (id: TaskId): Promise<boolean> => {
-  const result = await db
-    .update(tasks)
-    .set({
-      deletedAt: new Date(),
-      updatedAt: new Date(),
-    })
-    .where(eq(tasks.id, id))
-    .returning()
-  return result.length > 0
-}
+    const query = db
+      .select()
+      .from(tasks)
+      .where(and(...conditions))
+      .orderBy(tasks.createdAt)
+
+    if (filters?.limit) {
+      const offset = filters.page ? (filters.page - 1) * filters.limit : 0
+      const result = await query.limit(filters.limit).offset(offset)
+      return result.map(toDomainTask)
+    }
+
+    const result = await query
+    return result.map(toDomainTask)
+  }
+
+export const findTaskChildren =
+  ({ db }: Dependencies) =>
+  async (taskId: TaskId): Promise<Task[]> => {
+    const result = await db
+      .select()
+      .from(tasks)
+      .where(and(eq(tasks.parentTaskId, taskId), isNull(tasks.deletedAt)))
+      .orderBy(tasks.createdAt)
+    return result.map(toDomainTask)
+  }
+
+export const createTask =
+  ({ db }: Dependencies) =>
+  async (data: CreateTaskData): Promise<Task> => {
+    const result = await db
+      .insert(tasks)
+      .values({
+        userId: data.userId,
+        projectId: data.projectId,
+        parentTaskId: data.parentTaskId,
+        title: data.title,
+        description: data.description,
+        status: "pending",
+        priority: data.priority ?? 0,
+        dueDate: data.dueDate,
+        depth: 0, // Will be calculated based on parent
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      })
+      .returning()
+    return toDomainTask(result[0])
+  }
+
+export const updateTask =
+  ({ db }: Dependencies) =>
+  async (id: TaskId, data: UpdateTaskData): Promise<Task | null> => {
+    const result = await db
+      .update(tasks)
+      .set({
+        ...data,
+        updatedAt: new Date(),
+      })
+      .where(eq(tasks.id, id))
+      .returning()
+    return result[0] ? toDomainTask(result[0]) : null
+  }
+
+export const markTaskCompleted =
+  ({ db }: Dependencies) =>
+  async (id: TaskId): Promise<Task | null> => {
+    const result = await db
+      .update(tasks)
+      .set({
+        status: "completed",
+        completedAt: new Date(),
+        updatedAt: new Date(),
+      })
+      .where(eq(tasks.id, id))
+      .returning()
+    return result[0] ? toDomainTask(result[0]) : null
+  }
+
+export const deleteTask =
+  ({ db }: Dependencies) =>
+  async (id: TaskId): Promise<boolean> => {
+    const result = await db
+      .update(tasks)
+      .set({
+        deletedAt: new Date(),
+        updatedAt: new Date(),
+      })
+      .where(eq(tasks.id, id))
+      .returning()
+    return result.length > 0
+  }
 
 // Create a repository object that implements TaskRepository interface
-export const taskRepository: TaskRepository = {
-  findById: findTaskById,
-  findByProjectId: findTasksByProjectId,
-  findByUserId: findTasksByUserId,
-  findChildren: findTaskChildren,
-  create: createTask,
-  update: updateTask,
-  markCompleted: markTaskCompleted,
-  delete: deleteTask,
-}
+export const createTaskRepository = (deps: Dependencies): TaskRepository => ({
+  findById: findTaskById(deps),
+  findByProjectId: findTasksByProjectId(deps),
+  findByUserId: findTasksByUserId(deps),
+  findChildren: findTaskChildren(deps),
+  create: createTask(deps),
+  update: updateTask(deps),
+  markCompleted: markTaskCompleted(deps),
+  delete: deleteTask(deps),
+})

@@ -1,4 +1,4 @@
-import { drizzle } from "drizzle-orm/node-postgres"
+import { drizzle, type NodePgDatabase } from "drizzle-orm/node-postgres"
 import { Pool } from "pg"
 import * as schema from "./schema"
 
@@ -8,7 +8,11 @@ const pool = new Pool({
     "postgresql://postgres:password@localhost:5432/todoapp",
 })
 
-export const db = drizzle(pool, { schema })
+export type DB = NodePgDatabase<typeof schema> & {
+  $client: Pool
+}
+
+export const db: DB = drizzle(pool, { schema })
 
 export const testConnection = async () => {
   try {
