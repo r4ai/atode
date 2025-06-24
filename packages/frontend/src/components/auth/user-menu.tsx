@@ -1,3 +1,4 @@
+import { signOut, useSession } from "@hono/auth-js/react"
 import { LogOut, Settings, User } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
@@ -9,7 +10,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { signOut, useSession } from "@hono/auth-js/react"
 
 export const UserMenu = () => {
   const session = useSession()

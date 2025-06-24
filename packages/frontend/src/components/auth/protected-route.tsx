@@ -1,6 +1,6 @@
+import { useSession } from "@hono/auth-js/react"
 import { Loader2 } from "lucide-react"
 import { LoginPage } from "./login-page"
-import { useSession } from "@hono/auth-js/react"
 
 type ProtectedRouteProps = {
   children: React.ReactNode

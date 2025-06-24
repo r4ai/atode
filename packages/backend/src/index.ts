@@ -9,12 +9,12 @@ import { prettyJSON } from "hono/pretty-json"
 import { describeRoute, openAPISpecs } from "hono-openapi"
 import { resolver } from "hono-openapi/zod"
 import { z } from "zod"
+import { db } from "@/infrastructure/database/connection"
 import { createTaskRepository } from "@/infrastructure/repositories/task"
 import { createUserRepository } from "@/infrastructure/repositories/user"
 import type { Dependencies } from "@/presentation/dependencies"
 import { createAuthRoutes } from "@/presentation/routes/auth"
 import { createTaskRoutes } from "@/presentation/routes/task"
-import { db } from "@/infrastructure/database/connection"
 
 const dependencies = {
   repository: {

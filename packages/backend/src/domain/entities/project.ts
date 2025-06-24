@@ -22,6 +22,7 @@ export type CreateProjectData = {
   name: string
   description?: string
   color?: string
+  depth?: number
 }
 
 export type UpdateProjectData = Partial<Omit<CreateProjectData, "userId">>

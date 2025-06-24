@@ -7,8 +7,14 @@ export const IdSchema = z
   .int()
   .min(1)
   .openapi({ example: 1, description: "Unique identifier" })
-export const TimestampSchema = z
+
+export const IdParamSchema = z
   .string()
+  .transform((val) => Number(val))
+  .pipe(IdSchema)
+  .openapi({ example: "1", description: "Unique identifier as URL parameter" })
+export const TimestampSchema = z
+  .union([z.date(), z.string().datetime()])
   .openapi({ example: "2025-01-01T00:00:00Z", description: "ISO timestamp" })
 export const ColorSchema = z
   .string()
@@ -203,7 +209,9 @@ export const TaskFilterSchema = PaginationSchema.extend({
   dueAfter: TimestampSchema.optional(),
   search: z.string().optional().openapi({ example: "search term" }),
   includeCompleted: z.boolean().optional().openapi({ example: false }),
-}).openapi({ description: "Task filter parameters" })
+})
+  .optional()
+  .openapi({ description: "Task filter parameters" })
 
 export const ProjectFilterSchema = PaginationSchema.extend({
   includeArchived: z.boolean().optional().openapi({ example: false }),

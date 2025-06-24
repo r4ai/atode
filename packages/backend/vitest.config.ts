@@ -2,8 +2,12 @@ import path from "node:path"
 import { defineConfig } from "vitest/config"
 
 export default defineConfig({
+  resolve: {
+    alias: {
+      "@": path.resolve(__dirname, "./src"),
+    },
+  },
   test: {
-    globals: true,
     environment: "node",
     coverage: {
       provider: "v8",
@@ -24,17 +28,28 @@ export default defineConfig({
         "**/*.d.ts",
         "**/*.config.*",
         "drizzle/**",
-        "src/types.d.ts",
-        "src/test-utils/**",
+        "src/test-helpers/**",
         "**/*.test.ts",
         "**/*.mock.ts",
       ],
     },
-    setupFiles: ["./src/test-utils/setup.ts"],
-  },
-  resolve: {
-    alias: {
-      "@": path.resolve(__dirname, "./src"),
-    },
+    projects: [
+      {
+        extends: true,
+        test: {
+          name: "unit",
+          include: ["**/*.unit.test.ts"],
+          setupFiles: ["./src/test-helpers/unit-setup.ts"],
+        },
+      },
+      {
+        extends: true,
+        test: {
+          name: "integration",
+          include: ["**/*.integration.test.ts"],
+          setupFiles: ["./src/test-helpers/integration-setup.ts"],
+        },
+      },
+    ],
   },
 })

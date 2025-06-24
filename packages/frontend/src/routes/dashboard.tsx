@@ -1,3 +1,4 @@
+import { useSession } from "@hono/auth-js/react"
 import { createFileRoute } from "@tanstack/react-router"
 import { ProtectedRoute } from "@/components/auth/protected-route"
 import { UserMenu } from "@/components/auth/user-menu"
@@ -8,7 +9,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { useSession } from "@hono/auth-js/react"
 
 const Dashboard = () => {
   const session = useSession()

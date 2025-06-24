@@ -1,3 +1,4 @@
+import { signIn } from "@hono/auth-js/react"
 import { Github } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
@@ -8,7 +9,6 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
-import { signIn } from "@hono/auth-js/react"
 
 export const LoginPage = () => {
   return (

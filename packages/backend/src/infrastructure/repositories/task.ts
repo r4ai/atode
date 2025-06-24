@@ -35,7 +35,7 @@ type Dependencies = {
   db: DB
 }
 
-export const findTaskById =
+const findTaskById =
   ({ db }: Dependencies) =>
   async (id: TaskId): Promise<Task | null> => {
     const result = await db
@@ -45,7 +45,7 @@ export const findTaskById =
     return result[0] ? toDomainTask(result[0]) : null
   }
 
-export const findTasksByProjectId =
+const findTasksByProjectId =
   ({ db }: Dependencies) =>
   async (projectId: ProjectId): Promise<Task[]> => {
     const result = await db
@@ -56,7 +56,7 @@ export const findTasksByProjectId =
     return result.map(toDomainTask)
   }
 
-export const findTasksByUserId =
+const findTasksByUserId =
   ({ db }: Dependencies) =>
   async (userId: UserId, filters?: TaskFilters): Promise<Task[]> => {
     const conditions = [eq(tasks.userId, userId), isNull(tasks.deletedAt)]
@@ -99,7 +99,7 @@ export const findTasksByUserId =
     return result.map(toDomainTask)
   }
 
-export const findTaskChildren =
+const findTaskChildren =
   ({ db }: Dependencies) =>
   async (taskId: TaskId): Promise<Task[]> => {
     const result = await db
@@ -110,7 +110,7 @@ export const findTaskChildren =
     return result.map(toDomainTask)
   }
 
-export const createTask =
+const createTask =
   ({ db }: Dependencies) =>
   async (data: CreateTaskData): Promise<Task> => {
     const result = await db
@@ -132,7 +132,7 @@ export const createTask =
     return toDomainTask(result[0])
   }
 
-export const updateTask =
+const updateTask =
   ({ db }: Dependencies) =>
   async (id: TaskId, data: UpdateTaskData): Promise<Task | null> => {
     const result = await db
@@ -146,7 +146,7 @@ export const updateTask =
     return result[0] ? toDomainTask(result[0]) : null
   }
 
-export const markTaskCompleted =
+const markTaskCompleted =
   ({ db }: Dependencies) =>
   async (id: TaskId): Promise<Task | null> => {
     const result = await db
@@ -161,7 +161,7 @@ export const markTaskCompleted =
     return result[0] ? toDomainTask(result[0]) : null
   }
 
-export const deleteTask =
+const deleteTask =
   ({ db }: Dependencies) =>
   async (id: TaskId): Promise<boolean> => {
     const result = await db

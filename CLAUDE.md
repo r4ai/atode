@@ -70,6 +70,13 @@ packages/backend/src/
 └── index.ts                 # Application entry point
 ```
 
+**File Naming Conventions:**
+
+- `hoge.ts` for implementation files
+- `hoge.mock.ts` for mock files
+- `hoge.test.ts` for test files
+- `hoge.integration.test.ts` for integration test files
+
 **Functional Programming Principles:**
 
 - **Pure Functions**: Business logic implemented as pure functions without side effects
