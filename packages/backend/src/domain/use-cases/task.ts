@@ -16,35 +16,52 @@ type TaskDependencies = {
   }
 }
 
-export const getTaskById = async (
+export const getTask = async (
   deps: TaskDependencies,
   id: TaskId,
-): Promise<Task | null> => {
-  const results = await deps.repository.task.find({ id })
-  return results[0] ?? null
-}
-
-export const getTasksByProject = async (
-  deps: TaskDependencies,
-  projectId: ProjectId,
-): Promise<Task[]> => {
-  return await deps.repository.task.find({ projectId })
-}
-
-export const getTasksByUser = async (
-  deps: TaskDependencies,
-  userId: UserId,
   filters?: TaskFilters,
-): Promise<Task[]> => {
-  return await deps.repository.task.find({ userId, filters })
+): Promise<Task | null> => {
+  const tasks = await deps.repository.task.find({ id, filters })
+  return tasks[0] ?? null
 }
 
-export const getTasksCountByUser = async (
+type GetTasksOptions =
+  | { projectId: ProjectId; filters?: TaskFilters }
+  | { userId: UserId; filters?: TaskFilters }
+
+export const getTasks = async (
   deps: TaskDependencies,
-  userId: UserId,
-  filters?: Omit<TaskFilters, "page" | "limit">,
+  options: GetTasksOptions,
+): Promise<Task[]> => {
+  if ("projectId" in options) {
+    return await deps.repository.task.find({
+      projectId: options.projectId,
+      filters: options.filters,
+    })
+  }
+  return await deps.repository.task.find({
+    userId: options.userId,
+    filters: options.filters,
+  })
+}
+
+type CountTasksOptions =
+  | { userId: UserId; filters?: Omit<TaskFilters, "page" | "limit"> }
+  | { projectId: ProjectId; filters?: Omit<TaskFilters, "page" | "limit"> }
+
+export const countTasks = async (
+  deps: TaskDependencies,
+  options: CountTasksOptions,
 ): Promise<number> => {
-  return await deps.repository.task.count(userId, filters)
+  if ("userId" in options) {
+    return await deps.repository.task.count(options.userId, options.filters)
+  }
+  // For projectId, we can use the find method with filters and count the results
+  const tasks = await deps.repository.task.find({
+    projectId: options.projectId,
+    filters: options.filters,
+  })
+  return tasks.length
 }
 
 export const createTask = async (
@@ -63,10 +80,7 @@ export const createTask = async (
 
   // Business logic: Verify parent task exists and belongs to same project
   if (data.parentTaskId) {
-    const parentTasks = await deps.repository.task.find({
-      id: data.parentTaskId,
-    })
-    const parentTask = parentTasks[0]
+    const parentTask = await getTask(deps, data.parentTaskId)
     if (!parentTask) {
       throw new Error("Parent task not found")
     }
@@ -84,8 +98,7 @@ export const updateTask = async (
   data: UpdateTaskData,
   userId: UserId,
 ): Promise<Task> => {
-  const tasks = await deps.repository.task.find({ id })
-  const task = tasks[0]
+  const task = await getTask(deps, id)
   if (!task) {
     throw new Error("Task not found")
   }
@@ -107,8 +120,7 @@ export const completeTask = async (
   id: TaskId,
   userId: UserId,
 ): Promise<Task> => {
-  const tasks = await deps.repository.task.find({ id })
-  const task = tasks[0]
+  const task = await getTask(deps, id)
   if (!task) {
     throw new Error("Task not found")
   }
@@ -134,8 +146,7 @@ export const deleteTask = async (
   id: TaskId,
   userId: UserId,
 ): Promise<void> => {
-  const tasks = await deps.repository.task.find({ id })
-  const task = tasks[0]
+  const task = await getTask(deps, id)
   if (!task) {
     throw new Error("Task not found")
   }

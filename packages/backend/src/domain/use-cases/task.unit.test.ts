@@ -12,9 +12,8 @@ import {
   completeTask,
   createTask,
   deleteTask,
-  getTaskById,
-  getTasksByProject,
-  getTasksByUser,
+  getTask,
+  getTasks,
   updateTask,
 } from "./task"
 
@@ -37,31 +36,32 @@ describe("Task Use Cases", () => {
     faker.seed(123) // Ensure consistent test data
   })
 
-  describe("getTaskById", () => {
-    it("should return task when found", async () => {
+  describe("getTask", () => {
+    it("should return task by id when found", async () => {
       const taskId = faker.number.int({ min: 1, max: 100 })
       const mockTask = createRandomTask({ id: taskId })
-      mockTaskRepository.find.mockResolvedValue([mockTask])
+      vi.mocked(mockTaskRepository.find).mockResolvedValue([mockTask])
 
-      const result = await getTaskById(deps, taskId)
+      const result = await getTask(deps, taskId)
 
       expect(result).toEqual(mockTask)
-      expect(mockTaskRepository.find).toHaveBeenCalledWith({ id: taskId })
+      expect(mockTaskRepository.find).toHaveBeenCalledWith({ id: taskId, filters: undefined })
     })
 
-    it("should return null when task not found", async () => {
+    it("should return null when task not found by id", async () => {
       const taskId = faker.number.int({ min: 1, max: 100 })
-      mockTaskRepository.find.mockResolvedValue([])
+      vi.mocked(mockTaskRepository.find).mockResolvedValue([])
 
-      const result = await getTaskById(deps, taskId)
+      const result = await getTask(deps, taskId)
 
       expect(result).toBeNull()
-      expect(mockTaskRepository.find).toHaveBeenCalledWith({ id: taskId })
+      expect(mockTaskRepository.find).toHaveBeenCalledWith({ id: taskId, filters: undefined })
     })
   })
 
-  describe("getTasksByProject", () => {
-    it("should return tasks for project", async () => {
+  describe("getTasks", () => {
+
+    it("should return tasks by project", async () => {
       const projectId = faker.number.int({ min: 1, max: 100 })
       const mockTasks = [
         createRandomTask({ projectId }),
@@ -70,27 +70,25 @@ describe("Task Use Cases", () => {
           id: faker.number.int({ min: 101, max: 200 }),
         }),
       ]
-      mockTaskRepository.find.mockResolvedValue(mockTasks)
+      vi.mocked(mockTaskRepository.find).mockResolvedValue(mockTasks)
 
-      const result = await getTasksByProject(deps, projectId)
+      const result = await getTasks(deps, { projectId })
 
       expect(result).toEqual(mockTasks)
-      expect(mockTaskRepository.find).toHaveBeenCalledWith({ projectId })
+      expect(mockTaskRepository.find).toHaveBeenCalledWith({ projectId, filters: undefined })
     })
 
-    it("should return empty array when no tasks found", async () => {
+    it("should return empty array when no tasks found by project", async () => {
       const projectId = faker.number.int({ min: 1, max: 100 })
-      mockTaskRepository.find.mockResolvedValue([])
+      vi.mocked(mockTaskRepository.find).mockResolvedValue([])
 
-      const result = await getTasksByProject(deps, projectId)
+      const result = await getTasks(deps, { projectId })
 
       expect(result).toEqual([])
-      expect(mockTaskRepository.find).toHaveBeenCalledWith({ projectId })
+      expect(mockTaskRepository.find).toHaveBeenCalledWith({ projectId, filters: undefined })
     })
-  })
 
-  describe("getTasksByUser", () => {
-    it("should return tasks for user without filters", async () => {
+    it("should return tasks by user without filters", async () => {
       const userId = faker.number.int({ min: 1, max: 100 })
       const mockTasks = [
         createRandomTask({ userId }),
@@ -99,9 +97,9 @@ describe("Task Use Cases", () => {
           id: faker.number.int({ min: 101, max: 200 }),
         }),
       ]
-      mockTaskRepository.find.mockResolvedValue(mockTasks)
+      vi.mocked(mockTaskRepository.find).mockResolvedValue(mockTasks)
 
-      const result = await getTasksByUser(deps, userId)
+      const result = await getTasks(deps, { userId })
 
       expect(result).toEqual(mockTasks)
       expect(mockTaskRepository.find).toHaveBeenCalledWith({
@@ -110,13 +108,13 @@ describe("Task Use Cases", () => {
       })
     })
 
-    it("should return tasks for user with filters", async () => {
+    it("should return tasks by user with filters", async () => {
       const userId = faker.number.int({ min: 1, max: 100 })
       const filters: TaskFilters = { status: "completed", limit: 10 }
       const mockTasks = [createRandomTask({ userId, status: "completed" })]
-      mockTaskRepository.find.mockResolvedValue(mockTasks)
+      vi.mocked(mockTaskRepository.find).mockResolvedValue(mockTasks)
 
-      const result = await getTasksByUser(deps, userId, filters)
+      const result = await getTasks(deps, { userId, filters })
 
       expect(result).toEqual(mockTasks)
       expect(mockTaskRepository.find).toHaveBeenCalledWith({
@@ -134,8 +132,8 @@ describe("Task Use Cases", () => {
       const mockProject = createRandomProject({ id: projectId, userId })
       const mockTask = createRandomTask(taskData)
 
-      mockProjectRepository.findById.mockResolvedValue(mockProject)
-      mockTaskRepository.create.mockResolvedValue(mockTask)
+      vi.mocked(mockProjectRepository.findById).mockResolvedValue(mockProject)
+      vi.mocked(mockTaskRepository.create).mockResolvedValue(mockTask)
 
       const result = await createTask(deps, taskData)
 
@@ -146,7 +144,7 @@ describe("Task Use Cases", () => {
 
     it("should throw error when project not found", async () => {
       const taskData = createRandomTaskData()
-      mockProjectRepository.findById.mockResolvedValue(null)
+      vi.mocked(mockProjectRepository.findById).mockResolvedValue(null)
 
       await expect(createTask(deps, taskData)).rejects.toThrow(
         "Project not found",
@@ -166,7 +164,7 @@ describe("Task Use Cases", () => {
         userId: projectOwnerId,
       })
 
-      mockProjectRepository.findById.mockResolvedValue(mockProject)
+      vi.mocked(mockProjectRepository.findById).mockResolvedValue(mockProject)
 
       await expect(createTask(deps, taskData)).rejects.toThrow(
         "User does not have access to this project",
@@ -190,9 +188,9 @@ describe("Task Use Cases", () => {
       const mockParentTask = createRandomTask({ id: parentTaskId, projectId })
       const mockTask = createRandomTask(taskData)
 
-      mockProjectRepository.findById.mockResolvedValue(mockProject)
-      mockTaskRepository.find.mockResolvedValue([mockParentTask])
-      mockTaskRepository.create.mockResolvedValue(mockTask)
+      vi.mocked(mockProjectRepository.findById).mockResolvedValue(mockProject)
+      vi.mocked(mockTaskRepository.find).mockResolvedValue([mockParentTask])
+      vi.mocked(mockTaskRepository.create).mockResolvedValue(mockTask)
 
       const result = await createTask(deps, taskData)
 
@@ -213,8 +211,8 @@ describe("Task Use Cases", () => {
       })
       const mockProject = createRandomProject({ id: projectId, userId })
 
-      mockProjectRepository.findById.mockResolvedValue(mockProject)
-      mockTaskRepository.find.mockResolvedValue([])
+      vi.mocked(mockProjectRepository.findById).mockResolvedValue(mockProject)
+      vi.mocked(mockTaskRepository.find).mockResolvedValue([])
 
       await expect(createTask(deps, taskData)).rejects.toThrow(
         "Parent task not found",
@@ -240,8 +238,8 @@ describe("Task Use Cases", () => {
         projectId: parentProjectId,
       })
 
-      mockProjectRepository.findById.mockResolvedValue(mockProject)
-      mockTaskRepository.find.mockResolvedValue([mockParentTask])
+      vi.mocked(mockProjectRepository.findById).mockResolvedValue(mockProject)
+      vi.mocked(mockTaskRepository.find).mockResolvedValue([mockParentTask])
 
       await expect(createTask(deps, taskData)).rejects.toThrow(
         "Parent task must belong to the same project",
@@ -260,8 +258,8 @@ describe("Task Use Cases", () => {
       const existingTask = createRandomTask({ id: taskId, userId })
       const updatedTask = createRandomTask({ ...existingTask, ...updateData })
 
-      mockTaskRepository.find.mockResolvedValue([existingTask])
-      mockTaskRepository.update.mockResolvedValue(updatedTask)
+      vi.mocked(mockTaskRepository.find).mockResolvedValue([existingTask])
+      vi.mocked(mockTaskRepository.update).mockResolvedValue(updatedTask)
 
       const result = await updateTask(deps, taskId, updateData, userId)
 
@@ -275,7 +273,7 @@ describe("Task Use Cases", () => {
       const userId = faker.number.int({ min: 1, max: 100 })
       const updateData = { title: faker.lorem.sentence() }
 
-      mockTaskRepository.find.mockResolvedValue([])
+      vi.mocked(mockTaskRepository.find).mockResolvedValue([])
 
       await expect(
         updateTask(deps, taskId, updateData, userId),
@@ -294,7 +292,7 @@ describe("Task Use Cases", () => {
         userId: taskOwnerId,
       })
 
-      mockTaskRepository.find.mockResolvedValue([existingTask])
+      vi.mocked(mockTaskRepository.find).mockResolvedValue([existingTask])
 
       await expect(
         updateTask(deps, taskId, updateData, userId),
@@ -309,8 +307,8 @@ describe("Task Use Cases", () => {
       const updateData = { title: faker.lorem.sentence() }
       const existingTask = createRandomTask({ id: taskId, userId })
 
-      mockTaskRepository.find.mockResolvedValue([existingTask])
-      mockTaskRepository.update.mockResolvedValue(null)
+      vi.mocked(mockTaskRepository.find).mockResolvedValue([existingTask])
+      vi.mocked(mockTaskRepository.update).mockResolvedValue(null)
 
       await expect(
         updateTask(deps, taskId, updateData, userId),
@@ -335,8 +333,10 @@ describe("Task Use Cases", () => {
         completedAt: faker.date.recent(),
       })
 
-      mockTaskRepository.find.mockResolvedValue([existingTask])
-      mockTaskRepository.markCompleted.mockResolvedValue(completedTask)
+      vi.mocked(mockTaskRepository.find).mockResolvedValue([existingTask])
+      vi.mocked(mockTaskRepository.markCompleted).mockResolvedValue(
+        completedTask,
+      )
 
       const result = await completeTask(deps, taskId, userId)
 
@@ -349,7 +349,7 @@ describe("Task Use Cases", () => {
       const taskId = faker.number.int({ min: 1, max: 100 })
       const userId = faker.number.int({ min: 1, max: 100 })
 
-      mockTaskRepository.find.mockResolvedValue([])
+      vi.mocked(mockTaskRepository.find).mockResolvedValue([])
 
       await expect(completeTask(deps, taskId, userId)).rejects.toThrow(
         "Task not found",
@@ -367,7 +367,7 @@ describe("Task Use Cases", () => {
         userId: taskOwnerId,
       })
 
-      mockTaskRepository.find.mockResolvedValue([existingTask])
+      vi.mocked(mockTaskRepository.find).mockResolvedValue([existingTask])
 
       await expect(completeTask(deps, taskId, userId)).rejects.toThrow(
         "Task not found",
@@ -385,7 +385,7 @@ describe("Task Use Cases", () => {
         status: "completed",
       })
 
-      mockTaskRepository.find.mockResolvedValue([existingTask])
+      vi.mocked(mockTaskRepository.find).mockResolvedValue([existingTask])
 
       await expect(completeTask(deps, taskId, userId)).rejects.toThrow(
         "Task is already completed",
@@ -403,8 +403,8 @@ describe("Task Use Cases", () => {
         status: "in_progress",
       })
 
-      mockTaskRepository.find.mockResolvedValue([existingTask])
-      mockTaskRepository.markCompleted.mockResolvedValue(null)
+      vi.mocked(mockTaskRepository.find).mockResolvedValue([existingTask])
+      vi.mocked(mockTaskRepository.markCompleted).mockResolvedValue(null)
 
       await expect(completeTask(deps, taskId, userId)).rejects.toThrow(
         "Failed to complete task",
@@ -420,8 +420,8 @@ describe("Task Use Cases", () => {
       const userId = faker.number.int({ min: 1, max: 100 })
       const existingTask = createRandomTask({ id: taskId, userId })
 
-      mockTaskRepository.find.mockResolvedValue([existingTask])
-      mockTaskRepository.delete.mockResolvedValue(true)
+      vi.mocked(mockTaskRepository.find).mockResolvedValue([existingTask])
+      vi.mocked(mockTaskRepository.delete).mockResolvedValue(true)
 
       await deleteTask(deps, taskId, userId)
 
@@ -433,7 +433,7 @@ describe("Task Use Cases", () => {
       const taskId = faker.number.int({ min: 1, max: 100 })
       const userId = faker.number.int({ min: 1, max: 100 })
 
-      mockTaskRepository.find.mockResolvedValue([])
+      vi.mocked(mockTaskRepository.find).mockResolvedValue([])
 
       await expect(deleteTask(deps, taskId, userId)).rejects.toThrow(
         "Task not found",
@@ -451,7 +451,7 @@ describe("Task Use Cases", () => {
         userId: taskOwnerId,
       })
 
-      mockTaskRepository.find.mockResolvedValue([existingTask])
+      vi.mocked(mockTaskRepository.find).mockResolvedValue([existingTask])
 
       await expect(deleteTask(deps, taskId, userId)).rejects.toThrow(
         "Task not found",
@@ -465,8 +465,8 @@ describe("Task Use Cases", () => {
       const userId = faker.number.int({ min: 1, max: 100 })
       const existingTask = createRandomTask({ id: taskId, userId })
 
-      mockTaskRepository.find.mockResolvedValue([existingTask])
-      mockTaskRepository.delete.mockResolvedValue(false)
+      vi.mocked(mockTaskRepository.find).mockResolvedValue([existingTask])
+      vi.mocked(mockTaskRepository.delete).mockResolvedValue(false)
 
       await expect(deleteTask(deps, taskId, userId)).rejects.toThrow(
         "Failed to delete task",

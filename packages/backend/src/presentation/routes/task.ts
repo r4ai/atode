@@ -6,11 +6,11 @@ import type { CreateTaskData, UpdateTaskData } from "@/domain/entities/task"
 import type { TaskFilters } from "@/domain/repositories/task"
 import {
   completeTask,
+  countTasks,
   createTask,
   deleteTask,
-  getTaskById,
-  getTasksByUser,
-  getTasksCountByUser,
+  getTask,
+  getTasks,
   updateTask,
 } from "@/domain/use-cases/task"
 import type { Dependencies } from "@/presentation/dependencies"
@@ -95,11 +95,14 @@ export const createTaskRoutes = (deps: Dependencies) => {
           }
 
           const [tasks, totalCount] = await Promise.all([
-            getTasksByUser(deps, user.id, taskFilters),
-            getTasksCountByUser(deps, user.id, {
-              projectId: filters?.projectId,
-              status: filters?.status,
-              search: filters?.search,
+            getTasks(deps, { userId: user.id, filters: taskFilters }),
+            countTasks(deps, {
+              userId: user.id,
+              filters: {
+                projectId: filters?.projectId,
+                status: filters?.status,
+                search: filters?.search,
+              },
             }),
           ])
 
@@ -276,7 +279,7 @@ export const createTaskRoutes = (deps: Dependencies) => {
             )
           }
 
-          const task = await getTaskById(deps, id)
+          const task = await getTask(deps, id)
 
           if (!task || task.userId !== user.id) {
             return c.json(
