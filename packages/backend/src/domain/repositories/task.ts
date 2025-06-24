@@ -17,15 +17,22 @@ export type TaskFilters = {
   limit?: number
 }
 
-export type FindByIdOptions = {
+type BaseFindOptions = {
+  parentTaskId?: TaskId
   includeDeleted?: boolean
+  filters?: TaskFilters
 }
 
+export type FindOptions = BaseFindOptions &
+  (
+    | { id: TaskId; userId?: never; projectId?: never }
+    | { id?: never; userId: UserId; projectId?: ProjectId }
+    | { id?: never; userId?: never; projectId: ProjectId }
+  )
+
 export type TaskRepository = {
-  findById(id: TaskId, options?: FindByIdOptions): Promise<Task | null>
-  findByProjectId(projectId: ProjectId): Promise<Task[]>
-  findByUserId(userId: UserId, filters?: TaskFilters): Promise<Task[]>
-  countByUserId(
+  find(options: FindOptions): Promise<Task[]>
+  count(
     userId: UserId,
     filters?: Omit<TaskFilters, "page" | "limit">,
   ): Promise<number>

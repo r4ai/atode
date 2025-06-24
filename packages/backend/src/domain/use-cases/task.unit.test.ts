@@ -41,22 +41,22 @@ describe("Task Use Cases", () => {
     it("should return task when found", async () => {
       const taskId = faker.number.int({ min: 1, max: 100 })
       const mockTask = createRandomTask({ id: taskId })
-      vi.mocked(mockTaskRepository.findById).mockResolvedValue(mockTask)
+      mockTaskRepository.find.mockResolvedValue([mockTask])
 
       const result = await getTaskById(deps, taskId)
 
       expect(result).toEqual(mockTask)
-      expect(mockTaskRepository.findById).toHaveBeenCalledWith(taskId)
+      expect(mockTaskRepository.find).toHaveBeenCalledWith({ id: taskId })
     })
 
     it("should return null when task not found", async () => {
       const taskId = faker.number.int({ min: 1, max: 100 })
-      vi.mocked(mockTaskRepository.findById).mockResolvedValue(null)
+      mockTaskRepository.find.mockResolvedValue([])
 
       const result = await getTaskById(deps, taskId)
 
       expect(result).toBeNull()
-      expect(mockTaskRepository.findById).toHaveBeenCalledWith(taskId)
+      expect(mockTaskRepository.find).toHaveBeenCalledWith({ id: taskId })
     })
   })
 
@@ -70,22 +70,22 @@ describe("Task Use Cases", () => {
           id: faker.number.int({ min: 101, max: 200 }),
         }),
       ]
-      vi.mocked(mockTaskRepository.findByProjectId).mockResolvedValue(mockTasks)
+      mockTaskRepository.find.mockResolvedValue(mockTasks)
 
       const result = await getTasksByProject(deps, projectId)
 
       expect(result).toEqual(mockTasks)
-      expect(mockTaskRepository.findByProjectId).toHaveBeenCalledWith(projectId)
+      expect(mockTaskRepository.find).toHaveBeenCalledWith({ projectId })
     })
 
     it("should return empty array when no tasks found", async () => {
       const projectId = faker.number.int({ min: 1, max: 100 })
-      vi.mocked(mockTaskRepository.findByProjectId).mockResolvedValue([])
+      mockTaskRepository.find.mockResolvedValue([])
 
       const result = await getTasksByProject(deps, projectId)
 
       expect(result).toEqual([])
-      expect(mockTaskRepository.findByProjectId).toHaveBeenCalledWith(projectId)
+      expect(mockTaskRepository.find).toHaveBeenCalledWith({ projectId })
     })
   })
 
@@ -99,30 +99,30 @@ describe("Task Use Cases", () => {
           id: faker.number.int({ min: 101, max: 200 }),
         }),
       ]
-      vi.mocked(mockTaskRepository.findByUserId).mockResolvedValue(mockTasks)
+      mockTaskRepository.find.mockResolvedValue(mockTasks)
 
       const result = await getTasksByUser(deps, userId)
 
       expect(result).toEqual(mockTasks)
-      expect(mockTaskRepository.findByUserId).toHaveBeenCalledWith(
+      expect(mockTaskRepository.find).toHaveBeenCalledWith({
         userId,
-        undefined,
-      )
+        filters: undefined,
+      })
     })
 
     it("should return tasks for user with filters", async () => {
       const userId = faker.number.int({ min: 1, max: 100 })
       const filters: TaskFilters = { status: "completed", limit: 10 }
       const mockTasks = [createRandomTask({ userId, status: "completed" })]
-      vi.mocked(mockTaskRepository.findByUserId).mockResolvedValue(mockTasks)
+      mockTaskRepository.find.mockResolvedValue(mockTasks)
 
       const result = await getTasksByUser(deps, userId, filters)
 
       expect(result).toEqual(mockTasks)
-      expect(mockTaskRepository.findByUserId).toHaveBeenCalledWith(
+      expect(mockTaskRepository.find).toHaveBeenCalledWith({
         userId,
         filters,
-      )
+      })
     })
   })
 
@@ -134,8 +134,8 @@ describe("Task Use Cases", () => {
       const mockProject = createRandomProject({ id: projectId, userId })
       const mockTask = createRandomTask(taskData)
 
-      vi.mocked(mockProjectRepository.findById).mockResolvedValue(mockProject)
-      vi.mocked(mockTaskRepository.create).mockResolvedValue(mockTask)
+      mockProjectRepository.findById.mockResolvedValue(mockProject)
+      mockTaskRepository.create.mockResolvedValue(mockTask)
 
       const result = await createTask(deps, taskData)
 
@@ -146,7 +146,7 @@ describe("Task Use Cases", () => {
 
     it("should throw error when project not found", async () => {
       const taskData = createRandomTaskData()
-      vi.mocked(mockProjectRepository.findById).mockResolvedValue(null)
+      mockProjectRepository.findById.mockResolvedValue(null)
 
       await expect(createTask(deps, taskData)).rejects.toThrow(
         "Project not found",
@@ -166,7 +166,7 @@ describe("Task Use Cases", () => {
         userId: projectOwnerId,
       })
 
-      vi.mocked(mockProjectRepository.findById).mockResolvedValue(mockProject)
+      mockProjectRepository.findById.mockResolvedValue(mockProject)
 
       await expect(createTask(deps, taskData)).rejects.toThrow(
         "User does not have access to this project",
@@ -190,15 +190,15 @@ describe("Task Use Cases", () => {
       const mockParentTask = createRandomTask({ id: parentTaskId, projectId })
       const mockTask = createRandomTask(taskData)
 
-      vi.mocked(mockProjectRepository.findById).mockResolvedValue(mockProject)
-      vi.mocked(mockTaskRepository.findById).mockResolvedValue(mockParentTask)
-      vi.mocked(mockTaskRepository.create).mockResolvedValue(mockTask)
+      mockProjectRepository.findById.mockResolvedValue(mockProject)
+      mockTaskRepository.find.mockResolvedValue([mockParentTask])
+      mockTaskRepository.create.mockResolvedValue(mockTask)
 
       const result = await createTask(deps, taskData)
 
       expect(result).toEqual(mockTask)
       expect(mockProjectRepository.findById).toHaveBeenCalledWith(projectId)
-      expect(mockTaskRepository.findById).toHaveBeenCalledWith(parentTaskId)
+      expect(mockTaskRepository.find).toHaveBeenCalledWith({ id: parentTaskId })
       expect(mockTaskRepository.create).toHaveBeenCalledWith(taskData)
     })
 
@@ -213,14 +213,14 @@ describe("Task Use Cases", () => {
       })
       const mockProject = createRandomProject({ id: projectId, userId })
 
-      vi.mocked(mockProjectRepository.findById).mockResolvedValue(mockProject)
-      vi.mocked(mockTaskRepository.findById).mockResolvedValue(null)
+      mockProjectRepository.findById.mockResolvedValue(mockProject)
+      mockTaskRepository.find.mockResolvedValue([])
 
       await expect(createTask(deps, taskData)).rejects.toThrow(
         "Parent task not found",
       )
       expect(mockProjectRepository.findById).toHaveBeenCalledWith(projectId)
-      expect(mockTaskRepository.findById).toHaveBeenCalledWith(parentTaskId)
+      expect(mockTaskRepository.find).toHaveBeenCalledWith({ id: parentTaskId })
       expect(mockTaskRepository.create).not.toHaveBeenCalled()
     })
 
@@ -240,14 +240,14 @@ describe("Task Use Cases", () => {
         projectId: parentProjectId,
       })
 
-      vi.mocked(mockProjectRepository.findById).mockResolvedValue(mockProject)
-      vi.mocked(mockTaskRepository.findById).mockResolvedValue(mockParentTask)
+      mockProjectRepository.findById.mockResolvedValue(mockProject)
+      mockTaskRepository.find.mockResolvedValue([mockParentTask])
 
       await expect(createTask(deps, taskData)).rejects.toThrow(
         "Parent task must belong to the same project",
       )
       expect(mockProjectRepository.findById).toHaveBeenCalledWith(projectId)
-      expect(mockTaskRepository.findById).toHaveBeenCalledWith(parentTaskId)
+      expect(mockTaskRepository.find).toHaveBeenCalledWith({ id: parentTaskId })
       expect(mockTaskRepository.create).not.toHaveBeenCalled()
     })
   })
@@ -260,13 +260,13 @@ describe("Task Use Cases", () => {
       const existingTask = createRandomTask({ id: taskId, userId })
       const updatedTask = createRandomTask({ ...existingTask, ...updateData })
 
-      vi.mocked(mockTaskRepository.findById).mockResolvedValue(existingTask)
-      vi.mocked(mockTaskRepository.update).mockResolvedValue(updatedTask)
+      mockTaskRepository.find.mockResolvedValue([existingTask])
+      mockTaskRepository.update.mockResolvedValue(updatedTask)
 
       const result = await updateTask(deps, taskId, updateData, userId)
 
       expect(result).toEqual(updatedTask)
-      expect(mockTaskRepository.findById).toHaveBeenCalledWith(taskId)
+      expect(mockTaskRepository.find).toHaveBeenCalledWith({ id: taskId })
       expect(mockTaskRepository.update).toHaveBeenCalledWith(taskId, updateData)
     })
 
@@ -275,12 +275,12 @@ describe("Task Use Cases", () => {
       const userId = faker.number.int({ min: 1, max: 100 })
       const updateData = { title: faker.lorem.sentence() }
 
-      vi.mocked(mockTaskRepository.findById).mockResolvedValue(null)
+      mockTaskRepository.find.mockResolvedValue([])
 
       await expect(
         updateTask(deps, taskId, updateData, userId),
       ).rejects.toThrow("Task not found")
-      expect(mockTaskRepository.findById).toHaveBeenCalledWith(taskId)
+      expect(mockTaskRepository.find).toHaveBeenCalledWith({ id: taskId })
       expect(mockTaskRepository.update).not.toHaveBeenCalled()
     })
 
@@ -294,12 +294,12 @@ describe("Task Use Cases", () => {
         userId: taskOwnerId,
       })
 
-      vi.mocked(mockTaskRepository.findById).mockResolvedValue(existingTask)
+      mockTaskRepository.find.mockResolvedValue([existingTask])
 
       await expect(
         updateTask(deps, taskId, updateData, userId),
       ).rejects.toThrow("Task not found")
-      expect(mockTaskRepository.findById).toHaveBeenCalledWith(taskId)
+      expect(mockTaskRepository.find).toHaveBeenCalledWith({ id: taskId })
       expect(mockTaskRepository.update).not.toHaveBeenCalled()
     })
 
@@ -309,13 +309,13 @@ describe("Task Use Cases", () => {
       const updateData = { title: faker.lorem.sentence() }
       const existingTask = createRandomTask({ id: taskId, userId })
 
-      vi.mocked(mockTaskRepository.findById).mockResolvedValue(existingTask)
-      vi.mocked(mockTaskRepository.update).mockResolvedValue(null)
+      mockTaskRepository.find.mockResolvedValue([existingTask])
+      mockTaskRepository.update.mockResolvedValue(null)
 
       await expect(
         updateTask(deps, taskId, updateData, userId),
       ).rejects.toThrow("Failed to update task")
-      expect(mockTaskRepository.findById).toHaveBeenCalledWith(taskId)
+      expect(mockTaskRepository.find).toHaveBeenCalledWith({ id: taskId })
       expect(mockTaskRepository.update).toHaveBeenCalledWith(taskId, updateData)
     })
   })
@@ -335,15 +335,13 @@ describe("Task Use Cases", () => {
         completedAt: faker.date.recent(),
       })
 
-      vi.mocked(mockTaskRepository.findById).mockResolvedValue(existingTask)
-      vi.mocked(mockTaskRepository.markCompleted).mockResolvedValue(
-        completedTask,
-      )
+      mockTaskRepository.find.mockResolvedValue([existingTask])
+      mockTaskRepository.markCompleted.mockResolvedValue(completedTask)
 
       const result = await completeTask(deps, taskId, userId)
 
       expect(result).toEqual(completedTask)
-      expect(mockTaskRepository.findById).toHaveBeenCalledWith(taskId)
+      expect(mockTaskRepository.find).toHaveBeenCalledWith({ id: taskId })
       expect(mockTaskRepository.markCompleted).toHaveBeenCalledWith(taskId)
     })
 
@@ -351,12 +349,12 @@ describe("Task Use Cases", () => {
       const taskId = faker.number.int({ min: 1, max: 100 })
       const userId = faker.number.int({ min: 1, max: 100 })
 
-      vi.mocked(mockTaskRepository.findById).mockResolvedValue(null)
+      mockTaskRepository.find.mockResolvedValue([])
 
       await expect(completeTask(deps, taskId, userId)).rejects.toThrow(
         "Task not found",
       )
-      expect(mockTaskRepository.findById).toHaveBeenCalledWith(taskId)
+      expect(mockTaskRepository.find).toHaveBeenCalledWith({ id: taskId })
       expect(mockTaskRepository.markCompleted).not.toHaveBeenCalled()
     })
 
@@ -369,12 +367,12 @@ describe("Task Use Cases", () => {
         userId: taskOwnerId,
       })
 
-      vi.mocked(mockTaskRepository.findById).mockResolvedValue(existingTask)
+      mockTaskRepository.find.mockResolvedValue([existingTask])
 
       await expect(completeTask(deps, taskId, userId)).rejects.toThrow(
         "Task not found",
       )
-      expect(mockTaskRepository.findById).toHaveBeenCalledWith(taskId)
+      expect(mockTaskRepository.find).toHaveBeenCalledWith({ id: taskId })
       expect(mockTaskRepository.markCompleted).not.toHaveBeenCalled()
     })
 
@@ -387,12 +385,12 @@ describe("Task Use Cases", () => {
         status: "completed",
       })
 
-      vi.mocked(mockTaskRepository.findById).mockResolvedValue(existingTask)
+      mockTaskRepository.find.mockResolvedValue([existingTask])
 
       await expect(completeTask(deps, taskId, userId)).rejects.toThrow(
         "Task is already completed",
       )
-      expect(mockTaskRepository.findById).toHaveBeenCalledWith(taskId)
+      expect(mockTaskRepository.find).toHaveBeenCalledWith({ id: taskId })
       expect(mockTaskRepository.markCompleted).not.toHaveBeenCalled()
     })
 
@@ -405,13 +403,13 @@ describe("Task Use Cases", () => {
         status: "in_progress",
       })
 
-      vi.mocked(mockTaskRepository.findById).mockResolvedValue(existingTask)
-      vi.mocked(mockTaskRepository.markCompleted).mockResolvedValue(null)
+      mockTaskRepository.find.mockResolvedValue([existingTask])
+      mockTaskRepository.markCompleted.mockResolvedValue(null)
 
       await expect(completeTask(deps, taskId, userId)).rejects.toThrow(
         "Failed to complete task",
       )
-      expect(mockTaskRepository.findById).toHaveBeenCalledWith(taskId)
+      expect(mockTaskRepository.find).toHaveBeenCalledWith({ id: taskId })
       expect(mockTaskRepository.markCompleted).toHaveBeenCalledWith(taskId)
     })
   })
@@ -422,12 +420,12 @@ describe("Task Use Cases", () => {
       const userId = faker.number.int({ min: 1, max: 100 })
       const existingTask = createRandomTask({ id: taskId, userId })
 
-      vi.mocked(mockTaskRepository.findById).mockResolvedValue(existingTask)
-      vi.mocked(mockTaskRepository.delete).mockResolvedValue(true)
+      mockTaskRepository.find.mockResolvedValue([existingTask])
+      mockTaskRepository.delete.mockResolvedValue(true)
 
       await deleteTask(deps, taskId, userId)
 
-      expect(mockTaskRepository.findById).toHaveBeenCalledWith(taskId)
+      expect(mockTaskRepository.find).toHaveBeenCalledWith({ id: taskId })
       expect(mockTaskRepository.delete).toHaveBeenCalledWith(taskId)
     })
 
@@ -435,12 +433,12 @@ describe("Task Use Cases", () => {
       const taskId = faker.number.int({ min: 1, max: 100 })
       const userId = faker.number.int({ min: 1, max: 100 })
 
-      vi.mocked(mockTaskRepository.findById).mockResolvedValue(null)
+      mockTaskRepository.find.mockResolvedValue([])
 
       await expect(deleteTask(deps, taskId, userId)).rejects.toThrow(
         "Task not found",
       )
-      expect(mockTaskRepository.findById).toHaveBeenCalledWith(taskId)
+      expect(mockTaskRepository.find).toHaveBeenCalledWith({ id: taskId })
       expect(mockTaskRepository.delete).not.toHaveBeenCalled()
     })
 
@@ -453,12 +451,12 @@ describe("Task Use Cases", () => {
         userId: taskOwnerId,
       })
 
-      vi.mocked(mockTaskRepository.findById).mockResolvedValue(existingTask)
+      mockTaskRepository.find.mockResolvedValue([existingTask])
 
       await expect(deleteTask(deps, taskId, userId)).rejects.toThrow(
         "Task not found",
       )
-      expect(mockTaskRepository.findById).toHaveBeenCalledWith(taskId)
+      expect(mockTaskRepository.find).toHaveBeenCalledWith({ id: taskId })
       expect(mockTaskRepository.delete).not.toHaveBeenCalled()
     })
 
@@ -467,13 +465,13 @@ describe("Task Use Cases", () => {
       const userId = faker.number.int({ min: 1, max: 100 })
       const existingTask = createRandomTask({ id: taskId, userId })
 
-      vi.mocked(mockTaskRepository.findById).mockResolvedValue(existingTask)
-      vi.mocked(mockTaskRepository.delete).mockResolvedValue(false)
+      mockTaskRepository.find.mockResolvedValue([existingTask])
+      mockTaskRepository.delete.mockResolvedValue(false)
 
       await expect(deleteTask(deps, taskId, userId)).rejects.toThrow(
         "Failed to delete task",
       )
-      expect(mockTaskRepository.findById).toHaveBeenCalledWith(taskId)
+      expect(mockTaskRepository.find).toHaveBeenCalledWith({ id: taskId })
       expect(mockTaskRepository.delete).toHaveBeenCalledWith(taskId)
     })
   })

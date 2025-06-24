@@ -20,14 +20,15 @@ export const getTaskById = async (
   deps: TaskDependencies,
   id: TaskId,
 ): Promise<Task | null> => {
-  return await deps.repository.task.findById(id)
+  const results = await deps.repository.task.find({ id })
+  return results[0] ?? null
 }
 
 export const getTasksByProject = async (
   deps: TaskDependencies,
   projectId: ProjectId,
 ): Promise<Task[]> => {
-  return await deps.repository.task.findByProjectId(projectId)
+  return await deps.repository.task.find({ projectId })
 }
 
 export const getTasksByUser = async (
@@ -35,7 +36,7 @@ export const getTasksByUser = async (
   userId: UserId,
   filters?: TaskFilters,
 ): Promise<Task[]> => {
-  return await deps.repository.task.findByUserId(userId, filters)
+  return await deps.repository.task.find({ userId, filters })
 }
 
 export const getTasksCountByUser = async (
@@ -43,7 +44,7 @@ export const getTasksCountByUser = async (
   userId: UserId,
   filters?: Omit<TaskFilters, "page" | "limit">,
 ): Promise<number> => {
-  return await deps.repository.task.countByUserId(userId, filters)
+  return await deps.repository.task.count(userId, filters)
 }
 
 export const createTask = async (
@@ -62,7 +63,10 @@ export const createTask = async (
 
   // Business logic: Verify parent task exists and belongs to same project
   if (data.parentTaskId) {
-    const parentTask = await deps.repository.task.findById(data.parentTaskId)
+    const parentTasks = await deps.repository.task.find({
+      id: data.parentTaskId,
+    })
+    const parentTask = parentTasks[0]
     if (!parentTask) {
       throw new Error("Parent task not found")
     }
@@ -80,7 +84,8 @@ export const updateTask = async (
   data: UpdateTaskData,
   userId: UserId,
 ): Promise<Task> => {
-  const task = await deps.repository.task.findById(id)
+  const tasks = await deps.repository.task.find({ id })
+  const task = tasks[0]
   if (!task) {
     throw new Error("Task not found")
   }
@@ -102,7 +107,8 @@ export const completeTask = async (
   id: TaskId,
   userId: UserId,
 ): Promise<Task> => {
-  const task = await deps.repository.task.findById(id)
+  const tasks = await deps.repository.task.find({ id })
+  const task = tasks[0]
   if (!task) {
     throw new Error("Task not found")
   }
@@ -128,7 +134,8 @@ export const deleteTask = async (
   id: TaskId,
   userId: UserId,
 ): Promise<void> => {
-  const task = await deps.repository.task.findById(id)
+  const tasks = await deps.repository.task.find({ id })
+  const task = tasks[0]
   if (!task) {
     throw new Error("Task not found")
   }

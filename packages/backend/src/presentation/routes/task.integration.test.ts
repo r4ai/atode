@@ -640,9 +640,11 @@ describe("Task Routes Integration Tests", () => {
       expect(data.data.success).toBe(true)
 
       // Verify task is soft deleted
-      const deletedTask = await env.deps.repository.task.findById(task.id, {
+      const deletedTasks = await env.deps.repository.task.find({
+        id: task.id,
         includeDeleted: true,
       })
+      const deletedTask = deletedTasks[0]
       expect(deletedTask?.deletedAt).toBeDefined()
     })
 
