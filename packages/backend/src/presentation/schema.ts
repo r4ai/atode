@@ -2,7 +2,7 @@ import { z } from "zod"
 import "zod-openapi/extend"
 
 // Base schemas
-export const IdSchema = z
+export const IdSchema = z.coerce
   .number()
   .int()
   .min(1)
@@ -58,7 +58,7 @@ export const ProjectSchema = z
       .nullable()
       .optional()
       .openapi({ example: "/root/subproject" }),
-    depth: z.number().int().min(0).openapi({ example: 0 }),
+    depth: z.coerce.number().int().min(0).openapi({ example: 0 }),
     createdAt: TimestampSchema,
     updatedAt: TimestampSchema,
     deletedAt: TimestampSchema.nullable().optional(),
@@ -99,7 +99,7 @@ export const TaskSchema = z
       .optional()
       .openapi({ example: "Task description" }),
     status: TaskStatusSchema,
-    priority: z.number().int().openapi({
+    priority: z.coerce.number().int().openapi({
       example: 1,
       description: "Task priority (higher = more important)",
     }),
@@ -110,7 +110,7 @@ export const TaskSchema = z
       .nullable()
       .optional()
       .openapi({ example: "/root/subtask" }),
-    depth: z.number().int().min(0).openapi({ example: 0 }),
+    depth: z.coerce.number().int().min(0).openapi({ example: 0 }),
     createdAt: TimestampSchema,
     updatedAt: TimestampSchema,
     deletedAt: TimestampSchema.nullable().optional(),
@@ -123,7 +123,7 @@ export const CreateTaskSchema = z
     projectId: IdSchema,
     parentId: IdSchema.optional(),
     description: z.string().optional().openapi({ example: "Task description" }),
-    priority: z.number().int().optional().openapi({ example: 1 }),
+    priority: z.coerce.number().int().optional().openapi({ example: 1 }),
     dueDate: TimestampSchema.optional(),
     labels: z
       .array(z.string())
@@ -182,13 +182,13 @@ export const CreateCommentSchema = z
 // Query parameter schemas
 export const PaginationSchema = z
   .object({
-    page: z
+    page: z.coerce
       .number()
       .int()
       .min(1)
       .optional()
       .openapi({ example: 1, description: "Page number" }),
-    limit: z
+    limit: z.coerce
       .number()
       .int()
       .min(1)
@@ -215,7 +215,7 @@ export const TaskFilterSchema = PaginationSchema.extend({
 
 export const ProjectFilterSchema = PaginationSchema.extend({
   includeArchived: z.boolean().optional().openapi({ example: false }),
-  depth: z
+  depth: z.coerce
     .number()
     .int()
     .min(1)
@@ -251,22 +251,22 @@ export const PaginatedResponseSchema = <T extends z.ZodTypeAny>(
   z
     .object({
       data: z.array(itemSchema),
-      total: z
+      total: z.coerce
         .number()
         .int()
         .min(0)
         .openapi({ example: 42, description: "Total number of items" }),
-      page: z
+      page: z.coerce
         .number()
         .int()
         .min(1)
         .openapi({ example: 1, description: "Current page number" }),
-      limit: z
+      limit: z.coerce
         .number()
         .int()
         .min(1)
         .openapi({ example: 20, description: "Items per page" }),
-      totalPages: z
+      totalPages: z.coerce
         .number()
         .int()
         .min(0)

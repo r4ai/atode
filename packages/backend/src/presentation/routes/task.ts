@@ -246,7 +246,7 @@ export const createTaskRoutes = (deps: Dependencies) => {
                 success: false,
                 error: "Task not found",
                 message: `Task with ID ${id} not found`,
-              },
+              } as const,
               404,
             )
           }
@@ -254,14 +254,14 @@ export const createTaskRoutes = (deps: Dependencies) => {
           return c.json({
             data: task,
             success: true,
-          })
+          } as const)
         } catch (error) {
           return c.json(
             {
               success: false,
               error: "Failed to fetch task",
               message: error instanceof Error ? error.message : "Unknown error",
-            },
+            } as const,
             500,
           )
         }
@@ -308,7 +308,7 @@ export const createTaskRoutes = (deps: Dependencies) => {
                 success: false,
                 error: "Unauthorized",
                 message: "User not authenticated",
-              },
+              } as const,
               401,
             )
           }
@@ -323,7 +323,7 @@ export const createTaskRoutes = (deps: Dependencies) => {
                 success: false,
                 error: "User not found",
                 message: "User not found in database",
-              },
+              } as const,
               404,
             )
           }
@@ -344,7 +344,7 @@ export const createTaskRoutes = (deps: Dependencies) => {
                 success: false,
                 error: "Task not found",
                 message: `Task with ID ${id} not found`,
-              },
+              } as const,
               404,
             )
           }
@@ -353,14 +353,14 @@ export const createTaskRoutes = (deps: Dependencies) => {
             data: task,
             success: true,
             message: "Task updated successfully",
-          })
+          } as const)
         } catch (error) {
           return c.json(
             {
               success: false,
               error: "Failed to update task",
               message: error instanceof Error ? error.message : "Unknown error",
-            },
+            } as const,
             500,
           )
         }
@@ -405,7 +405,7 @@ export const createTaskRoutes = (deps: Dependencies) => {
                 success: false,
                 error: "Unauthorized",
                 message: "User not authenticated",
-              },
+              } as const,
               401,
             )
           }
@@ -420,7 +420,7 @@ export const createTaskRoutes = (deps: Dependencies) => {
                 success: false,
                 error: "User not found",
                 message: "User not found in database",
-              },
+              } as const,
               404,
             )
           }
@@ -433,7 +433,7 @@ export const createTaskRoutes = (deps: Dependencies) => {
                 success: false,
                 error: "Task not found",
                 message: `Task with ID ${id} not found`,
-              },
+              } as const,
               404,
             )
           }
@@ -442,14 +442,14 @@ export const createTaskRoutes = (deps: Dependencies) => {
             data: task,
             success: true,
             message: "Task completed successfully",
-          })
+          } as const)
         } catch (error) {
           return c.json(
             {
               success: false,
               error: "Failed to complete task",
               message: error instanceof Error ? error.message : "Unknown error",
-            },
+            } as const,
             500,
           )
         }
@@ -500,7 +500,7 @@ export const createTaskRoutes = (deps: Dependencies) => {
                 success: false,
                 error: "Unauthorized",
                 message: "User not authenticated",
-              },
+              } as const,
               401,
             )
           }
@@ -515,7 +515,7 @@ export const createTaskRoutes = (deps: Dependencies) => {
                 success: false,
                 error: "User not found",
                 message: "User not found in database",
-              },
+              } as const,
               404,
             )
           }
@@ -526,14 +526,14 @@ export const createTaskRoutes = (deps: Dependencies) => {
             data: { success: true },
             success: true,
             message: "Task deleted successfully",
-          })
+          } as const)
         } catch (error) {
           return c.json(
             {
               success: false,
               error: "Failed to delete task",
               message: error instanceof Error ? error.message : "Unknown error",
-            },
+            } as const,
             500,
           )
         }

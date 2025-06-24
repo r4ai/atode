@@ -42,6 +42,9 @@ export const getWorkerId = () =>
 export const createTestContainer =
   async (): Promise<StartedPostgreSqlContainer> => {
     const workerId = getWorkerId()
+    const label = `[INFO] Creating test container for worker ${workerId}`
+    console.time(label)
+
     const container = await new PostgreSqlContainer("postgres:15-alpine")
       .withDatabase(`app_test_${workerId.replace(/[^a-zA-Z0-9]/g, "_")}`)
       .withUsername("tester")
@@ -61,6 +64,12 @@ export const createTestContainer =
 
     // Create initial snapshot
     await container.snapshot(INITIAL_SNAPSHOT)
+
+    // Cache the container for reuse
+    globalThis.__TEST_CONTAINERS__ ??= {}
+    globalThis.__TEST_CONTAINERS__[workerId] = container
+
+    console.timeEnd(label)
 
     return container
   }

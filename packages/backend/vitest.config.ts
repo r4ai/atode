@@ -48,6 +48,7 @@ export default defineConfig({
           name: "integration",
           include: ["**/*.integration.test.ts"],
           setupFiles: ["./src/test-helpers/integration-setup.ts"],
+          testTimeout: 30000, // 30 seconds for integration tests
         },
       },
     ],
