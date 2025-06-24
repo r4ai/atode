@@ -17,10 +17,18 @@ export type TaskFilters = {
   limit?: number
 }
 
+export type FindByIdOptions = {
+  includeDeleted?: boolean
+}
+
 export type TaskRepository = {
-  findById(id: TaskId): Promise<Task | null>
+  findById(id: TaskId, options?: FindByIdOptions): Promise<Task | null>
   findByProjectId(projectId: ProjectId): Promise<Task[]>
   findByUserId(userId: UserId, filters?: TaskFilters): Promise<Task[]>
+  countByUserId(
+    userId: UserId,
+    filters?: Omit<TaskFilters, "page" | "limit">,
+  ): Promise<number>
   findChildren(taskId: TaskId): Promise<Task[]>
   create(data: CreateTaskData): Promise<Task>
   update(id: TaskId, data: UpdateTaskData): Promise<Task | null>

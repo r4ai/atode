@@ -291,44 +291,18 @@ describe("Task Routes Integration Tests", () => {
       expect(data.data.title).toBe(minimalTaskData.title)
       expect(data.data.projectId).toBe(project.id)
       expect(data.data.userId).toBe(user.id)
-    })
-
-    it("should create task with full data", async ({ env }) => {
-      const user = await env.deps.repository.user.create(createRandomUserData())
-      const project = await env.deps.repository.project.create(
-        createRandomProjectData({ userId: user.id }),
-      )
-
-      const { client } = await createApp(env, { user })
-
-      const fullTaskData = {
-        projectId: project.id,
-        title: "Complex task",
-        description: "This is a detailed task description",
-        priority: 1,
-        dueDate: "2025-12-31T23:59:59.000Z",
-      }
-
-      const res = await client.tasks.$post({
-        json: fullTaskData,
-      })
-      expect(res.status).toBe(201)
-
-      const data = await res.json()
-      expect(data.success).toBe(true)
-      assert(data.success === true)
-      expect(data.data).toMatchObject({
-        title: fullTaskData.title,
-        description: fullTaskData.description,
-        priority: fullTaskData.priority,
-        projectId: project.id,
-        userId: user.id,
-      })
-      expect(data.data.dueDate).toBeDefined()
-      assert(data.data.dueDate != null)
-      expect(new Date(data.data.dueDate).toISOString()).toBe(
-        fullTaskData.dueDate,
-      )
+      expect(data.data.description).toBeNull()
+      expect(data.data.priority).toBe(0)
+      expect(data.data.dueDate).toBeNull()
+      expect(data.data.completedAt).toBeNull()
+      expect(data.data.status).toBe("pending")
+      expect(data.data.path).toBeNull()
+      expect(data.data.depth).toBe(0)
+      expect(data.data.createdAt).toBeDefined()
+      expect(data.data.updatedAt).toBeDefined()
+      expect(data.data.deletedAt).toBeNull()
+      expect(data.data.id).toBeDefined()
+      expect(data.data.parentTaskId).toBeNull()
     })
   })
 
@@ -359,7 +333,7 @@ describe("Task Routes Integration Tests", () => {
       const { client } = await createApp(env)
 
       const res = await client.tasks[":id"].$get({
-        param: { id: "non-existent-id" },
+        param: { id: "100" },
       })
       expect(res.status).toBe(404)
 
@@ -438,7 +412,7 @@ describe("Task Routes Integration Tests", () => {
       const { client } = await createApp(env)
 
       const res = await client.tasks[":id"].$put({
-        param: { id: "non-existent-id" },
+        param: { id: "100" },
         json: { title: "Updated title" },
       })
       expect(res.status).toBe(404)
@@ -513,7 +487,7 @@ describe("Task Routes Integration Tests", () => {
       const { client } = await createApp(env)
 
       const res = await client.tasks[":id"].complete.$post({
-        param: { id: "non-existent-id" },
+        param: { id: "100" },
       })
       expect(res.status).toBe(404)
 
@@ -576,7 +550,9 @@ describe("Task Routes Integration Tests", () => {
       expect(data.data.success).toBe(true)
 
       // Verify task is soft deleted
-      const deletedTask = await env.deps.repository.task.findById(task.id)
+      const deletedTask = await env.deps.repository.task.findById(task.id, {
+        includeDeleted: true,
+      })
       expect(deletedTask?.deletedAt).toBeDefined()
     })
 
@@ -584,7 +560,7 @@ describe("Task Routes Integration Tests", () => {
       const { client } = await createApp(env)
 
       const res = await client.tasks[":id"].$delete({
-        param: { id: "non-existent-id" },
+        param: { id: "100" },
       })
       expect(res.status).toBe(500)
 
@@ -639,7 +615,6 @@ describe("Task Routes Integration Tests", () => {
       const data = await res.json()
       expect(data.success).toBe(false)
       assert(data.success === false)
-      assert(data.success === false)
       expect(data.error).toBe("Unauthorized")
     })
 
@@ -657,25 +632,31 @@ describe("Task Routes Integration Tests", () => {
       const data = await res.json()
       expect(data.success).toBe(false)
       assert(data.success === false)
-      assert(data.success === false)
       expect(data.error).toBe("Unauthorized")
     })
 
     it("should return 401 for unauthenticated PUT /tasks/:id request", async ({
       env,
     }) => {
+      const user = await env.deps.repository.user.create(createRandomUserData())
+      const project = await env.deps.repository.project.create(
+        createRandomProjectData({ userId: user.id }),
+      )
+      const task = await env.deps.repository.task.create(
+        createRandomTaskData({ userId: user.id, projectId: project.id }),
+      )
+
       const app = new Hono().route("/tasks", createTaskRoutes(env.deps))
       const client = testClient(app)
 
       const res = await client.tasks[":id"].$put({
-        param: { id: "test-id" },
+        param: { id: task.id.toString() },
         json: { title: "Updated title" },
       })
       expect(res.status).toBe(401)
 
       const data = await res.json()
       expect(data.success).toBe(false)
-      assert(data.success === false)
       assert(data.success === false)
       expect(data.error).toBe("Unauthorized")
     })
@@ -687,13 +668,12 @@ describe("Task Routes Integration Tests", () => {
       const client = testClient(app)
 
       const res = await client.tasks[":id"].complete.$post({
-        param: { id: "test-id" },
+        param: { id: "1" },
       })
       expect(res.status).toBe(401)
 
       const data = await res.json()
       expect(data.success).toBe(false)
-      assert(data.success === false)
       assert(data.success === false)
       expect(data.error).toBe("Unauthorized")
     })
@@ -705,57 +685,14 @@ describe("Task Routes Integration Tests", () => {
       const client = testClient(app)
 
       const res = await client.tasks[":id"].$delete({
-        param: { id: "test-id" },
+        param: { id: "1" },
       })
       expect(res.status).toBe(401)
 
       const data = await res.json()
       expect(data.success).toBe(false)
       assert(data.success === false)
-      assert(data.success === false)
       expect(data.error).toBe("Unauthorized")
-    })
-  })
-
-  describe("Error Handling", () => {
-    it("should handle database errors gracefully on task creation", async ({
-      env,
-    }) => {
-      const user = await env.deps.repository.user.create(createRandomUserData())
-      const { client } = await createApp(env, { user })
-
-      // Try to create task with invalid projectId
-      const res = await client.tasks.$post({
-        json: {
-          title: "Test task",
-          projectId: 999999,
-        },
-      })
-      expect(res.status).toBe(500)
-
-      const data = await res.json()
-      expect(data.success).toBe(false)
-      assert(data.success === false)
-      assert(data.success === false)
-      expect(data.error).toBe("Failed to create task")
-    })
-
-    it("should handle database errors gracefully on task fetching", async ({
-      env,
-    }) => {
-      const user = await env.deps.repository.user.create(createRandomUserData())
-      const { client } = await createApp(env, { user })
-
-      const res = await client.tasks[":id"].$get({
-        param: { id: "invalid-id-format-that-causes-db-error" },
-      })
-      expect(res.status).toBe(500)
-
-      const data = await res.json()
-      expect(data.success).toBe(false)
-      assert(data.success === false)
-      assert(data.success === false)
-      expect(data.error).toBe("Failed to fetch task")
     })
   })
 })

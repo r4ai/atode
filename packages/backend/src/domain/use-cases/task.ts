@@ -38,6 +38,14 @@ export const getTasksByUser = async (
   return await deps.repository.task.findByUserId(userId, filters)
 }
 
+export const getTasksCountByUser = async (
+  deps: TaskDependencies,
+  userId: UserId,
+  filters?: Omit<TaskFilters, "page" | "limit">,
+): Promise<number> => {
+  return await deps.repository.task.countByUserId(userId, filters)
+}
+
 export const createTask = async (
   deps: TaskDependencies,
   data: CreateTaskData,
@@ -78,7 +86,7 @@ export const updateTask = async (
   }
 
   if (task.userId !== userId) {
-    throw new Error("User does not have access to this task")
+    throw new Error("Task not found")
   }
 
   const updatedTask = await deps.repository.task.update(id, data)
@@ -100,7 +108,7 @@ export const completeTask = async (
   }
 
   if (task.userId !== userId) {
-    throw new Error("User does not have access to this task")
+    throw new Error("Task not found")
   }
 
   if (task.status === "completed") {
@@ -126,7 +134,7 @@ export const deleteTask = async (
   }
 
   if (task.userId !== userId) {
-    throw new Error("User does not have access to this task")
+    throw new Error("Task not found")
   }
 
   const deleted = await deps.repository.task.delete(id)

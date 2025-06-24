@@ -10,7 +10,8 @@
     "includes": [
       "**",
       "!packages/frontend/src/routeTree.gen.ts",
-      "!packages/frontend/.tanstack/**"
+      "!packages/frontend/.tanstack/**",
+      "!coverage/**"
     ]
   },
   "formatter": {

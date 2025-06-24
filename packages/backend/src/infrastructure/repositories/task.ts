@@ -1,4 +1,4 @@
-import { and, eq, ilike, isNull, lte, or } from "drizzle-orm"
+import { and, count, eq, ilike, isNull, lte, or } from "drizzle-orm"
 import type { ProjectId } from "@/domain/entities/project"
 import type {
   CreateTaskData,
@@ -7,7 +7,11 @@ import type {
   UpdateTaskData,
 } from "@/domain/entities/task"
 import type { UserId } from "@/domain/entities/user"
-import type { TaskFilters, TaskRepository } from "@/domain/repositories/task"
+import type {
+  FindByIdOptions,
+  TaskFilters,
+  TaskRepository,
+} from "@/domain/repositories/task"
 import type { DB } from "@/infrastructure/database/connection"
 import type { Task as DbTask } from "@/infrastructure/database/schema"
 import { tasks } from "@/infrastructure/database/schema"
@@ -37,11 +41,12 @@ type Dependencies = {
 
 const findTaskById =
   ({ db }: Dependencies) =>
-  async (id: TaskId): Promise<Task | null> => {
-    const result = await db
-      .select()
-      .from(tasks)
-      .where(and(eq(tasks.id, id), isNull(tasks.deletedAt)))
+  async (id: TaskId, options?: FindByIdOptions): Promise<Task | null> => {
+    const whereConditions = options?.includeDeleted
+      ? eq(tasks.id, id)
+      : and(eq(tasks.id, id), isNull(tasks.deletedAt))
+
+    const result = await db.select().from(tasks).where(whereConditions)
     return result[0] ? toDomainTask(result[0]) : null
   }
 
@@ -56,32 +61,41 @@ const findTasksByProjectId =
     return result.map(toDomainTask)
   }
 
+const buildTaskConditions = (
+  userId: UserId,
+  filters?: Omit<TaskFilters, "page" | "limit">,
+) => {
+  const conditions = [eq(tasks.userId, userId), isNull(tasks.deletedAt)]
+
+  if (filters?.projectId) {
+    conditions.push(eq(tasks.projectId, filters.projectId))
+  }
+
+  if (filters?.status) {
+    conditions.push(eq(tasks.status, filters.status))
+  }
+
+  if (filters?.dueBefore) {
+    conditions.push(lte(tasks.dueDate, filters.dueBefore))
+  }
+
+  if (filters?.search) {
+    const searchCondition = or(
+      ilike(tasks.title, `%${filters.search}%`),
+      ilike(tasks.description, `%${filters.search}%`),
+    )
+    if (searchCondition) {
+      conditions.push(searchCondition)
+    }
+  }
+
+  return conditions
+}
+
 const findTasksByUserId =
   ({ db }: Dependencies) =>
   async (userId: UserId, filters?: TaskFilters): Promise<Task[]> => {
-    const conditions = [eq(tasks.userId, userId), isNull(tasks.deletedAt)]
-
-    if (filters?.projectId) {
-      conditions.push(eq(tasks.projectId, filters.projectId))
-    }
-
-    if (filters?.status) {
-      conditions.push(eq(tasks.status, filters.status))
-    }
-
-    if (filters?.dueBefore) {
-      conditions.push(lte(tasks.dueDate, filters.dueBefore))
-    }
-
-    if (filters?.search) {
-      const searchCondition = or(
-        ilike(tasks.title, `%${filters.search}%`),
-        ilike(tasks.description, `%${filters.search}%`),
-      )
-      if (searchCondition) {
-        conditions.push(searchCondition)
-      }
-    }
+    const conditions = buildTaskConditions(userId, filters)
 
     const query = db
       .select()
@@ -97,6 +111,22 @@ const findTasksByUserId =
 
     const result = await query
     return result.map(toDomainTask)
+  }
+
+const countTasksByUserId =
+  ({ db }: Dependencies) =>
+  async (
+    userId: UserId,
+    filters?: Omit<TaskFilters, "page" | "limit">,
+  ): Promise<number> => {
+    const conditions = buildTaskConditions(userId, filters)
+
+    const result = await db
+      .select({ count: count() })
+      .from(tasks)
+      .where(and(...conditions))
+
+    return result[0]?.count ?? 0
   }
 
 const findTaskChildren =
@@ -180,6 +210,7 @@ export const createTaskRepository = (deps: Dependencies): TaskRepository => ({
   findById: findTaskById(deps),
   findByProjectId: findTasksByProjectId(deps),
   findByUserId: findTasksByUserId(deps),
+  countByUserId: countTasksByUserId(deps),
   findChildren: findTaskChildren(deps),
   create: createTask(deps),
   update: updateTask(deps),

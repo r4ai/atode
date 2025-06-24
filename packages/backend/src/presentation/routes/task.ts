@@ -10,6 +10,7 @@ import {
   deleteTask,
   getTaskById,
   getTasksByUser,
+  getTasksCountByUser,
   updateTask,
 } from "@/domain/use-cases/task"
 import type { Dependencies } from "@/presentation/dependencies"
@@ -93,14 +94,24 @@ export const createTaskRoutes = (deps: Dependencies) => {
             limit: filters?.limit ?? 50,
           }
 
-          const tasks = await getTasksByUser(deps, user.id, taskFilters)
+          const [tasks, totalCount] = await Promise.all([
+            getTasksByUser(deps, user.id, taskFilters),
+            getTasksCountByUser(deps, user.id, {
+              projectId: filters?.projectId,
+              status: filters?.status,
+              search: filters?.search,
+            }),
+          ])
+
+          const limit = filters?.limit ?? 50
+          const totalPages = Math.ceil(totalCount / limit)
 
           return c.json({
             data: tasks,
-            total: tasks.length, // TODO: Implement proper count
+            total: totalCount,
             page: filters?.page ?? 1,
-            limit: filters?.limit ?? 50,
-            totalPages: Math.ceil(tasks.length / (filters?.limit ?? 50)),
+            limit,
+            totalPages,
             success: true,
           } as const)
         } catch (error) {
@@ -238,9 +249,36 @@ export const createTaskRoutes = (deps: Dependencies) => {
         const { id } = c.req.valid("param")
 
         try {
+          const session = c.get("authUser")
+          if (!session?.user?.email) {
+            return c.json(
+              {
+                success: false,
+                error: "Unauthorized",
+                message: "User not authenticated",
+              } as const,
+              401,
+            )
+          }
+
+          // Get user from database to get the ID
+          const user = await deps.repository.user.findByEmail(
+            session.user.email,
+          )
+          if (!user || user.deletedAt) {
+            return c.json(
+              {
+                success: false,
+                error: "User not found",
+                message: "User not found in database",
+              } as const,
+              404,
+            )
+          }
+
           const task = await getTaskById(deps, id)
 
-          if (!task) {
+          if (!task || task.userId !== user.id) {
             return c.json(
               {
                 success: false,
@@ -297,22 +335,36 @@ export const createTaskRoutes = (deps: Dependencies) => {
       zValidator("param", z.object({ id: IdParamSchema })),
       zValidator("json", UpdateTaskSchema),
       async (c) => {
-        const { id } = c.req.valid("param")
+        // Check authentication first
+        const session = c.get("authUser")
+        if (!session?.user?.email) {
+          return c.json(
+            {
+              success: false,
+              error: "Unauthorized",
+              message: "User not authenticated",
+            } as const,
+            401,
+          )
+        }
+
+        const { id: idParam } = c.req.valid("param")
         const data = c.req.valid("json")
 
-        try {
-          const session = c.get("authUser")
-          if (!session?.user?.email) {
-            return c.json(
-              {
-                success: false,
-                error: "Unauthorized",
-                message: "User not authenticated",
-              } as const,
-              401,
-            )
-          }
+        // Convert to number and validate
+        const id = Number(idParam)
+        if (Number.isNaN(id) || id <= 0) {
+          return c.json(
+            {
+              success: false,
+              error: "Task not found",
+              message: `Task with ID ${idParam} not found`,
+            } as const,
+            404,
+          )
+        }
 
+        try {
           // Get user from database to get the ID
           const user = await deps.repository.user.findByEmail(
             session.user.email,
@@ -338,7 +390,13 @@ export const createTaskRoutes = (deps: Dependencies) => {
 
           const task = await updateTask(deps, id, updateData, user.id)
 
-          if (!task) {
+          return c.json({
+            data: task,
+            success: true,
+            message: "Task updated successfully",
+          } as const)
+        } catch (error) {
+          if (error instanceof Error && error.message === "Task not found") {
             return c.json(
               {
                 success: false,
@@ -349,12 +407,6 @@ export const createTaskRoutes = (deps: Dependencies) => {
             )
           }
 
-          return c.json({
-            data: task,
-            success: true,
-            message: "Task updated successfully",
-          } as const)
-        } catch (error) {
           return c.json(
             {
               success: false,
@@ -397,19 +449,20 @@ export const createTaskRoutes = (deps: Dependencies) => {
       async (c) => {
         const { id } = c.req.valid("param")
 
-        try {
-          const session = c.get("authUser")
-          if (!session?.user?.email) {
-            return c.json(
-              {
-                success: false,
-                error: "Unauthorized",
-                message: "User not authenticated",
-              } as const,
-              401,
-            )
-          }
+        // Check authentication first
+        const session = c.get("authUser")
+        if (!session?.user?.email) {
+          return c.json(
+            {
+              success: false,
+              error: "Unauthorized",
+              message: "User not authenticated",
+            } as const,
+            401,
+          )
+        }
 
+        try {
           // Get user from database to get the ID
           const user = await deps.repository.user.findByEmail(
             session.user.email,
@@ -427,7 +480,13 @@ export const createTaskRoutes = (deps: Dependencies) => {
 
           const task = await completeTask(deps, id, user.id)
 
-          if (!task) {
+          return c.json({
+            data: task,
+            success: true,
+            message: "Task completed successfully",
+          } as const)
+        } catch (error) {
+          if (error instanceof Error && error.message === "Task not found") {
             return c.json(
               {
                 success: false,
@@ -438,12 +497,6 @@ export const createTaskRoutes = (deps: Dependencies) => {
             )
           }
 
-          return c.json({
-            data: task,
-            success: true,
-            message: "Task completed successfully",
-          } as const)
-        } catch (error) {
           return c.json(
             {
               success: false,
@@ -492,19 +545,20 @@ export const createTaskRoutes = (deps: Dependencies) => {
       async (c) => {
         const { id } = c.req.valid("param")
 
-        try {
-          const session = c.get("authUser")
-          if (!session?.user?.email) {
-            return c.json(
-              {
-                success: false,
-                error: "Unauthorized",
-                message: "User not authenticated",
-              } as const,
-              401,
-            )
-          }
+        // Check authentication first
+        const session = c.get("authUser")
+        if (!session?.user?.email) {
+          return c.json(
+            {
+              success: false,
+              error: "Unauthorized",
+              message: "User not authenticated",
+            } as const,
+            401,
+          )
+        }
 
+        try {
           // Get user from database to get the ID
           const user = await deps.repository.user.findByEmail(
             session.user.email,
@@ -528,6 +582,17 @@ export const createTaskRoutes = (deps: Dependencies) => {
             message: "Task deleted successfully",
           } as const)
         } catch (error) {
+          if (error instanceof Error && error.message === "Task not found") {
+            return c.json(
+              {
+                success: false,
+                error: "Failed to delete task",
+                message: `Task with ID ${id} not found`,
+              } as const,
+              500,
+            )
+          }
+
           return c.json(
             {
               success: false,

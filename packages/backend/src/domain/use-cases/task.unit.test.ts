@@ -298,7 +298,7 @@ describe("Task Use Cases", () => {
 
       await expect(
         updateTask(deps, taskId, updateData, userId),
-      ).rejects.toThrow("User does not have access to this task")
+      ).rejects.toThrow("Task not found")
       expect(mockTaskRepository.findById).toHaveBeenCalledWith(taskId)
       expect(mockTaskRepository.update).not.toHaveBeenCalled()
     })
@@ -372,7 +372,7 @@ describe("Task Use Cases", () => {
       vi.mocked(mockTaskRepository.findById).mockResolvedValue(existingTask)
 
       await expect(completeTask(deps, taskId, userId)).rejects.toThrow(
-        "User does not have access to this task",
+        "Task not found",
       )
       expect(mockTaskRepository.findById).toHaveBeenCalledWith(taskId)
       expect(mockTaskRepository.markCompleted).not.toHaveBeenCalled()
@@ -456,7 +456,7 @@ describe("Task Use Cases", () => {
       vi.mocked(mockTaskRepository.findById).mockResolvedValue(existingTask)
 
       await expect(deleteTask(deps, taskId, userId)).rejects.toThrow(
-        "User does not have access to this task",
+        "Task not found",
       )
       expect(mockTaskRepository.findById).toHaveBeenCalledWith(taskId)
       expect(mockTaskRepository.delete).not.toHaveBeenCalled()
