@@ -9,12 +9,48 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TodayRouteImport } from './routes/today'
+import { Route as SettingsRouteImport } from './routes/settings'
+import { Route as InboxRouteImport } from './routes/inbox'
+import { Route as HomeRouteImport } from './routes/home'
+import { Route as FavoritesRouteImport } from './routes/favorites'
 import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as CompletedRouteImport } from './routes/completed'
 import { Route as IndexRouteImport } from './routes/index'
 
+const TodayRoute = TodayRouteImport.update({
+  id: '/today',
+  path: '/today',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SettingsRoute = SettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const InboxRoute = InboxRouteImport.update({
+  id: '/inbox',
+  path: '/inbox',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HomeRoute = HomeRouteImport.update({
+  id: '/home',
+  path: '/home',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FavoritesRoute = FavoritesRouteImport.update({
+  id: '/favorites',
+  path: '/favorites',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DashboardRoute = DashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CompletedRoute = CompletedRouteImport.update({
+  id: '/completed',
+  path: '/completed',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -25,37 +61,128 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/completed': typeof CompletedRoute
   '/dashboard': typeof DashboardRoute
+  '/favorites': typeof FavoritesRoute
+  '/home': typeof HomeRoute
+  '/inbox': typeof InboxRoute
+  '/settings': typeof SettingsRoute
+  '/today': typeof TodayRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/completed': typeof CompletedRoute
   '/dashboard': typeof DashboardRoute
+  '/favorites': typeof FavoritesRoute
+  '/home': typeof HomeRoute
+  '/inbox': typeof InboxRoute
+  '/settings': typeof SettingsRoute
+  '/today': typeof TodayRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/completed': typeof CompletedRoute
   '/dashboard': typeof DashboardRoute
+  '/favorites': typeof FavoritesRoute
+  '/home': typeof HomeRoute
+  '/inbox': typeof InboxRoute
+  '/settings': typeof SettingsRoute
+  '/today': typeof TodayRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/dashboard'
+  fullPaths:
+    | '/'
+    | '/completed'
+    | '/dashboard'
+    | '/favorites'
+    | '/home'
+    | '/inbox'
+    | '/settings'
+    | '/today'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/dashboard'
-  id: '__root__' | '/' | '/dashboard'
+  to:
+    | '/'
+    | '/completed'
+    | '/dashboard'
+    | '/favorites'
+    | '/home'
+    | '/inbox'
+    | '/settings'
+    | '/today'
+  id:
+    | '__root__'
+    | '/'
+    | '/completed'
+    | '/dashboard'
+    | '/favorites'
+    | '/home'
+    | '/inbox'
+    | '/settings'
+    | '/today'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  CompletedRoute: typeof CompletedRoute
   DashboardRoute: typeof DashboardRoute
+  FavoritesRoute: typeof FavoritesRoute
+  HomeRoute: typeof HomeRoute
+  InboxRoute: typeof InboxRoute
+  SettingsRoute: typeof SettingsRoute
+  TodayRoute: typeof TodayRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/today': {
+      id: '/today'
+      path: '/today'
+      fullPath: '/today'
+      preLoaderRoute: typeof TodayRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/inbox': {
+      id: '/inbox'
+      path: '/inbox'
+      fullPath: '/inbox'
+      preLoaderRoute: typeof InboxRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/home': {
+      id: '/home'
+      path: '/home'
+      fullPath: '/home'
+      preLoaderRoute: typeof HomeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/favorites': {
+      id: '/favorites'
+      path: '/favorites'
+      fullPath: '/favorites'
+      preLoaderRoute: typeof FavoritesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/dashboard': {
       id: '/dashboard'
       path: '/dashboard'
       fullPath: '/dashboard'
       preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/completed': {
+      id: '/completed'
+      path: '/completed'
+      fullPath: '/completed'
+      preLoaderRoute: typeof CompletedRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -70,7 +197,13 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  CompletedRoute: CompletedRoute,
   DashboardRoute: DashboardRoute,
+  FavoritesRoute: FavoritesRoute,
+  HomeRoute: HomeRoute,
+  InboxRoute: InboxRoute,
+  SettingsRoute: SettingsRoute,
+  TodayRoute: TodayRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
