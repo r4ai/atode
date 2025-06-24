@@ -7,18 +7,12 @@ type UserDependencies = {
   }
 }
 
-export const getUserById = async (
+export const getUser = async (
   deps: UserDependencies,
-  id: UserId,
+  options: { id: UserId } | { email: string },
 ): Promise<User | null> => {
-  return await deps.repository.user.findById(id)
-}
-
-export const getUserByEmail = async (
-  deps: UserDependencies,
-  email: string,
-): Promise<User | null> => {
-  return await deps.repository.user.findByEmail(email)
+  const users = await deps.repository.user.find(options)
+  return users[0] ?? null
 }
 
 export const createUser = async (
@@ -26,7 +20,7 @@ export const createUser = async (
   data: CreateUserData,
 ): Promise<User> => {
   // Business logic: Check if user already exists
-  const existingUser = await deps.repository.user.findByEmail(data.email)
+  const existingUser = await getUser(deps, { email: data.email })
   if (existingUser) {
     throw new Error("User with this email already exists")
   }
@@ -39,7 +33,7 @@ export const updateUser = async (
   id: UserId,
   data: Partial<CreateUserData>,
 ): Promise<User> => {
-  const user = await deps.repository.user.findById(id)
+  const user = await getUser(deps, { id })
   if (!user) {
     throw new Error("User not found")
   }
@@ -56,7 +50,7 @@ export const deleteUser = async (
   deps: UserDependencies,
   id: UserId,
 ): Promise<void> => {
-  const user = await deps.repository.user.findById(id)
+  const user = await getUser(deps, { id })
   if (!user) {
     throw new Error("User not found")
   }

@@ -19,24 +19,29 @@ type Dependencies = {
   db: DB
 }
 
-const findUserById =
+const findUsers =
   ({ db }: Dependencies) =>
-  async (id: UserId): Promise<User | null> => {
-    const result = await db.select().from(users).where(eq(users.id, id))
-    return result[0] ? toDomainUser(result[0]) : null
-  }
-
-const findUserByEmail =
-  ({ db }: Dependencies) =>
-  async (email: string): Promise<User | null> => {
-    const result = await db.select().from(users).where(eq(users.email, email))
-    return result[0] ? toDomainUser(result[0]) : null
+  async (options: { id: UserId } | { email: string }): Promise<User[]> => {
+    if ("id" in options) {
+      const result = await db
+        .select()
+        .from(users)
+        .where(eq(users.id, options.id))
+      return result.map(toDomainUser)
+    } else {
+      const result = await db
+        .select()
+        .from(users)
+        .where(eq(users.email, options.email))
+      return result.map(toDomainUser)
+    }
   }
 
 const createUser =
   ({ db }: Dependencies) =>
   async (data: CreateUserData): Promise<User> => {
-    const existingUser = await findUserByEmail({ db })(data.email)
+    const existingUsers = await findUsers({ db })({ email: data.email })
+    const existingUser = existingUsers[0] ?? null
 
     // If user exists but is deleted, we can restore them
     if (existingUser?.deletedAt) {
@@ -100,8 +105,7 @@ const deleteUser =
 
 // Create a repository object that implements UserRepository interface
 export const createUserRepository = (deps: Dependencies): UserRepository => ({
-  findById: findUserById(deps),
-  findByEmail: findUserByEmail(deps),
+  find: findUsers(deps),
   create: createUser(deps),
   update: updateUser(deps),
   delete: deleteUser(deps),

@@ -10,6 +10,7 @@ import { describeRoute, openAPISpecs } from "hono-openapi"
 import { resolver } from "hono-openapi/zod"
 import { z } from "zod"
 import { db } from "@/infrastructure/database/connection"
+import { createProjectRepository } from "@/infrastructure/repositories/project"
 import { createTaskRepository } from "@/infrastructure/repositories/task"
 import { createUserRepository } from "@/infrastructure/repositories/user"
 import type { Dependencies } from "@/presentation/dependencies"
@@ -20,27 +21,7 @@ const dependencies = {
   repository: {
     task: createTaskRepository({ db }),
     user: createUserRepository({ db }),
-    // TODO: Implement project repository
-    project: {
-      create: async () => {
-        throw new Error("Project repository not implemented")
-      },
-      delete: async () => {
-        throw new Error("Project repository not implemented")
-      },
-      findById: async () => {
-        throw new Error("Project repository not implemented")
-      },
-      findByUserId: async () => {
-        throw new Error("Project repository not implemented")
-      },
-      update: async () => {
-        throw new Error("Project repository not implemented")
-      },
-      findChildren: async () => {
-        throw new Error("Project repository not implemented")
-      },
-    },
+    project: createProjectRepository({ db }),
   },
 } as const satisfies Dependencies
 
@@ -88,7 +69,8 @@ app.use(
             const name = session.user.name ?? session.user.email.split("@")[0]
 
             // Check if user exists in database
-            let user = await dependencies.repository.user.findByEmail(email)
+            const users = await dependencies.repository.user.find({ email })
+            let user = users[0] ?? null
 
             if (!user) {
               // Create new user on first login
@@ -107,10 +89,16 @@ app.use(
             } else {
               // Update display name if changed
               if (name && name !== user.displayName) {
-                user = await dependencies.repository.user.update(user.id, {
-                  displayName: name,
-                })
-                console.log("Updated user:", user)
+                const updatedUser = await dependencies.repository.user.update(
+                  user.id,
+                  {
+                    displayName: name,
+                  },
+                )
+                if (updatedUser) {
+                  user = updatedUser
+                  console.log("Updated user:", user)
+                }
               }
             }
           } catch (error) {

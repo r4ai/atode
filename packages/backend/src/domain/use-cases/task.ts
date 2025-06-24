@@ -69,7 +69,8 @@ export const createTask = async (
   data: CreateTaskData,
 ): Promise<Task> => {
   // Business logic: Verify project exists and user has access
-  const project = await deps.repository.project.findById(data.projectId)
+  const projects = await deps.repository.project.find({ id: data.projectId })
+  const project = projects[0] ?? null
   if (!project) {
     throw new Error("Project not found")
   }

@@ -29,20 +29,38 @@ type Dependencies = {
   db: DB
 }
 
-const findProjectById =
+const findProjects =
   ({ db }: Dependencies) =>
-  async (id: ProjectId): Promise<Project | null> => {
-    const result = await db.select().from(projects).where(eq(projects.id, id))
-    return result[0] ? toDomainProject(result[0]) : null
-  }
+  async (options: {
+    id?: ProjectId
+    userId?: UserId
+    parentProjectId?: ProjectId
+  }): Promise<Project[]> => {
+    if (options.id) {
+      const result = await db
+        .select()
+        .from(projects)
+        .where(eq(projects.id, options.id))
+      return result.map(toDomainProject)
+    }
 
-const findProjectsByUserId =
-  ({ db }: Dependencies) =>
-  async (userId: UserId): Promise<Project[]> => {
-    const result = await db
-      .select()
-      .from(projects)
-      .where(eq(projects.userId, userId))
+    if (options.userId) {
+      const result = await db
+        .select()
+        .from(projects)
+        .where(eq(projects.userId, options.userId))
+      return result.map(toDomainProject)
+    }
+
+    if (options.parentProjectId) {
+      const result = await db
+        .select()
+        .from(projects)
+        .where(eq(projects.parentProjectId, options.parentProjectId))
+      return result.map(toDomainProject)
+    }
+
+    const result = await db.select().from(projects)
     return result.map(toDomainProject)
   }
 
@@ -110,8 +128,7 @@ const deleteProject =
 export const createProjectRepository = (
   deps: Dependencies,
 ): ProjectRepository => ({
-  findById: findProjectById(deps),
-  findByUserId: findProjectsByUserId(deps),
+  find: findProjects(deps),
   findChildren: findProjectChildren(deps),
   create: createProject(deps),
   update: updateProject(deps),

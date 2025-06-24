@@ -5,13 +5,7 @@ import {
   createRandomUserData,
 } from "@/domain/entities/user.mock"
 import { createMockUserRepository } from "@/domain/repositories/user.mock"
-import {
-  createUser,
-  deleteUser,
-  getUserByEmail,
-  getUserById,
-  updateUser,
-} from "./user"
+import { createUser, deleteUser, getUser, updateUser } from "./user"
 
 describe("User Use Cases", () => {
   let mockUserRepository = createMockUserRepository()
@@ -24,47 +18,47 @@ describe("User Use Cases", () => {
     faker.seed(123) // Ensure consistent test data
   })
 
-  describe("getUserById", () => {
+  describe("getUser by id", () => {
     it("should return user when found", async () => {
       const mockUser = createRandomUser({ id: 1, email: "john@example.com" })
-      vi.mocked(mockUserRepository.findById).mockResolvedValue(mockUser)
+      vi.mocked(mockUserRepository.find).mockResolvedValue([mockUser])
 
-      const result = await getUserById(deps, 1)
+      const result = await getUser(deps, { id: 1 })
 
       expect(result).toEqual(mockUser)
-      expect(mockUserRepository.findById).toHaveBeenCalledWith(1)
+      expect(mockUserRepository.find).toHaveBeenCalledWith({ id: 1 })
     })
 
     it("should return null when user not found", async () => {
-      vi.mocked(mockUserRepository.findById).mockResolvedValue(null)
+      vi.mocked(mockUserRepository.find).mockResolvedValue([])
 
-      const result = await getUserById(deps, 999)
+      const result = await getUser(deps, { id: 999 })
 
       expect(result).toBeNull()
-      expect(mockUserRepository.findById).toHaveBeenCalledWith(999)
+      expect(mockUserRepository.find).toHaveBeenCalledWith({ id: 999 })
     })
   })
 
-  describe("getUserByEmail", () => {
+  describe("getUser by email", () => {
     it("should return user when found", async () => {
       const email = faker.internet.email()
       const mockUser = createRandomUser({ email })
-      vi.mocked(mockUserRepository.findByEmail).mockResolvedValue(mockUser)
+      vi.mocked(mockUserRepository.find).mockResolvedValue([mockUser])
 
-      const result = await getUserByEmail(deps, email)
+      const result = await getUser(deps, { email })
 
       expect(result).toEqual(mockUser)
-      expect(mockUserRepository.findByEmail).toHaveBeenCalledWith(email)
+      expect(mockUserRepository.find).toHaveBeenCalledWith({ email })
     })
 
     it("should return null when user not found", async () => {
       const email = faker.internet.email()
-      vi.mocked(mockUserRepository.findByEmail).mockResolvedValue(null)
+      vi.mocked(mockUserRepository.find).mockResolvedValue([])
 
-      const result = await getUserByEmail(deps, email)
+      const result = await getUser(deps, { email })
 
       expect(result).toBeNull()
-      expect(mockUserRepository.findByEmail).toHaveBeenCalledWith(email)
+      expect(mockUserRepository.find).toHaveBeenCalledWith({ email })
     })
   })
 
@@ -76,15 +70,15 @@ describe("User Use Cases", () => {
       })
       const mockUser = createRandomUser(userData)
 
-      vi.mocked(mockUserRepository.findByEmail).mockResolvedValue(null)
+      vi.mocked(mockUserRepository.find).mockResolvedValue([])
       vi.mocked(mockUserRepository.create).mockResolvedValue(mockUser)
 
       const result = await createUser(deps, userData)
 
       expect(result).toEqual(mockUser)
-      expect(mockUserRepository.findByEmail).toHaveBeenCalledWith(
-        userData.email,
-      )
+      expect(mockUserRepository.find).toHaveBeenCalledWith({
+        email: userData.email,
+      })
       expect(mockUserRepository.create).toHaveBeenCalledWith(userData)
     })
 
@@ -92,14 +86,14 @@ describe("User Use Cases", () => {
       const userData = createRandomUserData()
       const existingUser = createRandomUser({ email: userData.email })
 
-      vi.mocked(mockUserRepository.findByEmail).mockResolvedValue(existingUser)
+      vi.mocked(mockUserRepository.find).mockResolvedValue([existingUser])
 
       await expect(createUser(deps, userData)).rejects.toThrow(
         "User with this email already exists",
       )
-      expect(mockUserRepository.findByEmail).toHaveBeenCalledWith(
-        userData.email,
-      )
+      expect(mockUserRepository.find).toHaveBeenCalledWith({
+        email: userData.email,
+      })
       expect(mockUserRepository.create).not.toHaveBeenCalled()
     })
   })
@@ -111,13 +105,13 @@ describe("User Use Cases", () => {
       const existingUser = createRandomUser({ id: userId })
       const updatedUser = createRandomUser({ ...existingUser, ...updateData })
 
-      vi.mocked(mockUserRepository.findById).mockResolvedValue(existingUser)
+      vi.mocked(mockUserRepository.find).mockResolvedValue([existingUser])
       vi.mocked(mockUserRepository.update).mockResolvedValue(updatedUser)
 
       const result = await updateUser(deps, userId, updateData)
 
       expect(result).toEqual(updatedUser)
-      expect(mockUserRepository.findById).toHaveBeenCalledWith(userId)
+      expect(mockUserRepository.find).toHaveBeenCalledWith({ id: userId })
       expect(mockUserRepository.update).toHaveBeenCalledWith(userId, updateData)
     })
 
@@ -125,12 +119,12 @@ describe("User Use Cases", () => {
       const userId = faker.number.int({ min: 1, max: 100 })
       const updateData = { displayName: faker.person.fullName() }
 
-      vi.mocked(mockUserRepository.findById).mockResolvedValue(null)
+      vi.mocked(mockUserRepository.find).mockResolvedValue([])
 
       await expect(updateUser(deps, userId, updateData)).rejects.toThrow(
         "User not found",
       )
-      expect(mockUserRepository.findById).toHaveBeenCalledWith(userId)
+      expect(mockUserRepository.find).toHaveBeenCalledWith({ id: userId })
       expect(mockUserRepository.update).not.toHaveBeenCalled()
     })
 
@@ -139,13 +133,13 @@ describe("User Use Cases", () => {
       const updateData = { displayName: faker.person.fullName() }
       const existingUser = createRandomUser({ id: userId })
 
-      vi.mocked(mockUserRepository.findById).mockResolvedValue(existingUser)
+      vi.mocked(mockUserRepository.find).mockResolvedValue([existingUser])
       vi.mocked(mockUserRepository.update).mockResolvedValue(null)
 
       await expect(updateUser(deps, userId, updateData)).rejects.toThrow(
         "Failed to update user",
       )
-      expect(mockUserRepository.findById).toHaveBeenCalledWith(userId)
+      expect(mockUserRepository.find).toHaveBeenCalledWith({ id: userId })
       expect(mockUserRepository.update).toHaveBeenCalledWith(userId, updateData)
     })
   })
@@ -155,22 +149,22 @@ describe("User Use Cases", () => {
       const userId = faker.number.int({ min: 1, max: 100 })
       const existingUser = createRandomUser({ id: userId })
 
-      vi.mocked(mockUserRepository.findById).mockResolvedValue(existingUser)
+      vi.mocked(mockUserRepository.find).mockResolvedValue([existingUser])
       vi.mocked(mockUserRepository.delete).mockResolvedValue(true)
 
       await deleteUser(deps, userId)
 
-      expect(mockUserRepository.findById).toHaveBeenCalledWith(userId)
+      expect(mockUserRepository.find).toHaveBeenCalledWith({ id: userId })
       expect(mockUserRepository.delete).toHaveBeenCalledWith(userId)
     })
 
     it("should throw error when user not found", async () => {
       const userId = faker.number.int({ min: 1, max: 100 })
 
-      vi.mocked(mockUserRepository.findById).mockResolvedValue(null)
+      vi.mocked(mockUserRepository.find).mockResolvedValue([])
 
       await expect(deleteUser(deps, userId)).rejects.toThrow("User not found")
-      expect(mockUserRepository.findById).toHaveBeenCalledWith(userId)
+      expect(mockUserRepository.find).toHaveBeenCalledWith({ id: userId })
       expect(mockUserRepository.delete).not.toHaveBeenCalled()
     })
 
@@ -178,13 +172,13 @@ describe("User Use Cases", () => {
       const userId = faker.number.int({ min: 1, max: 100 })
       const existingUser = createRandomUser({ id: userId })
 
-      vi.mocked(mockUserRepository.findById).mockResolvedValue(existingUser)
+      vi.mocked(mockUserRepository.find).mockResolvedValue([existingUser])
       vi.mocked(mockUserRepository.delete).mockResolvedValue(false)
 
       await expect(deleteUser(deps, userId)).rejects.toThrow(
         "Failed to delete user",
       )
-      expect(mockUserRepository.findById).toHaveBeenCalledWith(userId)
+      expect(mockUserRepository.find).toHaveBeenCalledWith({ id: userId })
       expect(mockUserRepository.delete).toHaveBeenCalledWith(userId)
     })
   })

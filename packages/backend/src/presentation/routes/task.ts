@@ -72,9 +72,10 @@ export const createTaskRoutes = (deps: Dependencies) => {
           }
 
           // Get user from database to get the ID
-          const user = await deps.repository.user.findByEmail(
-            session.user.email,
-          )
+          const users = await deps.repository.user.find({
+            email: session.user.email,
+          })
+          const user = users[0] ?? null
           if (!user || user.deletedAt) {
             return c.json(
               {
@@ -174,9 +175,10 @@ export const createTaskRoutes = (deps: Dependencies) => {
           }
 
           // Get user from database to get the ID
-          const user = await deps.repository.user.findByEmail(
-            session.user.email,
-          )
+          const users = await deps.repository.user.find({
+            email: session.user.email,
+          })
+          const user = users[0] ?? null
           if (!user || user.deletedAt) {
             return c.json(
               {
@@ -265,9 +267,10 @@ export const createTaskRoutes = (deps: Dependencies) => {
           }
 
           // Get user from database to get the ID
-          const user = await deps.repository.user.findByEmail(
-            session.user.email,
-          )
+          const users = await deps.repository.user.find({
+            email: session.user.email,
+          })
+          const user = users[0] ?? null
           if (!user || user.deletedAt) {
             return c.json(
               {
@@ -369,9 +372,10 @@ export const createTaskRoutes = (deps: Dependencies) => {
 
         try {
           // Get user from database to get the ID
-          const user = await deps.repository.user.findByEmail(
-            session.user.email,
-          )
+          const users = await deps.repository.user.find({
+            email: session.user.email,
+          })
+          const user = users[0] ?? null
           if (!user || user.deletedAt) {
             return c.json(
               {
@@ -467,9 +471,10 @@ export const createTaskRoutes = (deps: Dependencies) => {
 
         try {
           // Get user from database to get the ID
-          const user = await deps.repository.user.findByEmail(
-            session.user.email,
-          )
+          const users = await deps.repository.user.find({
+            email: session.user.email,
+          })
+          const user = users[0] ?? null
           if (!user || user.deletedAt) {
             return c.json(
               {
@@ -563,9 +568,10 @@ export const createTaskRoutes = (deps: Dependencies) => {
 
         try {
           // Get user from database to get the ID
-          const user = await deps.repository.user.findByEmail(
-            session.user.email,
-          )
+          const users = await deps.repository.user.find({
+            email: session.user.email,
+          })
+          const user = users[0] ?? null
           if (!user || user.deletedAt) {
             return c.json(
               {

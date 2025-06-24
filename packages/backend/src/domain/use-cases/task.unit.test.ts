@@ -45,7 +45,10 @@ describe("Task Use Cases", () => {
       const result = await getTask(deps, taskId)
 
       expect(result).toEqual(mockTask)
-      expect(mockTaskRepository.find).toHaveBeenCalledWith({ id: taskId, filters: undefined })
+      expect(mockTaskRepository.find).toHaveBeenCalledWith({
+        id: taskId,
+        filters: undefined,
+      })
     })
 
     it("should return null when task not found by id", async () => {
@@ -55,12 +58,14 @@ describe("Task Use Cases", () => {
       const result = await getTask(deps, taskId)
 
       expect(result).toBeNull()
-      expect(mockTaskRepository.find).toHaveBeenCalledWith({ id: taskId, filters: undefined })
+      expect(mockTaskRepository.find).toHaveBeenCalledWith({
+        id: taskId,
+        filters: undefined,
+      })
     })
   })
 
   describe("getTasks", () => {
-
     it("should return tasks by project", async () => {
       const projectId = faker.number.int({ min: 1, max: 100 })
       const mockTasks = [
@@ -75,7 +80,10 @@ describe("Task Use Cases", () => {
       const result = await getTasks(deps, { projectId })
 
       expect(result).toEqual(mockTasks)
-      expect(mockTaskRepository.find).toHaveBeenCalledWith({ projectId, filters: undefined })
+      expect(mockTaskRepository.find).toHaveBeenCalledWith({
+        projectId,
+        filters: undefined,
+      })
     })
 
     it("should return empty array when no tasks found by project", async () => {
@@ -85,7 +93,10 @@ describe("Task Use Cases", () => {
       const result = await getTasks(deps, { projectId })
 
       expect(result).toEqual([])
-      expect(mockTaskRepository.find).toHaveBeenCalledWith({ projectId, filters: undefined })
+      expect(mockTaskRepository.find).toHaveBeenCalledWith({
+        projectId,
+        filters: undefined,
+      })
     })
 
     it("should return tasks by user without filters", async () => {
@@ -132,26 +143,26 @@ describe("Task Use Cases", () => {
       const mockProject = createRandomProject({ id: projectId, userId })
       const mockTask = createRandomTask(taskData)
 
-      vi.mocked(mockProjectRepository.findById).mockResolvedValue(mockProject)
+      vi.mocked(mockProjectRepository.find).mockResolvedValue([mockProject])
       vi.mocked(mockTaskRepository.create).mockResolvedValue(mockTask)
 
       const result = await createTask(deps, taskData)
 
       expect(result).toEqual(mockTask)
-      expect(mockProjectRepository.findById).toHaveBeenCalledWith(projectId)
+      expect(mockProjectRepository.find).toHaveBeenCalledWith({ id: projectId })
       expect(mockTaskRepository.create).toHaveBeenCalledWith(taskData)
     })
 
     it("should throw error when project not found", async () => {
       const taskData = createRandomTaskData()
-      vi.mocked(mockProjectRepository.findById).mockResolvedValue(null)
+      vi.mocked(mockProjectRepository.find).mockResolvedValue([])
 
       await expect(createTask(deps, taskData)).rejects.toThrow(
         "Project not found",
       )
-      expect(mockProjectRepository.findById).toHaveBeenCalledWith(
-        taskData.projectId,
-      )
+      expect(mockProjectRepository.find).toHaveBeenCalledWith({
+        id: taskData.projectId,
+      })
       expect(mockTaskRepository.create).not.toHaveBeenCalled()
     })
 
@@ -164,14 +175,14 @@ describe("Task Use Cases", () => {
         userId: projectOwnerId,
       })
 
-      vi.mocked(mockProjectRepository.findById).mockResolvedValue(mockProject)
+      vi.mocked(mockProjectRepository.find).mockResolvedValue([mockProject])
 
       await expect(createTask(deps, taskData)).rejects.toThrow(
         "User does not have access to this project",
       )
-      expect(mockProjectRepository.findById).toHaveBeenCalledWith(
-        taskData.projectId,
-      )
+      expect(mockProjectRepository.find).toHaveBeenCalledWith({
+        id: taskData.projectId,
+      })
       expect(mockTaskRepository.create).not.toHaveBeenCalled()
     })
 
@@ -188,14 +199,14 @@ describe("Task Use Cases", () => {
       const mockParentTask = createRandomTask({ id: parentTaskId, projectId })
       const mockTask = createRandomTask(taskData)
 
-      vi.mocked(mockProjectRepository.findById).mockResolvedValue(mockProject)
+      vi.mocked(mockProjectRepository.find).mockResolvedValue([mockProject])
       vi.mocked(mockTaskRepository.find).mockResolvedValue([mockParentTask])
       vi.mocked(mockTaskRepository.create).mockResolvedValue(mockTask)
 
       const result = await createTask(deps, taskData)
 
       expect(result).toEqual(mockTask)
-      expect(mockProjectRepository.findById).toHaveBeenCalledWith(projectId)
+      expect(mockProjectRepository.find).toHaveBeenCalledWith({ id: projectId })
       expect(mockTaskRepository.find).toHaveBeenCalledWith({ id: parentTaskId })
       expect(mockTaskRepository.create).toHaveBeenCalledWith(taskData)
     })
@@ -211,13 +222,13 @@ describe("Task Use Cases", () => {
       })
       const mockProject = createRandomProject({ id: projectId, userId })
 
-      vi.mocked(mockProjectRepository.findById).mockResolvedValue(mockProject)
+      vi.mocked(mockProjectRepository.find).mockResolvedValue([mockProject])
       vi.mocked(mockTaskRepository.find).mockResolvedValue([])
 
       await expect(createTask(deps, taskData)).rejects.toThrow(
         "Parent task not found",
       )
-      expect(mockProjectRepository.findById).toHaveBeenCalledWith(projectId)
+      expect(mockProjectRepository.find).toHaveBeenCalledWith({ id: projectId })
       expect(mockTaskRepository.find).toHaveBeenCalledWith({ id: parentTaskId })
       expect(mockTaskRepository.create).not.toHaveBeenCalled()
     })
@@ -238,13 +249,13 @@ describe("Task Use Cases", () => {
         projectId: parentProjectId,
       })
 
-      vi.mocked(mockProjectRepository.findById).mockResolvedValue(mockProject)
+      vi.mocked(mockProjectRepository.find).mockResolvedValue([mockProject])
       vi.mocked(mockTaskRepository.find).mockResolvedValue([mockParentTask])
 
       await expect(createTask(deps, taskData)).rejects.toThrow(
         "Parent task must belong to the same project",
       )
-      expect(mockProjectRepository.findById).toHaveBeenCalledWith(projectId)
+      expect(mockProjectRepository.find).toHaveBeenCalledWith({ id: projectId })
       expect(mockTaskRepository.find).toHaveBeenCalledWith({ id: parentTaskId })
       expect(mockTaskRepository.create).not.toHaveBeenCalled()
     })
