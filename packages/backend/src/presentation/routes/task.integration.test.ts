@@ -239,6 +239,19 @@ describe("Task Routes Integration Tests", () => {
       expect(data.data).toHaveLength(1)
       expect(data.data[0].userId).toBe(user1.id)
     })
+
+    it("should return 401 for unauthenticated request", async ({ env }) => {
+      const app = new Hono().route("/tasks", createTaskRoutes(env.deps))
+      const client = testClient(app)
+
+      const res = await client.tasks.$get()
+      expect(res.status).toBe(401)
+
+      const data = await res.json()
+      expect(data.success).toBe(false)
+      assert(data.success === false)
+      expect(data.error).toBe("Unauthorized")
+    })
   })
 
   describe("POST /tasks", () => {
@@ -303,6 +316,21 @@ describe("Task Routes Integration Tests", () => {
       expect(data.data.deletedAt).toBeNull()
       expect(data.data.id).toBeDefined()
       expect(data.data.parentTaskId).toBeNull()
+    })
+
+    it("should return 401 for unauthenticated request", async ({ env }) => {
+      const app = new Hono().route("/tasks", createTaskRoutes(env.deps))
+      const client = testClient(app)
+
+      const res = await client.tasks.$post({
+        json: { title: "Test task", projectId: 1 },
+      })
+      expect(res.status).toBe(401)
+
+      const data = await res.json()
+      expect(data.success).toBe(false)
+      assert(data.success === false)
+      expect(data.error).toBe("Unauthorized")
     })
   })
 
@@ -370,6 +398,29 @@ describe("Task Routes Integration Tests", () => {
       expect(data.success).toBe(false)
       assert(data.success === false)
       expect(data.error).toBe("Task not found")
+    })
+
+    it("should return 401 for unauthenticated request", async ({ env }) => {
+      const user = await env.deps.repository.user.create(createRandomUserData())
+      const project = await env.deps.repository.project.create(
+        createRandomProjectData({ userId: user.id }),
+      )
+      const task = await env.deps.repository.task.create(
+        createRandomTaskData({ userId: user.id, projectId: project.id }),
+      )
+
+      const app = new Hono().route("/tasks", createTaskRoutes(env.deps))
+      const client = testClient(app)
+
+      const res = await client.tasks[":id"].$get({
+        param: { id: task.id.toString() },
+      })
+      expect(res.status).toBe(401)
+
+      const data = await res.json()
+      expect(data.success).toBe(false)
+      assert(data.success === false)
+      expect(data.error).toBe("Unauthorized")
     })
   })
 
@@ -452,6 +503,30 @@ describe("Task Routes Integration Tests", () => {
       assert(data.success === false)
       expect(data.error).toBe("Task not found")
     })
+
+    it("should return 401 for unauthenticated request", async ({ env }) => {
+      const user = await env.deps.repository.user.create(createRandomUserData())
+      const project = await env.deps.repository.project.create(
+        createRandomProjectData({ userId: user.id }),
+      )
+      const task = await env.deps.repository.task.create(
+        createRandomTaskData({ userId: user.id, projectId: project.id }),
+      )
+
+      const app = new Hono().route("/tasks", createTaskRoutes(env.deps))
+      const client = testClient(app)
+
+      const res = await client.tasks[":id"].$put({
+        param: { id: task.id.toString() },
+        json: { title: "Updated title" },
+      })
+      expect(res.status).toBe(401)
+
+      const data = await res.json()
+      expect(data.success).toBe(false)
+      assert(data.success === false)
+      expect(data.error).toBe("Unauthorized")
+    })
   })
 
   describe("POST /tasks/:id/complete", () => {
@@ -524,6 +599,21 @@ describe("Task Routes Integration Tests", () => {
       expect(data.success).toBe(false)
       assert(data.success === false)
       expect(data.error).toBe("Task not found")
+    })
+
+    it("should return 401 for unauthenticated request", async ({ env }) => {
+      const app = new Hono().route("/tasks", createTaskRoutes(env.deps))
+      const client = testClient(app)
+
+      const res = await client.tasks[":id"].complete.$post({
+        param: { id: "1" },
+      })
+      expect(res.status).toBe(401)
+
+      const data = await res.json()
+      expect(data.success).toBe(false)
+      assert(data.success === false)
+      expect(data.error).toBe("Unauthorized")
     })
   })
 
@@ -600,87 +690,8 @@ describe("Task Routes Integration Tests", () => {
       assert(data.success === false)
       expect(data.error).toBe("Failed to delete task")
     })
-  })
 
-  describe("Authentication & Authorization", () => {
-    it("should return 401 for unauthenticated GET /tasks request", async ({
-      env,
-    }) => {
-      const app = new Hono().route("/tasks", createTaskRoutes(env.deps))
-      const client = testClient(app)
-
-      const res = await client.tasks.$get()
-      expect(res.status).toBe(401)
-
-      const data = await res.json()
-      expect(data.success).toBe(false)
-      assert(data.success === false)
-      expect(data.error).toBe("Unauthorized")
-    })
-
-    it("should return 401 for unauthenticated POST /tasks request", async ({
-      env,
-    }) => {
-      const app = new Hono().route("/tasks", createTaskRoutes(env.deps))
-      const client = testClient(app)
-
-      const res = await client.tasks.$post({
-        json: { title: "Test task", projectId: 1 },
-      })
-      expect(res.status).toBe(401)
-
-      const data = await res.json()
-      expect(data.success).toBe(false)
-      assert(data.success === false)
-      expect(data.error).toBe("Unauthorized")
-    })
-
-    it("should return 401 for unauthenticated PUT /tasks/:id request", async ({
-      env,
-    }) => {
-      const user = await env.deps.repository.user.create(createRandomUserData())
-      const project = await env.deps.repository.project.create(
-        createRandomProjectData({ userId: user.id }),
-      )
-      const task = await env.deps.repository.task.create(
-        createRandomTaskData({ userId: user.id, projectId: project.id }),
-      )
-
-      const app = new Hono().route("/tasks", createTaskRoutes(env.deps))
-      const client = testClient(app)
-
-      const res = await client.tasks[":id"].$put({
-        param: { id: task.id.toString() },
-        json: { title: "Updated title" },
-      })
-      expect(res.status).toBe(401)
-
-      const data = await res.json()
-      expect(data.success).toBe(false)
-      assert(data.success === false)
-      expect(data.error).toBe("Unauthorized")
-    })
-
-    it("should return 401 for unauthenticated POST /tasks/:id/complete request", async ({
-      env,
-    }) => {
-      const app = new Hono().route("/tasks", createTaskRoutes(env.deps))
-      const client = testClient(app)
-
-      const res = await client.tasks[":id"].complete.$post({
-        param: { id: "1" },
-      })
-      expect(res.status).toBe(401)
-
-      const data = await res.json()
-      expect(data.success).toBe(false)
-      assert(data.success === false)
-      expect(data.error).toBe("Unauthorized")
-    })
-
-    it("should return 401 for unauthenticated DELETE /tasks/:id request", async ({
-      env,
-    }) => {
+    it("should return 401 for unauthenticated request", async ({ env }) => {
       const app = new Hono().route("/tasks", createTaskRoutes(env.deps))
       const client = testClient(app)
 
