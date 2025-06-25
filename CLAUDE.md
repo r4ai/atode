@@ -47,6 +47,31 @@ routes/
 ├── -components/ // 👈🏼 ignored
 ```
 
+#### Development Cycle
+
+Story driven development:
+
+1. Create a minimum story with a minimum test
+2. Implement the minimum component to pass the test (Debug with Playwright MCP)
+3. Refactor and add more features (story first, then implementation)
+
+- Component should be as SMALL as possible:
+  - Big components should be split into smaller ones
+- Components should be EASY TO TEST in ISOLATION
+  - PRESENTER / CONTAINER pattern:
+    - Presenter components: responsible for rendering UI and state management
+    - Container components: responsible for data fetching
+
+    ```
+    task-list/
+    ├── container.tsx          # fetches data, passes it to presenter
+    ├── presenter.tsx          # renders UI based on props
+    ├── presenter.stories.tsx  # story and tests for presenter
+    ├── loading.tsx            # loading state component
+    ├── loading.stories.tsx    # story and tests for loading
+    └── index.ts               # exports all components
+    ```
+
 ## Code Quality
 
 - Always use Bun commands, never npm/npx (use `bun x` instead of `npx`)
