@@ -4,6 +4,7 @@ import {
   ChevronUp,
   Home,
   Inbox,
+  MoreHorizontal,
   Search,
   Settings,
   User2,
@@ -271,10 +272,11 @@ export const Default: Story = {
                         <span>{item.name}</span>
                       </a>
                     </SidebarMenuButton>
-                    <SidebarMenuAction>
+                    <SidebarMenuAction asChild>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button size="icon" variant="ghost">
+                            <MoreHorizontal />
                             <span className="sr-only">More</span>
                           </Button>
                         </DropdownMenuTrigger>

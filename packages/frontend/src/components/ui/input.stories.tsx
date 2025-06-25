@@ -44,7 +44,7 @@ export const Password: Story = {
 
 export const WithValue: Story = {
   args: {
-    value: "Sample value",
+    defaultValue: "Sample value",
     placeholder: "Placeholder",
   },
 }

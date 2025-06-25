@@ -27,7 +27,7 @@ export const Default: Story = {
 
 export const WithValue: Story = {
   args: {
-    value: "This is a sample text in the textarea component.",
+    defaultValue: "This is a sample text in the textarea component.",
     placeholder: "Type your message here.",
   },
 }
