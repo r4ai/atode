@@ -1,5 +1,7 @@
+import { eq } from "drizzle-orm"
 import { describe, expect } from "vitest"
 import type { CreateProjectData, ProjectId } from "@/domain/entities/project"
+import { projects } from "@/infrastructure/database/schema"
 import { createProjectRepository } from "@/infrastructure/repositories/project"
 import { createUserRepository } from "@/infrastructure/repositories/user"
 import { it } from "@/test-helpers/db"
@@ -198,10 +200,17 @@ describe("Project Repository Integration Tests", () => {
     const deleteResult = await projectRepository.delete(project.id)
     expect(deleteResult).toBe(true)
 
-    // Project should still be found but with deletedAt timestamp (soft delete)
+    // Project should not be found after soft delete (excluded by default)
     const foundProjects = await projectRepository.find({ id: project.id })
-    expect(foundProjects).toHaveLength(1)
-    expect(foundProjects[0].deletedAt).toBeInstanceOf(Date)
+    expect(foundProjects).toHaveLength(0)
+
+    // Verify project is soft deleted by checking directly in database
+    const deletedProject = await env.db
+      .select()
+      .from(projects)
+      .where(eq(projects.id, project.id))
+    expect(deletedProject).toHaveLength(1)
+    expect(deletedProject[0].deletedAt).toBeInstanceOf(Date)
   })
 
   it("should return false when deleting non-existent project", async ({

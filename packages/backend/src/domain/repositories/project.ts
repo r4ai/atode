@@ -9,7 +9,7 @@ import type { UserId } from "@/domain/entities/user"
 type FindProjectOptions = {
   id?: ProjectId
   userId?: UserId
-  parentProjectId?: ProjectId
+  parentProjectId?: ProjectId | null
 }
 
 export type ProjectRepository = {

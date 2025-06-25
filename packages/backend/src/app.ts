@@ -18,6 +18,7 @@ import { createTaskRepository } from "@/infrastructure/repositories/task"
 import { createUserRepository } from "@/infrastructure/repositories/user"
 import type { Dependencies } from "@/presentation/dependencies"
 import { createAuthRoutes } from "@/presentation/routes/auth"
+import { createProjectRoutes } from "@/presentation/routes/project"
 import { createTaskRoutes } from "@/presentation/routes/task"
 
 const dependencies = {
@@ -206,6 +207,9 @@ api.route("/auth", createAuthRoutes())
 // Protected API Routes
 api.use("/tasks/*", verifyAuth())
 api.route("/tasks", createTaskRoutes(dependencies))
+
+api.use("/projects/*", verifyAuth())
+api.route("/projects", createProjectRoutes(dependencies))
 
 // OpenAPI specification endpoint
 api.get("/openapi", openAPISpecs(api, openApiSpecsOptions))
