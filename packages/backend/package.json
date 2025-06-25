@@ -1,7 +1,7 @@
 {
   "name": "backend",
   "version": "1.0.0",
-  "description": "TODO app backend with Hono and PostgreSQL",
+  "description": "atode app backend with Hono and PostgreSQL",
   "main": "dist/index.js",
   "types": "types.ts",
   "exports": {

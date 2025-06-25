@@ -1,10 +1,10 @@
-version: '3.8'
+version: "3.8"
 
 services:
   postgres:
     restart: always
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-todoapp}
+      POSTGRES_DB: ${POSTGRES_DB:-atodeapp}
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
 
@@ -14,7 +14,7 @@ services:
       dockerfile: Dockerfile.prod
     environment:
       NODE_ENV: production
-      DATABASE_URL: ${DATABASE_URL:-postgresql://postgres:password@postgres:5432/todoapp}
+      DATABASE_URL: ${DATABASE_URL:-postgresql://postgres:password@postgres:5432/atodeapp}
     restart: always
     ports:
       - "3000:3000"
@@ -32,7 +32,7 @@ services:
   # Load balancer for production
   nginx:
     image: nginx:1.25-alpine
-    container_name: todo-nginx
+    container_name: atode-nginx
     restart: always
     ports:
       - "80:80"
@@ -44,4 +44,4 @@ services:
       - frontend
       - backend
     networks:
-      - todo-network
+      - atode-network

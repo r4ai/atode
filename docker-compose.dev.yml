@@ -7,14 +7,14 @@ services:
     ports:
       - "5432:5432"
     environment:
-      POSTGRES_DB: todoapp
+      POSTGRES_DB: atodeapp
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./packages/backend/drizzle/extensions.sql:/docker-entrypoint-initdb.d/01-extensions.sql
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d todoapp"]
+      test: ["CMD-SHELL", "pg_isready -U postgres -d atodeapp"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -26,7 +26,7 @@ services:
     restart: unless-stopped
     environment:
       NODE_ENV: development
-      DATABASE_URL: postgresql://postgres:password@postgres:5432/todoapp
+      DATABASE_URL: postgresql://postgres:password@postgres:5432/atodeapp
       PORT: 3000
     volumes:
       - ./packages/backend:/app

@@ -1,5 +1,7 @@
 # CLAUDE.md
 
+repo: https://github.com/r4ai/atode
+
 **CRITICAL**:
 
 - Always search web for latest info before ANY implementation/library changes.
@@ -74,3 +76,14 @@ routes/
 - **Imports**: Use `@/` path aliases instead of relative imports
   - ✅ `import { component } from "@/components/ui/button"`
   - ❌ `import { component } from "../../components/ui/button"`
+
+### Git
+
+- **Commit messages**: Use conventional commits
+  - ✅ `feat: add new feature`, `fix: resolve issue`, `chore: update dependencies`
+  - ❌ `added new feature`, `fixed issue`, `update dependencies`
+
+Notes:
+
+- Check git log BEFORE any git commands. DO NOT TRUST YOUR MEMORY.
+- Use gh to interact with GitHub

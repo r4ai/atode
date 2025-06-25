@@ -1,8 +1,16 @@
+<<<<<<< HEAD
+# Todoist-like atode Application Implementation Plan
+=======
 # TODO Application Implementation Status
+>>>>>>> main
 
 ## Project Overview
 
+<<<<<<< HEAD
+This comprehensive implementation plan details building a production-ready atode application with all Todoist features except recurring tasks. The application uses a modern tech stack with **Auth.js authentication (supporting GitHub OAuth)**, featuring a React frontend, Hono backend, and PostgreSQL database, all deployable via Docker Compose on home servers.
+=======
 A production-ready TODO application with modern tech stack, featuring React frontend, Hono backend, and PostgreSQL database. GitHub OAuth authentication and core task management are already in place.
+>>>>>>> main
 
 **Current Technology Stack:**
 
@@ -390,7 +398,7 @@ test('TaskList displays tasks and handles loading states', async () => {
 // Database transaction isolation for tests
 const testDb = () => {
   return async (testFn) => {
-    return pool.connect(async (client) => {
+    pool.connect(async (client) => {
       try {
         await client.query("BEGIN");
         await testFn(client);
@@ -455,7 +463,9 @@ afterAll(async () => {
 
 ```typescript
 test.describe("Auth.js Authentication Flow", () => {
-  test("should log in via GitHub OAuth and redirect back to app", async ({ page }) => {
+  test("should log in via GitHub OAuth and redirect back to app", async ({
+    page,
+  }) => {
     await page.goto("/");
     await page.click('button:has-text("Sign in with GitHub")');
     // After GitHub OAuth login is completed, user should be redirected back to the app
