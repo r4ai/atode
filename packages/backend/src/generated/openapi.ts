@@ -93,6 +93,78 @@ export interface paths {
     patch?: never
     trace?: never
   }
+  "/api/projects": {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /**
+     * List projects
+     * @description Get a list of user projects with optional filtering
+     */
+    get: operations["getApiProjects"]
+    put?: never
+    /**
+     * Create project
+     * @description Create a new project
+     */
+    post: operations["postApiProjects"]
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/projects/{id}": {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /**
+     * Get project
+     * @description Get a specific project by ID
+     */
+    get: operations["getApiProjectsById"]
+    /**
+     * Update project
+     * @description Update an existing project
+     */
+    put: operations["putApiProjectsById"]
+    post?: never
+    /**
+     * Delete project
+     * @description Soft delete a project
+     */
+    delete: operations["deleteApiProjectsById"]
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/projects/{id}/children": {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /**
+     * Get child projects
+     * @description Get all child projects of a specific project
+     */
+    get: operations["getApiProjectsByIdChildren"]
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
 }
 export type webhooks = Record<string, never>
 export interface components {
@@ -794,6 +866,534 @@ export interface operations {
         }
       }
       /** @description Task not found */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          "application/json": {
+            /** @constant */
+            success: false
+            /** @example VALIDATION_ERROR */
+            error: string
+            /** @example Invalid input provided */
+            message: string
+            details?: unknown
+          }
+        }
+      }
+    }
+  }
+  getApiProjects: {
+    parameters: {
+      query?: {
+        page?: number
+        limit?: number
+        includeArchived?: boolean
+        depth?: number
+      }
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description List of projects */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          "application/json": {
+            data: {
+              /**
+               * @description Unique identifier
+               * @example 1
+               */
+              id: number
+              /**
+               * @description Unique identifier
+               * @example 1
+               */
+              userId: number
+              /**
+               * @description Unique identifier
+               * @example 1
+               */
+              parentProjectId?: number | null
+              /** @example My Project */
+              name: string
+              /** @example Project description */
+              description?: string | null
+              /**
+               * @description Hex color code
+               * @example #FF5722
+               */
+              color?: string
+              /** @example /root/subproject */
+              path?: string | null
+              /** @example 0 */
+              depth: number
+              /**
+               * @description ISO timestamp
+               * @example 2025-01-01T00:00:00Z
+               */
+              createdAt: string
+              /**
+               * @description ISO timestamp
+               * @example 2025-01-01T00:00:00Z
+               */
+              updatedAt: string
+              /**
+               * @description ISO timestamp
+               * @example 2025-01-01T00:00:00Z
+               */
+              deletedAt?: string | null
+            }[]
+            success: boolean
+          }
+        }
+      }
+      /** @description Invalid request parameters */
+      400: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          "application/json": {
+            /** @constant */
+            success: false
+            /** @example VALIDATION_ERROR */
+            error: string
+            /** @example Invalid input provided */
+            message: string
+            details?: unknown
+          }
+        }
+      }
+    }
+  }
+  postApiProjects: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: {
+      content: {
+        "application/json": {
+          /** @example My Project */
+          name: string
+          /** @example Project description */
+          description?: string
+          /**
+           * @description Unique identifier
+           * @example 1
+           */
+          parentId?: number
+          /**
+           * @description Hex color code
+           * @example #FF5722
+           */
+          color?: string
+        }
+      }
+    }
+    responses: {
+      /** @description Project created successfully */
+      201: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          "application/json": {
+            /** @description Project entity */
+            data: {
+              /**
+               * @description Unique identifier
+               * @example 1
+               */
+              id: number
+              /**
+               * @description Unique identifier
+               * @example 1
+               */
+              userId: number
+              /**
+               * @description Unique identifier
+               * @example 1
+               */
+              parentProjectId?: number | null
+              /** @example My Project */
+              name: string
+              /** @example Project description */
+              description?: string | null
+              /**
+               * @description Hex color code
+               * @example #FF5722
+               */
+              color?: string
+              /** @example /root/subproject */
+              path?: string | null
+              /** @example 0 */
+              depth: number
+              /**
+               * @description ISO timestamp
+               * @example 2025-01-01T00:00:00Z
+               */
+              createdAt: string
+              /**
+               * @description ISO timestamp
+               * @example 2025-01-01T00:00:00Z
+               */
+              updatedAt: string
+              /**
+               * @description ISO timestamp
+               * @example 2025-01-01T00:00:00Z
+               */
+              deletedAt?: string | null
+            }
+            /** @example true */
+            success: boolean
+            /** @example Operation completed successfully */
+            message?: string
+          }
+        }
+      }
+      /** @description Invalid request data */
+      400: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          "application/json": {
+            /** @constant */
+            success: false
+            /** @example VALIDATION_ERROR */
+            error: string
+            /** @example Invalid input provided */
+            message: string
+            details?: unknown
+          }
+        }
+      }
+    }
+  }
+  getApiProjectsById: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        id: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Project details */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          "application/json": {
+            /** @description Project entity */
+            data: {
+              /**
+               * @description Unique identifier
+               * @example 1
+               */
+              id: number
+              /**
+               * @description Unique identifier
+               * @example 1
+               */
+              userId: number
+              /**
+               * @description Unique identifier
+               * @example 1
+               */
+              parentProjectId?: number | null
+              /** @example My Project */
+              name: string
+              /** @example Project description */
+              description?: string | null
+              /**
+               * @description Hex color code
+               * @example #FF5722
+               */
+              color?: string
+              /** @example /root/subproject */
+              path?: string | null
+              /** @example 0 */
+              depth: number
+              /**
+               * @description ISO timestamp
+               * @example 2025-01-01T00:00:00Z
+               */
+              createdAt: string
+              /**
+               * @description ISO timestamp
+               * @example 2025-01-01T00:00:00Z
+               */
+              updatedAt: string
+              /**
+               * @description ISO timestamp
+               * @example 2025-01-01T00:00:00Z
+               */
+              deletedAt?: string | null
+            }
+            /** @example true */
+            success: boolean
+            /** @example Operation completed successfully */
+            message?: string
+          }
+        }
+      }
+      /** @description Project not found */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          "application/json": {
+            /** @constant */
+            success: false
+            /** @example VALIDATION_ERROR */
+            error: string
+            /** @example Invalid input provided */
+            message: string
+            details?: unknown
+          }
+        }
+      }
+    }
+  }
+  putApiProjectsById: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        id: string
+      }
+      cookie?: never
+    }
+    requestBody?: {
+      content: {
+        "application/json": {
+          /** @example My Project */
+          name?: string
+          /** @example Project description */
+          description?: string
+          /**
+           * @description Unique identifier
+           * @example 1
+           */
+          parentId?: number
+          /**
+           * @description Hex color code
+           * @example #FF5722
+           */
+          color?: string
+        }
+      }
+    }
+    responses: {
+      /** @description Project updated successfully */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          "application/json": {
+            /** @description Project entity */
+            data: {
+              /**
+               * @description Unique identifier
+               * @example 1
+               */
+              id: number
+              /**
+               * @description Unique identifier
+               * @example 1
+               */
+              userId: number
+              /**
+               * @description Unique identifier
+               * @example 1
+               */
+              parentProjectId?: number | null
+              /** @example My Project */
+              name: string
+              /** @example Project description */
+              description?: string | null
+              /**
+               * @description Hex color code
+               * @example #FF5722
+               */
+              color?: string
+              /** @example /root/subproject */
+              path?: string | null
+              /** @example 0 */
+              depth: number
+              /**
+               * @description ISO timestamp
+               * @example 2025-01-01T00:00:00Z
+               */
+              createdAt: string
+              /**
+               * @description ISO timestamp
+               * @example 2025-01-01T00:00:00Z
+               */
+              updatedAt: string
+              /**
+               * @description ISO timestamp
+               * @example 2025-01-01T00:00:00Z
+               */
+              deletedAt?: string | null
+            }
+            /** @example true */
+            success: boolean
+            /** @example Operation completed successfully */
+            message?: string
+          }
+        }
+      }
+      /** @description Project not found */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          "application/json": {
+            /** @constant */
+            success: false
+            /** @example VALIDATION_ERROR */
+            error: string
+            /** @example Invalid input provided */
+            message: string
+            details?: unknown
+          }
+        }
+      }
+    }
+  }
+  deleteApiProjectsById: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        id: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Project deleted successfully */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          "application/json": {
+            data: {
+              success: boolean
+            }
+            /** @example true */
+            success: boolean
+            /** @example Operation completed successfully */
+            message?: string
+          }
+        }
+      }
+      /** @description Project not found */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          "application/json": {
+            /** @constant */
+            success: false
+            /** @example VALIDATION_ERROR */
+            error: string
+            /** @example Invalid input provided */
+            message: string
+            details?: unknown
+          }
+        }
+      }
+    }
+  }
+  getApiProjectsByIdChildren: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        id: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description List of child projects */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          "application/json": {
+            data: {
+              /**
+               * @description Unique identifier
+               * @example 1
+               */
+              id: number
+              /**
+               * @description Unique identifier
+               * @example 1
+               */
+              userId: number
+              /**
+               * @description Unique identifier
+               * @example 1
+               */
+              parentProjectId?: number | null
+              /** @example My Project */
+              name: string
+              /** @example Project description */
+              description?: string | null
+              /**
+               * @description Hex color code
+               * @example #FF5722
+               */
+              color?: string
+              /** @example /root/subproject */
+              path?: string | null
+              /** @example 0 */
+              depth: number
+              /**
+               * @description ISO timestamp
+               * @example 2025-01-01T00:00:00Z
+               */
+              createdAt: string
+              /**
+               * @description ISO timestamp
+               * @example 2025-01-01T00:00:00Z
+               */
+              updatedAt: string
+              /**
+               * @description ISO timestamp
+               * @example 2025-01-01T00:00:00Z
+               */
+              deletedAt?: string | null
+            }[]
+            success: boolean
+          }
+        }
+      }
+      /** @description Project not found */
       404: {
         headers: {
           [name: string]: unknown

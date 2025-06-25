@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "Atode API",
-    "description": "A comprehensive TODO application API with hierarchical projects and tasks, built with Hono, PostgreSQL, and Drizzle ORM",
+    "description": "A comprehensive todo application API with hierarchical projects and tasks, built with Hono, PostgreSQL, and Drizzle ORM",
     "version": "1.0.0"
   },
   "servers": [
@@ -1470,6 +1470,1011 @@
         ],
         "summary": "Complete task",
         "description": "Mark a task as completed"
+      }
+    },
+    "/api/projects": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "List of projects",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "example": 1,
+                            "description": "Unique identifier"
+                          },
+                          "userId": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "example": 1,
+                            "description": "Unique identifier"
+                          },
+                          "parentProjectId": {
+                            "type": ["integer", "null"],
+                            "minimum": 1,
+                            "example": 1,
+                            "description": "Unique identifier"
+                          },
+                          "name": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 255,
+                            "example": "My Project"
+                          },
+                          "description": {
+                            "type": ["string", "null"],
+                            "example": "Project description"
+                          },
+                          "color": {
+                            "type": "string",
+                            "pattern": "^#[0-9A-Fa-f]{6}$",
+                            "example": "#FF5722",
+                            "description": "Hex color code"
+                          },
+                          "path": {
+                            "type": ["string", "null"],
+                            "example": "/root/subproject"
+                          },
+                          "depth": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "example": 0
+                          },
+                          "createdAt": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "string",
+                                "format": "date-time"
+                              }
+                            ],
+                            "example": "2025-01-01T00:00:00Z",
+                            "description": "ISO timestamp"
+                          },
+                          "updatedAt": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "string",
+                                "format": "date-time"
+                              }
+                            ],
+                            "example": "2025-01-01T00:00:00Z",
+                            "description": "ISO timestamp"
+                          },
+                          "deletedAt": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "string",
+                                "format": "date-time"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ],
+                            "example": "2025-01-01T00:00:00Z",
+                            "description": "ISO timestamp"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "userId",
+                          "name",
+                          "depth",
+                          "createdAt",
+                          "updatedAt"
+                        ],
+                        "description": "Project entity"
+                      }
+                    },
+                    "success": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": ["data", "success"]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "const": false
+                    },
+                    "error": {
+                      "type": "string",
+                      "example": "VALIDATION_ERROR"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Invalid input provided"
+                    },
+                    "details": {}
+                  },
+                  "required": ["success", "error", "message"],
+                  "description": "API error response"
+                }
+              }
+            }
+          }
+        },
+        "operationId": "getApiProjects",
+        "tags": ["projects"],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "example": 1,
+              "description": "Page number"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "example": 20,
+              "description": "Items per page"
+            }
+          },
+          {
+            "in": "query",
+            "name": "includeArchived",
+            "schema": {
+              "type": "boolean",
+              "example": false
+            }
+          },
+          {
+            "in": "query",
+            "name": "depth",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "example": 1,
+              "description": "Maximum depth to include"
+            }
+          }
+        ],
+        "summary": "List projects",
+        "description": "Get a list of user projects with optional filtering"
+      },
+      "post": {
+        "responses": {
+          "201": {
+            "description": "Project created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "example": 1,
+                          "description": "Unique identifier"
+                        },
+                        "userId": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "example": 1,
+                          "description": "Unique identifier"
+                        },
+                        "parentProjectId": {
+                          "type": ["integer", "null"],
+                          "minimum": 1,
+                          "example": 1,
+                          "description": "Unique identifier"
+                        },
+                        "name": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 255,
+                          "example": "My Project"
+                        },
+                        "description": {
+                          "type": ["string", "null"],
+                          "example": "Project description"
+                        },
+                        "color": {
+                          "type": "string",
+                          "pattern": "^#[0-9A-Fa-f]{6}$",
+                          "example": "#FF5722",
+                          "description": "Hex color code"
+                        },
+                        "path": {
+                          "type": ["string", "null"],
+                          "example": "/root/subproject"
+                        },
+                        "depth": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "example": 0
+                        },
+                        "createdAt": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "type": "string",
+                              "format": "date-time"
+                            }
+                          ],
+                          "example": "2025-01-01T00:00:00Z",
+                          "description": "ISO timestamp"
+                        },
+                        "updatedAt": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "type": "string",
+                              "format": "date-time"
+                            }
+                          ],
+                          "example": "2025-01-01T00:00:00Z",
+                          "description": "ISO timestamp"
+                        },
+                        "deletedAt": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "type": "string",
+                              "format": "date-time"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ],
+                          "example": "2025-01-01T00:00:00Z",
+                          "description": "ISO timestamp"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "userId",
+                        "name",
+                        "depth",
+                        "createdAt",
+                        "updatedAt"
+                      ],
+                      "description": "Project entity"
+                    },
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Operation completed successfully"
+                    }
+                  },
+                  "required": ["data", "success"],
+                  "description": "API response wrapper"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "const": false
+                    },
+                    "error": {
+                      "type": "string",
+                      "example": "VALIDATION_ERROR"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Invalid input provided"
+                    },
+                    "details": {}
+                  },
+                  "required": ["success", "error", "message"],
+                  "description": "API error response"
+                }
+              }
+            }
+          }
+        },
+        "operationId": "postApiProjects",
+        "tags": ["projects"],
+        "parameters": [],
+        "summary": "Create project",
+        "description": "Create a new project",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 255,
+                    "example": "My Project"
+                  },
+                  "description": {
+                    "type": "string",
+                    "example": "Project description"
+                  },
+                  "parentId": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "example": 1,
+                    "description": "Unique identifier"
+                  },
+                  "color": {
+                    "type": "string",
+                    "pattern": "^#[0-9A-Fa-f]{6}$",
+                    "example": "#FF5722",
+                    "description": "Hex color code"
+                  }
+                },
+                "required": ["name"],
+                "description": "Create project request"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/projects/{id}": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Project details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "example": 1,
+                          "description": "Unique identifier"
+                        },
+                        "userId": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "example": 1,
+                          "description": "Unique identifier"
+                        },
+                        "parentProjectId": {
+                          "type": ["integer", "null"],
+                          "minimum": 1,
+                          "example": 1,
+                          "description": "Unique identifier"
+                        },
+                        "name": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 255,
+                          "example": "My Project"
+                        },
+                        "description": {
+                          "type": ["string", "null"],
+                          "example": "Project description"
+                        },
+                        "color": {
+                          "type": "string",
+                          "pattern": "^#[0-9A-Fa-f]{6}$",
+                          "example": "#FF5722",
+                          "description": "Hex color code"
+                        },
+                        "path": {
+                          "type": ["string", "null"],
+                          "example": "/root/subproject"
+                        },
+                        "depth": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "example": 0
+                        },
+                        "createdAt": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "type": "string",
+                              "format": "date-time"
+                            }
+                          ],
+                          "example": "2025-01-01T00:00:00Z",
+                          "description": "ISO timestamp"
+                        },
+                        "updatedAt": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "type": "string",
+                              "format": "date-time"
+                            }
+                          ],
+                          "example": "2025-01-01T00:00:00Z",
+                          "description": "ISO timestamp"
+                        },
+                        "deletedAt": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "type": "string",
+                              "format": "date-time"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ],
+                          "example": "2025-01-01T00:00:00Z",
+                          "description": "ISO timestamp"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "userId",
+                        "name",
+                        "depth",
+                        "createdAt",
+                        "updatedAt"
+                      ],
+                      "description": "Project entity"
+                    },
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Operation completed successfully"
+                    }
+                  },
+                  "required": ["data", "success"],
+                  "description": "API response wrapper"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Project not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "const": false
+                    },
+                    "error": {
+                      "type": "string",
+                      "example": "VALIDATION_ERROR"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Invalid input provided"
+                    },
+                    "details": {}
+                  },
+                  "required": ["success", "error", "message"],
+                  "description": "API error response"
+                }
+              }
+            }
+          }
+        },
+        "operationId": "getApiProjectsById",
+        "tags": ["projects"],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "string",
+              "example": "1",
+              "description": "Unique identifier as URL parameter"
+            },
+            "required": true
+          }
+        ],
+        "summary": "Get project",
+        "description": "Get a specific project by ID"
+      },
+      "put": {
+        "responses": {
+          "200": {
+            "description": "Project updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "example": 1,
+                          "description": "Unique identifier"
+                        },
+                        "userId": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "example": 1,
+                          "description": "Unique identifier"
+                        },
+                        "parentProjectId": {
+                          "type": ["integer", "null"],
+                          "minimum": 1,
+                          "example": 1,
+                          "description": "Unique identifier"
+                        },
+                        "name": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 255,
+                          "example": "My Project"
+                        },
+                        "description": {
+                          "type": ["string", "null"],
+                          "example": "Project description"
+                        },
+                        "color": {
+                          "type": "string",
+                          "pattern": "^#[0-9A-Fa-f]{6}$",
+                          "example": "#FF5722",
+                          "description": "Hex color code"
+                        },
+                        "path": {
+                          "type": ["string", "null"],
+                          "example": "/root/subproject"
+                        },
+                        "depth": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "example": 0
+                        },
+                        "createdAt": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "type": "string",
+                              "format": "date-time"
+                            }
+                          ],
+                          "example": "2025-01-01T00:00:00Z",
+                          "description": "ISO timestamp"
+                        },
+                        "updatedAt": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "type": "string",
+                              "format": "date-time"
+                            }
+                          ],
+                          "example": "2025-01-01T00:00:00Z",
+                          "description": "ISO timestamp"
+                        },
+                        "deletedAt": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "type": "string",
+                              "format": "date-time"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ],
+                          "example": "2025-01-01T00:00:00Z",
+                          "description": "ISO timestamp"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "userId",
+                        "name",
+                        "depth",
+                        "createdAt",
+                        "updatedAt"
+                      ],
+                      "description": "Project entity"
+                    },
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Operation completed successfully"
+                    }
+                  },
+                  "required": ["data", "success"],
+                  "description": "API response wrapper"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Project not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "const": false
+                    },
+                    "error": {
+                      "type": "string",
+                      "example": "VALIDATION_ERROR"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Invalid input provided"
+                    },
+                    "details": {}
+                  },
+                  "required": ["success", "error", "message"],
+                  "description": "API error response"
+                }
+              }
+            }
+          }
+        },
+        "operationId": "putApiProjectsById",
+        "tags": ["projects"],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "string",
+              "example": "1",
+              "description": "Unique identifier as URL parameter"
+            },
+            "required": true
+          }
+        ],
+        "summary": "Update project",
+        "description": "Update an existing project",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 255,
+                    "example": "My Project"
+                  },
+                  "description": {
+                    "type": "string",
+                    "example": "Project description"
+                  },
+                  "parentId": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "example": 1,
+                    "description": "Unique identifier"
+                  },
+                  "color": {
+                    "type": "string",
+                    "pattern": "^#[0-9A-Fa-f]{6}$",
+                    "example": "#FF5722",
+                    "description": "Hex color code"
+                  }
+                },
+                "description": "Update project request"
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "responses": {
+          "200": {
+            "description": "Project deleted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "success": {
+                          "type": "boolean"
+                        }
+                      },
+                      "required": ["success"]
+                    },
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Operation completed successfully"
+                    }
+                  },
+                  "required": ["data", "success"],
+                  "description": "API response wrapper"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Project not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "const": false
+                    },
+                    "error": {
+                      "type": "string",
+                      "example": "VALIDATION_ERROR"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Invalid input provided"
+                    },
+                    "details": {}
+                  },
+                  "required": ["success", "error", "message"],
+                  "description": "API error response"
+                }
+              }
+            }
+          }
+        },
+        "operationId": "deleteApiProjectsById",
+        "tags": ["projects"],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "string",
+              "example": "1",
+              "description": "Unique identifier as URL parameter"
+            },
+            "required": true
+          }
+        ],
+        "summary": "Delete project",
+        "description": "Soft delete a project"
+      }
+    },
+    "/api/projects/{id}/children": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "List of child projects",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "example": 1,
+                            "description": "Unique identifier"
+                          },
+                          "userId": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "example": 1,
+                            "description": "Unique identifier"
+                          },
+                          "parentProjectId": {
+                            "type": ["integer", "null"],
+                            "minimum": 1,
+                            "example": 1,
+                            "description": "Unique identifier"
+                          },
+                          "name": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 255,
+                            "example": "My Project"
+                          },
+                          "description": {
+                            "type": ["string", "null"],
+                            "example": "Project description"
+                          },
+                          "color": {
+                            "type": "string",
+                            "pattern": "^#[0-9A-Fa-f]{6}$",
+                            "example": "#FF5722",
+                            "description": "Hex color code"
+                          },
+                          "path": {
+                            "type": ["string", "null"],
+                            "example": "/root/subproject"
+                          },
+                          "depth": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "example": 0
+                          },
+                          "createdAt": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "string",
+                                "format": "date-time"
+                              }
+                            ],
+                            "example": "2025-01-01T00:00:00Z",
+                            "description": "ISO timestamp"
+                          },
+                          "updatedAt": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "string",
+                                "format": "date-time"
+                              }
+                            ],
+                            "example": "2025-01-01T00:00:00Z",
+                            "description": "ISO timestamp"
+                          },
+                          "deletedAt": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "string",
+                                "format": "date-time"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ],
+                            "example": "2025-01-01T00:00:00Z",
+                            "description": "ISO timestamp"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "userId",
+                          "name",
+                          "depth",
+                          "createdAt",
+                          "updatedAt"
+                        ],
+                        "description": "Project entity"
+                      }
+                    },
+                    "success": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": ["data", "success"]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Project not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "const": false
+                    },
+                    "error": {
+                      "type": "string",
+                      "example": "VALIDATION_ERROR"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Invalid input provided"
+                    },
+                    "details": {}
+                  },
+                  "required": ["success", "error", "message"],
+                  "description": "API error response"
+                }
+              }
+            }
+          }
+        },
+        "operationId": "getApiProjectsByIdChildren",
+        "tags": ["projects"],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "string",
+              "example": "1",
+              "description": "Unique identifier as URL parameter"
+            },
+            "required": true
+          }
+        ],
+        "summary": "Get child projects",
+        "description": "Get all child projects of a specific project"
       }
     }
   },
