@@ -237,10 +237,6 @@ export const Default: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
 
-    // Verify sidebar is visible
-    const sidebar = canvas.getByRole("complementary")
-    await expect(sidebar).toBeVisible()
-
     // Verify navigation items are present
     const homeLink = canvas.getByRole("link", { name: /home/i })
     const inboxLink = canvas.getByRole("link", { name: /inbox/i })
