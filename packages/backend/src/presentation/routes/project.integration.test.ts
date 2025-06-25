@@ -36,6 +36,29 @@ describe("Project Routes Integration Tests", () => {
       expect(data.data).toHaveLength(0)
     })
 
+    it("should return 404 when user not found in database", async ({ env }) => {
+      // Create a user with a non-existent email to simulate "user not found" scenario
+      const nonExistentUser = {
+        id: 99999,
+        email: "nonexistent@example.com",
+        displayName: "Non Existent User",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        deletedAt: null,
+      }
+
+      const { client } = await createApp(env, { user: nonExistentUser })
+
+      const res = await client.projects.$get()
+      expect(res.status).toBe(404)
+
+      const data = await res.json()
+      expect(data.success).toBe(false)
+      assert(data.success === false)
+      expect(data.error).toBe("User not found")
+      expect(data.message).toBe("User not found in database")
+    })
+
     it("should return projects for the authenticated user", async ({ env }) => {
       const user = await env.deps.repository.user.create(createRandomUserData())
       await env.deps.repository.project.create(
@@ -222,6 +245,98 @@ describe("Project Routes Integration Tests", () => {
       assert(data.success === false)
       expect(data.message).toContain("Parent project not found")
     })
+
+    it("should return validation error when name is empty", async ({ env }) => {
+      const { client } = await createApp(env)
+
+      const projectData = {
+        name: "", // Empty name should fail validation
+        description: "A project with empty name",
+      }
+
+      const res = await client.projects.$post({
+        json: projectData,
+      })
+
+      expect(res.status).toBe(400)
+
+      const data = await res.json()
+      expect(data.success).toBe(false)
+      assert(data.success === false)
+      expect(data.error).toHaveProperty("issues")
+      // Check that it's a validation error with name field issue
+      expect(JSON.stringify(data.error)).toContain("name")
+    })
+
+    it("should return validation error when name is too long", async ({
+      env,
+    }) => {
+      const { client } = await createApp(env)
+
+      const projectData = {
+        name: "a".repeat(256), // Name too long (max 255 chars)
+        description: "A project with too long name",
+      }
+
+      const res = await client.projects.$post({
+        json: projectData,
+      })
+
+      expect(res.status).toBe(400)
+
+      const data = await res.json()
+      expect(data.success).toBe(false)
+      assert(data.success === false)
+      expect(data.error).toHaveProperty("issues")
+      // Check that it's a validation error with name field issue
+      expect(JSON.stringify(data.error)).toContain("name")
+    })
+
+    it("should create project with minimal data", async ({ env }) => {
+      const { client, testUser } = await createApp(env)
+
+      const projectData = {
+        name: "Minimal Project", // Only required field
+      }
+
+      const res = await client.projects.$post({
+        json: projectData,
+      })
+
+      expect(res.status).toBe(201)
+
+      const data = await res.json()
+      expect(data.success).toBe(true)
+      assert(data.success === true)
+      expect(data.data).toMatchObject({
+        name: "Minimal Project",
+        userId: testUser.id,
+        color: "#808080", // Default color
+        depth: 0,
+      })
+    })
+
+    it("should return validation error when parentId is invalid", async ({
+      env,
+    }) => {
+      const { client } = await createApp(env)
+
+      const projectData = {
+        name: "Child Project",
+        parentId: 99999, // Non-existent parent ID
+      }
+
+      const res = await client.projects.$post({
+        json: projectData,
+      })
+
+      expect(res.status).toBe(500)
+
+      const data = await res.json()
+      expect(data.success).toBe(false)
+      assert(data.success === false)
+      expect(data.message).toContain("Parent project not found")
+    })
   })
 
   describe("GET /projects/:id", () => {
@@ -299,6 +414,23 @@ describe("Project Routes Integration Tests", () => {
       expect(data.success).toBe(false)
       assert(data.success === false)
       expect(data.error).toBe("Project not found")
+    })
+
+    it("should return 400 when project id is invalid", async ({ env }) => {
+      const { client } = await createApp(env)
+
+      const res = await client.projects[":id"].$get({
+        param: { id: "invalid-id" },
+      })
+
+      expect(res.status).toBe(400)
+
+      const data = await res.json()
+      expect(data.success).toBe(false)
+      assert(data.success === false)
+      expect(data.error).toHaveProperty("issues")
+      // Check that it's a validation error with id field issue
+      expect(JSON.stringify(data.error)).toContain("id")
     })
   })
 
@@ -384,6 +516,56 @@ describe("Project Routes Integration Tests", () => {
       assert(data.success === false)
       expect(data.error).toBe("Project not found")
     })
+
+    it("should return 404 when trying to get children of project from different user", async ({
+      env,
+    }) => {
+      const user1 = await env.deps.repository.user.create(
+        createRandomUserData(),
+      )
+      const user2 = await env.deps.repository.user.create(
+        createRandomUserData(),
+      )
+
+      // Create project for user1
+      const project = await env.deps.repository.project.create(
+        createRandomProjectData({
+          userId: user1.id,
+          name: "User1 Project",
+        }),
+      )
+
+      // Try to get children as user2
+      const { client } = await createApp(env, { user: user2 })
+
+      const res = await client.projects[":id"].children.$get({
+        param: { id: project.id.toString() },
+      })
+
+      expect(res.status).toBe(404)
+
+      const data = await res.json()
+      expect(data.success).toBe(false)
+      assert(data.success === false)
+      expect(data.error).toBe("Project not found")
+    })
+
+    it("should return 400 when project id is invalid", async ({ env }) => {
+      const { client } = await createApp(env)
+
+      const res = await client.projects[":id"].children.$get({
+        param: { id: "invalid-id" },
+      })
+
+      expect(res.status).toBe(400)
+
+      const data = await res.json()
+      expect(data.success).toBe(false)
+      assert(data.success === false)
+      expect(data.error).toHaveProperty("issues")
+      // Check that it's a validation error with id field issue
+      expect(JSON.stringify(data.error)).toContain("id")
+    })
   })
 
   describe("PUT /projects/:id", () => {
@@ -468,6 +650,110 @@ describe("Project Routes Integration Tests", () => {
       assert(data.success === false)
       expect(data.message).toContain("cannot be its own parent")
     })
+
+    it("should return validation error when updating with invalid data", async ({
+      env,
+    }) => {
+      const { client, testUser } = await createApp(env)
+
+      const project = await env.deps.repository.project.create(
+        createRandomProjectData({
+          userId: testUser.id,
+          name: "Test Project",
+        }),
+      )
+
+      const updateData = {
+        name: "", // Empty name should fail validation
+      }
+
+      const res = await client.projects[":id"].$put({
+        param: { id: project.id.toString() },
+        json: updateData,
+      })
+
+      expect(res.status).toBe(400)
+
+      const data = await res.json()
+      expect(data.success).toBe(false)
+      assert(data.success === false)
+      expect(data.error).toHaveProperty("issues")
+      // Check that it's a validation error with name field issue
+      expect(JSON.stringify(data.error)).toContain("name")
+    })
+
+    it("should partially update project with only some fields", async ({
+      env,
+    }) => {
+      const { client, testUser } = await createApp(env)
+
+      const project = await env.deps.repository.project.create(
+        createRandomProjectData({
+          userId: testUser.id,
+          name: "Original Project",
+          description: "Original description",
+          color: "#FF0000",
+        }),
+      )
+
+      // Only update the name
+      const updateData = {
+        name: "Updated Name Only",
+      }
+
+      const res = await client.projects[":id"].$put({
+        param: { id: project.id.toString() },
+        json: updateData,
+      })
+
+      expect(res.status).toBe(200)
+
+      const data = await res.json()
+      expect(data.success).toBe(true)
+      assert(data.success === true)
+      expect(data.data).toMatchObject({
+        id: project.id,
+        name: "Updated Name Only",
+        description: "Original description", // Should remain unchanged
+        color: "#FF0000", // Should remain unchanged
+      })
+    })
+
+    it("should return 404 when trying to update project from different user", async ({
+      env,
+    }) => {
+      const user1 = await env.deps.repository.user.create(
+        createRandomUserData(),
+      )
+      const user2 = await env.deps.repository.user.create(
+        createRandomUserData(),
+      )
+
+      // Create project for user1
+      const project = await env.deps.repository.project.create(
+        createRandomProjectData({
+          userId: user1.id,
+          name: "User1 Project",
+        }),
+      )
+
+      // Try to update as user2
+      const { client } = await createApp(env, { user: user2 })
+
+      const updateData = { name: "Hacked Name" }
+
+      const res = await client.projects[":id"].$put({
+        param: { id: project.id.toString() },
+        json: updateData,
+      })
+
+      expect(res.status).toBe(404)
+
+      const data = await res.json()
+      expect(data.success).toBe(false)
+      assert(data.success === false)
+      expect(data.error).toBe("Project not found")
+    })
   })
 
   describe("DELETE /projects/:id", () => {
@@ -544,6 +830,56 @@ describe("Project Routes Integration Tests", () => {
       assert(data.success === false)
       expect(data.error).toBe("Cannot delete project")
       expect(data.message).toContain("child projects")
+    })
+
+    it("should return 404 when trying to delete project from different user", async ({
+      env,
+    }) => {
+      const user1 = await env.deps.repository.user.create(
+        createRandomUserData(),
+      )
+      const user2 = await env.deps.repository.user.create(
+        createRandomUserData(),
+      )
+
+      // Create project for user1
+      const project = await env.deps.repository.project.create(
+        createRandomProjectData({
+          userId: user1.id,
+          name: "User1 Project",
+        }),
+      )
+
+      // Try to delete as user2
+      const { client } = await createApp(env, { user: user2 })
+
+      const res = await client.projects[":id"].$delete({
+        param: { id: project.id.toString() },
+      })
+
+      expect(res.status).toBe(404)
+
+      const data = await res.json()
+      expect(data.success).toBe(false)
+      assert(data.success === false)
+      expect(data.error).toBe("Project not found")
+    })
+
+    it("should return 400 when project id is invalid", async ({ env }) => {
+      const { client } = await createApp(env)
+
+      const res = await client.projects[":id"].$delete({
+        param: { id: "invalid-id" },
+      })
+
+      expect(res.status).toBe(400)
+
+      const data = await res.json()
+      expect(data.success).toBe(false)
+      assert(data.success === false)
+      expect(data.error).toHaveProperty("issues")
+      // Check that it's a validation error with id field issue
+      expect(JSON.stringify(data.error)).toContain("id")
     })
   })
 })
