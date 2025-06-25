@@ -51,8 +51,6 @@ jobs:
 
       - name: Run tests
         if: matrix.task == 'test'
-        env:
-          CI: true
         run: bun run test
 
       - name: Generate OpenAPI schema
