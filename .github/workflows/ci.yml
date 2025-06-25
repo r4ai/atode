@@ -35,7 +35,7 @@ jobs:
 
       - name: Install Playwright browsers
         if: matrix.task == 'test'
-        run: bun --cwd packages/frontend exec playwright install --with-deps chromium
+        run: bun x playwright install --with-deps chromium
 
       - name: Run TypeScript type check
         if: matrix.task == 'typecheck'
