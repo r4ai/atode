@@ -1,0 +1,1479 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Atode API",
+    "description": "A comprehensive TODO application API with hierarchical projects and tasks, built with Hono, PostgreSQL, and Drizzle ORM",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000/api",
+      "description": "Development server"
+    }
+  ],
+  "tags": [
+    {
+      "name": "health",
+      "description": "Health check operations"
+    },
+    {
+      "name": "auth",
+      "description": "Authentication operations"
+    },
+    {
+      "name": "tasks",
+      "description": "Task management operations"
+    },
+    {
+      "name": "projects",
+      "description": "Project management operations"
+    },
+    {
+      "name": "labels",
+      "description": "Label management operations"
+    },
+    {
+      "name": "comments",
+      "description": "Comment management operations"
+    }
+  ],
+  "paths": {
+    "/api/health": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "API is healthy",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "ok"
+                    },
+                    "timestamp": {
+                      "type": "string"
+                    },
+                    "version": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["status", "timestamp", "version"]
+                }
+              }
+            }
+          }
+        },
+        "operationId": "getApiHealth",
+        "tags": ["health"],
+        "parameters": [],
+        "description": "Health check endpoint"
+      }
+    },
+    "/api/tasks": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "List of tasks",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "example": 1,
+                            "description": "Unique identifier"
+                          },
+                          "userId": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "example": 1,
+                            "description": "Unique identifier"
+                          },
+                          "projectId": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "example": 1,
+                            "description": "Unique identifier"
+                          },
+                          "parentTaskId": {
+                            "type": ["integer", "null"],
+                            "minimum": 1,
+                            "example": 1,
+                            "description": "Unique identifier"
+                          },
+                          "title": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 500,
+                            "example": "Complete task"
+                          },
+                          "description": {
+                            "type": ["string", "null"],
+                            "example": "Task description"
+                          },
+                          "status": {
+                            "type": "string",
+                            "enum": [
+                              "pending",
+                              "in_progress",
+                              "completed",
+                              "cancelled"
+                            ],
+                            "example": "pending",
+                            "description": "Task status"
+                          },
+                          "priority": {
+                            "type": "integer",
+                            "example": 1,
+                            "description": "Task priority (higher = more important)"
+                          },
+                          "dueDate": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "string",
+                                "format": "date-time"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ],
+                            "example": "2025-01-01T00:00:00Z",
+                            "description": "ISO timestamp"
+                          },
+                          "completedAt": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "string",
+                                "format": "date-time"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ],
+                            "example": "2025-01-01T00:00:00Z",
+                            "description": "ISO timestamp"
+                          },
+                          "path": {
+                            "type": ["string", "null"],
+                            "example": "/root/subtask"
+                          },
+                          "depth": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "example": 0
+                          },
+                          "createdAt": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "string",
+                                "format": "date-time"
+                              }
+                            ],
+                            "example": "2025-01-01T00:00:00Z",
+                            "description": "ISO timestamp"
+                          },
+                          "updatedAt": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "string",
+                                "format": "date-time"
+                              }
+                            ],
+                            "example": "2025-01-01T00:00:00Z",
+                            "description": "ISO timestamp"
+                          },
+                          "deletedAt": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "string",
+                                "format": "date-time"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ],
+                            "example": "2025-01-01T00:00:00Z",
+                            "description": "ISO timestamp"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "userId",
+                          "projectId",
+                          "title",
+                          "status",
+                          "priority",
+                          "depth",
+                          "createdAt",
+                          "updatedAt"
+                        ],
+                        "description": "Task entity"
+                      }
+                    },
+                    "total": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "example": 42,
+                      "description": "Total number of items"
+                    },
+                    "page": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "example": 1,
+                      "description": "Current page number"
+                    },
+                    "limit": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "example": 20,
+                      "description": "Items per page"
+                    },
+                    "totalPages": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "example": 3,
+                      "description": "Total number of pages"
+                    },
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "total",
+                    "page",
+                    "limit",
+                    "totalPages",
+                    "success"
+                  ],
+                  "description": "Paginated response wrapper"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "const": false
+                    },
+                    "error": {
+                      "type": "string",
+                      "example": "VALIDATION_ERROR"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Invalid input provided"
+                    },
+                    "details": {}
+                  },
+                  "required": ["success", "error", "message"],
+                  "description": "API error response"
+                }
+              }
+            }
+          }
+        },
+        "operationId": "getApiTasks",
+        "tags": ["tasks"],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "example": 1,
+              "description": "Page number"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "example": 20,
+              "description": "Items per page"
+            }
+          },
+          {
+            "in": "query",
+            "name": "projectId",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "example": 1,
+              "description": "Unique identifier"
+            }
+          },
+          {
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string",
+              "enum": ["pending", "in_progress", "completed", "cancelled"],
+              "example": "pending",
+              "description": "Task status"
+            }
+          },
+          {
+            "in": "query",
+            "name": "labels",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "example": ["urgent", "bug"]
+            }
+          },
+          {
+            "in": "query",
+            "name": "dueBefore",
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "string",
+                  "format": "date-time"
+                }
+              ],
+              "example": "2025-01-01T00:00:00Z",
+              "description": "ISO timestamp"
+            }
+          },
+          {
+            "in": "query",
+            "name": "dueAfter",
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "string",
+                  "format": "date-time"
+                }
+              ],
+              "example": "2025-01-01T00:00:00Z",
+              "description": "ISO timestamp"
+            }
+          },
+          {
+            "in": "query",
+            "name": "search",
+            "schema": {
+              "type": "string",
+              "example": "search term"
+            }
+          },
+          {
+            "in": "query",
+            "name": "includeCompleted",
+            "schema": {
+              "type": "boolean",
+              "example": false
+            }
+          }
+        ],
+        "summary": "List tasks",
+        "description": "Get a paginated list of tasks with optional filtering"
+      },
+      "post": {
+        "responses": {
+          "201": {
+            "description": "Task created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "example": 1,
+                          "description": "Unique identifier"
+                        },
+                        "userId": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "example": 1,
+                          "description": "Unique identifier"
+                        },
+                        "projectId": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "example": 1,
+                          "description": "Unique identifier"
+                        },
+                        "parentTaskId": {
+                          "type": ["integer", "null"],
+                          "minimum": 1,
+                          "example": 1,
+                          "description": "Unique identifier"
+                        },
+                        "title": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 500,
+                          "example": "Complete task"
+                        },
+                        "description": {
+                          "type": ["string", "null"],
+                          "example": "Task description"
+                        },
+                        "status": {
+                          "type": "string",
+                          "enum": [
+                            "pending",
+                            "in_progress",
+                            "completed",
+                            "cancelled"
+                          ],
+                          "example": "pending",
+                          "description": "Task status"
+                        },
+                        "priority": {
+                          "type": "integer",
+                          "example": 1,
+                          "description": "Task priority (higher = more important)"
+                        },
+                        "dueDate": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "type": "string",
+                              "format": "date-time"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ],
+                          "example": "2025-01-01T00:00:00Z",
+                          "description": "ISO timestamp"
+                        },
+                        "completedAt": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "type": "string",
+                              "format": "date-time"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ],
+                          "example": "2025-01-01T00:00:00Z",
+                          "description": "ISO timestamp"
+                        },
+                        "path": {
+                          "type": ["string", "null"],
+                          "example": "/root/subtask"
+                        },
+                        "depth": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "example": 0
+                        },
+                        "createdAt": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "type": "string",
+                              "format": "date-time"
+                            }
+                          ],
+                          "example": "2025-01-01T00:00:00Z",
+                          "description": "ISO timestamp"
+                        },
+                        "updatedAt": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "type": "string",
+                              "format": "date-time"
+                            }
+                          ],
+                          "example": "2025-01-01T00:00:00Z",
+                          "description": "ISO timestamp"
+                        },
+                        "deletedAt": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "type": "string",
+                              "format": "date-time"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ],
+                          "example": "2025-01-01T00:00:00Z",
+                          "description": "ISO timestamp"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "userId",
+                        "projectId",
+                        "title",
+                        "status",
+                        "priority",
+                        "depth",
+                        "createdAt",
+                        "updatedAt"
+                      ],
+                      "description": "Task entity"
+                    },
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Operation completed successfully"
+                    }
+                  },
+                  "required": ["data", "success"],
+                  "description": "API response wrapper"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "const": false
+                    },
+                    "error": {
+                      "type": "string",
+                      "example": "VALIDATION_ERROR"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Invalid input provided"
+                    },
+                    "details": {}
+                  },
+                  "required": ["success", "error", "message"],
+                  "description": "API error response"
+                }
+              }
+            }
+          }
+        },
+        "operationId": "postApiTasks",
+        "tags": ["tasks"],
+        "parameters": [],
+        "summary": "Create task",
+        "description": "Create a new task",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 500,
+                    "example": "Complete task"
+                  },
+                  "projectId": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "example": 1,
+                    "description": "Unique identifier"
+                  },
+                  "parentId": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "example": 1,
+                    "description": "Unique identifier"
+                  },
+                  "description": {
+                    "type": "string",
+                    "example": "Task description"
+                  },
+                  "priority": {
+                    "type": "integer",
+                    "example": 1
+                  },
+                  "dueDate": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "string",
+                        "format": "date-time"
+                      }
+                    ],
+                    "example": "2025-01-01T00:00:00Z",
+                    "description": "ISO timestamp"
+                  },
+                  "labels": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "example": ["urgent", "bug"]
+                  }
+                },
+                "required": ["title", "projectId"],
+                "description": "Create task request"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/tasks/{id}": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Task details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "example": 1,
+                          "description": "Unique identifier"
+                        },
+                        "userId": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "example": 1,
+                          "description": "Unique identifier"
+                        },
+                        "projectId": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "example": 1,
+                          "description": "Unique identifier"
+                        },
+                        "parentTaskId": {
+                          "type": ["integer", "null"],
+                          "minimum": 1,
+                          "example": 1,
+                          "description": "Unique identifier"
+                        },
+                        "title": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 500,
+                          "example": "Complete task"
+                        },
+                        "description": {
+                          "type": ["string", "null"],
+                          "example": "Task description"
+                        },
+                        "status": {
+                          "type": "string",
+                          "enum": [
+                            "pending",
+                            "in_progress",
+                            "completed",
+                            "cancelled"
+                          ],
+                          "example": "pending",
+                          "description": "Task status"
+                        },
+                        "priority": {
+                          "type": "integer",
+                          "example": 1,
+                          "description": "Task priority (higher = more important)"
+                        },
+                        "dueDate": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "type": "string",
+                              "format": "date-time"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ],
+                          "example": "2025-01-01T00:00:00Z",
+                          "description": "ISO timestamp"
+                        },
+                        "completedAt": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "type": "string",
+                              "format": "date-time"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ],
+                          "example": "2025-01-01T00:00:00Z",
+                          "description": "ISO timestamp"
+                        },
+                        "path": {
+                          "type": ["string", "null"],
+                          "example": "/root/subtask"
+                        },
+                        "depth": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "example": 0
+                        },
+                        "createdAt": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "type": "string",
+                              "format": "date-time"
+                            }
+                          ],
+                          "example": "2025-01-01T00:00:00Z",
+                          "description": "ISO timestamp"
+                        },
+                        "updatedAt": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "type": "string",
+                              "format": "date-time"
+                            }
+                          ],
+                          "example": "2025-01-01T00:00:00Z",
+                          "description": "ISO timestamp"
+                        },
+                        "deletedAt": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "type": "string",
+                              "format": "date-time"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ],
+                          "example": "2025-01-01T00:00:00Z",
+                          "description": "ISO timestamp"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "userId",
+                        "projectId",
+                        "title",
+                        "status",
+                        "priority",
+                        "depth",
+                        "createdAt",
+                        "updatedAt"
+                      ],
+                      "description": "Task entity"
+                    },
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Operation completed successfully"
+                    }
+                  },
+                  "required": ["data", "success"],
+                  "description": "API response wrapper"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Task not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "const": false
+                    },
+                    "error": {
+                      "type": "string",
+                      "example": "VALIDATION_ERROR"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Invalid input provided"
+                    },
+                    "details": {}
+                  },
+                  "required": ["success", "error", "message"],
+                  "description": "API error response"
+                }
+              }
+            }
+          }
+        },
+        "operationId": "getApiTasksById",
+        "tags": ["tasks"],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "string",
+              "example": "1",
+              "description": "Unique identifier as URL parameter"
+            },
+            "required": true
+          }
+        ],
+        "summary": "Get task",
+        "description": "Get a specific task by ID"
+      },
+      "put": {
+        "responses": {
+          "200": {
+            "description": "Task updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "example": 1,
+                          "description": "Unique identifier"
+                        },
+                        "userId": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "example": 1,
+                          "description": "Unique identifier"
+                        },
+                        "projectId": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "example": 1,
+                          "description": "Unique identifier"
+                        },
+                        "parentTaskId": {
+                          "type": ["integer", "null"],
+                          "minimum": 1,
+                          "example": 1,
+                          "description": "Unique identifier"
+                        },
+                        "title": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 500,
+                          "example": "Complete task"
+                        },
+                        "description": {
+                          "type": ["string", "null"],
+                          "example": "Task description"
+                        },
+                        "status": {
+                          "type": "string",
+                          "enum": [
+                            "pending",
+                            "in_progress",
+                            "completed",
+                            "cancelled"
+                          ],
+                          "example": "pending",
+                          "description": "Task status"
+                        },
+                        "priority": {
+                          "type": "integer",
+                          "example": 1,
+                          "description": "Task priority (higher = more important)"
+                        },
+                        "dueDate": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "type": "string",
+                              "format": "date-time"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ],
+                          "example": "2025-01-01T00:00:00Z",
+                          "description": "ISO timestamp"
+                        },
+                        "completedAt": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "type": "string",
+                              "format": "date-time"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ],
+                          "example": "2025-01-01T00:00:00Z",
+                          "description": "ISO timestamp"
+                        },
+                        "path": {
+                          "type": ["string", "null"],
+                          "example": "/root/subtask"
+                        },
+                        "depth": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "example": 0
+                        },
+                        "createdAt": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "type": "string",
+                              "format": "date-time"
+                            }
+                          ],
+                          "example": "2025-01-01T00:00:00Z",
+                          "description": "ISO timestamp"
+                        },
+                        "updatedAt": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "type": "string",
+                              "format": "date-time"
+                            }
+                          ],
+                          "example": "2025-01-01T00:00:00Z",
+                          "description": "ISO timestamp"
+                        },
+                        "deletedAt": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "type": "string",
+                              "format": "date-time"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ],
+                          "example": "2025-01-01T00:00:00Z",
+                          "description": "ISO timestamp"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "userId",
+                        "projectId",
+                        "title",
+                        "status",
+                        "priority",
+                        "depth",
+                        "createdAt",
+                        "updatedAt"
+                      ],
+                      "description": "Task entity"
+                    },
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Operation completed successfully"
+                    }
+                  },
+                  "required": ["data", "success"],
+                  "description": "API response wrapper"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Task not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "const": false
+                    },
+                    "error": {
+                      "type": "string",
+                      "example": "VALIDATION_ERROR"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Invalid input provided"
+                    },
+                    "details": {}
+                  },
+                  "required": ["success", "error", "message"],
+                  "description": "API error response"
+                }
+              }
+            }
+          }
+        },
+        "operationId": "putApiTasksById",
+        "tags": ["tasks"],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "string",
+              "example": "1",
+              "description": "Unique identifier as URL parameter"
+            },
+            "required": true
+          }
+        ],
+        "summary": "Update task",
+        "description": "Update an existing task",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 500,
+                    "example": "Complete task"
+                  },
+                  "parentId": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "example": 1,
+                    "description": "Unique identifier"
+                  },
+                  "description": {
+                    "type": "string",
+                    "example": "Task description"
+                  },
+                  "priority": {
+                    "type": "integer",
+                    "example": 1
+                  },
+                  "dueDate": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "string",
+                        "format": "date-time"
+                      }
+                    ],
+                    "example": "2025-01-01T00:00:00Z",
+                    "description": "ISO timestamp"
+                  },
+                  "labels": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "example": ["urgent", "bug"]
+                  }
+                },
+                "description": "Update task request"
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "responses": {
+          "200": {
+            "description": "Task deleted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "success": {
+                          "type": "boolean"
+                        }
+                      },
+                      "required": ["success"]
+                    },
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Operation completed successfully"
+                    }
+                  },
+                  "required": ["data", "success"],
+                  "description": "API response wrapper"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Task not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "const": false
+                    },
+                    "error": {
+                      "type": "string",
+                      "example": "VALIDATION_ERROR"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Invalid input provided"
+                    },
+                    "details": {}
+                  },
+                  "required": ["success", "error", "message"],
+                  "description": "API error response"
+                }
+              }
+            }
+          }
+        },
+        "operationId": "deleteApiTasksById",
+        "tags": ["tasks"],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "string",
+              "example": "1",
+              "description": "Unique identifier as URL parameter"
+            },
+            "required": true
+          }
+        ],
+        "summary": "Delete task",
+        "description": "Soft delete a task"
+      }
+    },
+    "/api/tasks/{id}/complete": {
+      "post": {
+        "responses": {
+          "200": {
+            "description": "Task completed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "example": 1,
+                          "description": "Unique identifier"
+                        },
+                        "userId": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "example": 1,
+                          "description": "Unique identifier"
+                        },
+                        "projectId": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "example": 1,
+                          "description": "Unique identifier"
+                        },
+                        "parentTaskId": {
+                          "type": ["integer", "null"],
+                          "minimum": 1,
+                          "example": 1,
+                          "description": "Unique identifier"
+                        },
+                        "title": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 500,
+                          "example": "Complete task"
+                        },
+                        "description": {
+                          "type": ["string", "null"],
+                          "example": "Task description"
+                        },
+                        "status": {
+                          "type": "string",
+                          "enum": [
+                            "pending",
+                            "in_progress",
+                            "completed",
+                            "cancelled"
+                          ],
+                          "example": "pending",
+                          "description": "Task status"
+                        },
+                        "priority": {
+                          "type": "integer",
+                          "example": 1,
+                          "description": "Task priority (higher = more important)"
+                        },
+                        "dueDate": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "type": "string",
+                              "format": "date-time"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ],
+                          "example": "2025-01-01T00:00:00Z",
+                          "description": "ISO timestamp"
+                        },
+                        "completedAt": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "type": "string",
+                              "format": "date-time"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ],
+                          "example": "2025-01-01T00:00:00Z",
+                          "description": "ISO timestamp"
+                        },
+                        "path": {
+                          "type": ["string", "null"],
+                          "example": "/root/subtask"
+                        },
+                        "depth": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "example": 0
+                        },
+                        "createdAt": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "type": "string",
+                              "format": "date-time"
+                            }
+                          ],
+                          "example": "2025-01-01T00:00:00Z",
+                          "description": "ISO timestamp"
+                        },
+                        "updatedAt": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "type": "string",
+                              "format": "date-time"
+                            }
+                          ],
+                          "example": "2025-01-01T00:00:00Z",
+                          "description": "ISO timestamp"
+                        },
+                        "deletedAt": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "type": "string",
+                              "format": "date-time"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ],
+                          "example": "2025-01-01T00:00:00Z",
+                          "description": "ISO timestamp"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "userId",
+                        "projectId",
+                        "title",
+                        "status",
+                        "priority",
+                        "depth",
+                        "createdAt",
+                        "updatedAt"
+                      ],
+                      "description": "Task entity"
+                    },
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Operation completed successfully"
+                    }
+                  },
+                  "required": ["data", "success"],
+                  "description": "API response wrapper"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Task not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "const": false
+                    },
+                    "error": {
+                      "type": "string",
+                      "example": "VALIDATION_ERROR"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Invalid input provided"
+                    },
+                    "details": {}
+                  },
+                  "required": ["success", "error", "message"],
+                  "description": "API error response"
+                }
+              }
+            }
+          }
+        },
+        "operationId": "postApiTasksByIdComplete",
+        "tags": ["tasks"],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "string",
+              "example": "1",
+              "description": "Unique identifier as URL parameter"
+            },
+            "required": true
+          }
+        ],
+        "summary": "Complete task",
+        "description": "Mark a task as completed"
+      }
+    }
+  },
+  "components": {
+    "schemas": {}
+  }
+}

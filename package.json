@@ -35,7 +35,8 @@
   "dependencies": {},
   "devDependencies": {
     "@biomejs/biome": "2.0.0",
-    "@types/bun": "^1.2.17"
+    "@types/bun": "^1.2.17",
+    "lefthook": "^1.11.14"
   },
   "trustedDependencies": [
     "es5-ext"

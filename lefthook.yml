@@ -1,0 +1,17 @@
+# yaml-language-server: $schema=https://json.schemastore.org/lefthook.json
+
+pre-commit:
+  parallel: true
+  commands:
+    biome-check:
+      glob: "*.{js,ts,cjs,mjs,d.cts,d.mts,jsx,tsx,json,jsonc}"
+      run: biome check --write --unsafe --no-errors-on-unmatched --files-ignore-unknown=true {staged_files}
+      stage_fixed: true
+    typecheck:
+      run: bun run typecheck
+      stage_fixed: false
+    generate-schema:
+      root: packages/backend
+      glob: src/**/*
+      run: bun run generate-schema
+      stage_fixed: true

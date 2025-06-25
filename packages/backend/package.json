@@ -3,6 +3,13 @@
   "version": "1.0.0",
   "description": "TODO app backend with Hono and PostgreSQL",
   "main": "dist/index.js",
+  "types": "types.ts",
+  "exports": {
+    "./openapi": {
+      "types": "./src/generated/openapi.ts"
+    },
+    "./openapi.json": "./src/generated/openapi.json"
+  },
   "scripts": {
     "dev": "bun --hot src/index.ts",
     "build": "tsc",
@@ -15,7 +22,8 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:studio": "drizzle-kit studio",
-    "db:push": "drizzle-kit push"
+    "db:push": "drizzle-kit push",
+    "generate": "bun run scripts/generate-openapi.ts"
   },
   "keywords": [
     "hono",
@@ -49,6 +57,7 @@
     "@types/pg": "^8.10.0",
     "@types/uuid": "^9.0.0",
     "@vitest/coverage-v8": "^3.2.4",
+    "openapi-typescript": "^7.8.0",
     "postgres": "^3.4.7",
     "testcontainers": "^11.0.3",
     "typescript": "^5.0.0",

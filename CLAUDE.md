@@ -22,6 +22,8 @@ bun run check:write          # Biome lint/format fix
 
 ## Architecture
 
+### Backend
+
 Backend uses clean architecture with three main layers:
 
 - `domain/` - Pure business logic (entities, repositories, use-cases)
@@ -31,6 +33,17 @@ Backend uses clean architecture with three main layers:
 Each layer depends as follows: infrastructure -> domain <- presentation
 
 File naming: `name.ts`, `name.mock.ts`, `name.unit.test.ts`, `name.integration.test.ts`
+
+### Frontend
+
+Frontend uses Vite + React with TanStack Router and shadcn/ui components.
+
+Co-location is RECOMMENDED: keep related files together in the same directory.
+
+```
+routes/
+├── -components/ // 👈🏼 ignored
+```
 
 ## Code Quality
 
