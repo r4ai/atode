@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm"
+import { and, eq, isNull } from "drizzle-orm"
 import type {
   CreateProjectData,
   Project,
@@ -34,33 +34,32 @@ const findProjects =
   async (options: {
     id?: ProjectId
     userId?: UserId
-    parentProjectId?: ProjectId
+    parentProjectId?: ProjectId | null
   }): Promise<Project[]> => {
-    if (options.id) {
-      const result = await db
-        .select()
-        .from(projects)
-        .where(eq(projects.id, options.id))
-      return result.map(toDomainProject)
+    const whereConditions = [isNull(projects.deletedAt)]
+
+    if (options.id !== undefined) {
+      whereConditions.push(eq(projects.id, options.id))
     }
 
-    if (options.userId) {
-      const result = await db
-        .select()
-        .from(projects)
-        .where(eq(projects.userId, options.userId))
-      return result.map(toDomainProject)
+    if (options.userId !== undefined) {
+      whereConditions.push(eq(projects.userId, options.userId))
     }
 
-    if (options.parentProjectId) {
-      const result = await db
-        .select()
-        .from(projects)
-        .where(eq(projects.parentProjectId, options.parentProjectId))
-      return result.map(toDomainProject)
+    if (options.parentProjectId !== undefined) {
+      if (options.parentProjectId === null) {
+        whereConditions.push(isNull(projects.parentProjectId))
+      } else {
+        whereConditions.push(
+          eq(projects.parentProjectId, options.parentProjectId),
+        )
+      }
     }
 
-    const result = await db.select().from(projects)
+    const result = await db
+      .select()
+      .from(projects)
+      .where(and(...whereConditions))
     return result.map(toDomainProject)
   }
 
@@ -70,7 +69,12 @@ const findProjectChildren =
     const result = await db
       .select()
       .from(projects)
-      .where(eq(projects.parentProjectId, projectId))
+      .where(
+        and(
+          eq(projects.parentProjectId, projectId),
+          isNull(projects.deletedAt),
+        ),
+      )
     return result.map(toDomainProject)
   }
 

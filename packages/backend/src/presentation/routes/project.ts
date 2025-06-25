@@ -486,7 +486,10 @@ export const createProjectRoutes = (deps: Dependencies) => {
             )
           }
 
-          if (error instanceof Error && error.message.includes("circular")) {
+          if (
+            error instanceof Error &&
+            error.message.includes("cannot be its own parent")
+          ) {
             return c.json(
               {
                 success: false,
