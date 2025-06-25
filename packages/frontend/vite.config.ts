@@ -9,6 +9,16 @@ import { defineConfig } from "vite"
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  optimizeDeps: {
+    include: [
+      "@hono/auth-js/react",
+      "@tanstack/react-query",
+      "@tanstack/react-router",
+      "react-dom/client",
+      "web-vitals",
+      "@tanstack/react-router-devtools",
+    ],
+  },
   test: {
     projects: [
       {
