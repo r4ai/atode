@@ -52,6 +52,9 @@ jobs:
       - name: Run tests
         if: matrix.task == 'test'
         run: bun run test
+        env:
+          CI: true
+          PLAYWRIGHT_BROWSERS_PATH: 0
 
       - name: Generate OpenAPI schema
         if: matrix.task == 'openapi-check'
