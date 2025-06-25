@@ -1,16 +1,36 @@
 /// <reference types="vitest/config" />
 
 import { resolve } from "node:path"
+import { storybookTest } from "@storybook/addon-vitest/vitest-plugin"
 import tailwindcss from "@tailwindcss/vite"
 import { tanstackRouter } from "@tanstack/router-plugin/vite"
 import viteReact from "@vitejs/plugin-react"
 import { defineConfig } from "vite"
 
 // https://vitejs.dev/config/
-export default defineConfig(() => ({
+export default defineConfig({
   test: {
-    globals: true,
-    environment: "jsdom",
+    projects: [
+      {
+        extends: true,
+        plugins: [
+          storybookTest({
+            configDir: resolve(__dirname, ".storybook"),
+            storybookScript: "bun run storybook --ci",
+          }),
+        ],
+        test: {
+          name: "storybook",
+          browser: {
+            enabled: true,
+            provider: "playwright",
+            headless: true,
+            instances: [{ browser: "chromium" }],
+          },
+          setupFiles: ["./.storybook/vitest.setup.ts"],
+        },
+      },
+    ],
   },
   resolve: {
     alias: {
@@ -30,4 +50,4 @@ export default defineConfig(() => ({
     tailwindcss(),
     viteReact(),
   ],
-}))
+})
