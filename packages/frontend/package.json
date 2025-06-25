@@ -8,7 +8,9 @@
     "build": "vite build && tsc",
     "serve": "vite preview",
     "test": "vitest run",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build"
   },
   "dependencies": {
     "backend": "workspace:*",
@@ -66,7 +68,10 @@
     "zod": "^3.25.67"
   },
   "devDependencies": {
+    "@chromatic-com/storybook": "^4.0.1",
     "@hono/vite-dev-server": "^0.19.1",
+    "@storybook/addon-docs": "^9.0.13",
+    "@storybook/react-vite": "^9.0.13",
     "@testing-library/dom": "^10.4.0",
     "@testing-library/react": "^16.2.0",
     "@types/bun": "^1.2.17",
@@ -74,6 +79,7 @@
     "@types/react-dom": "^19.0.3",
     "@vitejs/plugin-react": "^4.3.4",
     "jsdom": "^26.0.0",
+    "storybook": "^9.0.13",
     "tw-animate-css": "^1.3.4",
     "typescript": "^5.7.2",
     "vite": "^6.1.0",
