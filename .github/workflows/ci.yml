@@ -49,9 +49,13 @@ jobs:
         if: matrix.task == 'build'
         run: bun run build
 
-      - name: Run tests
+      - name: Run backend tests
         if: matrix.task == 'test'
-        run: bun run test
+        run: bun run --cwd=packages/backend test
+
+      - name: Run frontend tests
+        if: matrix.task == 'test'
+        run: bun run --cwd=packages/frontend test
 
       - name: Generate OpenAPI schema
         if: matrix.task == 'openapi-check'
