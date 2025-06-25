@@ -16,7 +16,7 @@ jobs:
     timeout-minutes: 30
     strategy:
       matrix:
-        task: [typecheck, biome, build, test, openapi-check]
+        task: [typecheck, biome, build, test-backend, test-frontend, openapi-check]
       fail-fast: false
     steps:
       - name: Checkout the repository
@@ -34,7 +34,7 @@ jobs:
         run: bun install --frozen-lockfile
 
       - name: Install Playwright browsers
-        if: matrix.task == 'test'
+        if: matrix.task == 'test-frontend'
         run: bun x playwright install --with-deps chromium
 
       - name: Run TypeScript type check
@@ -49,13 +49,17 @@ jobs:
         if: matrix.task == 'build'
         run: bun run build
 
-      - name: Run tests
-        if: matrix.task == 'test'
-        run: bun run test
+      - name: Run backend tests
+        if: matrix.task == 'test-backend'
+        run: bun run --cwd packages/backend test
+
+      - name: Run frontend tests
+        if: matrix.task == 'test-frontend'
+        run: bun run --cwd packages/frontend test
 
       - name: Generate OpenAPI schema
         if: matrix.task == 'openapi-check'
-        run: bun --cwd packages/backend run generate
+        run: bun run --cwd packages/backend generate
 
       - name: Check for OpenAPI schema changes
         if: matrix.task == 'openapi-check'
