@@ -1,7 +1,7 @@
 {
-  "name": "todo-app",
+  "name": "atode-app",
   "version": "1.0.0",
-  "description": "TODO application monorepo with React frontend and Hono backend",
+  "description": "atode application monorepo with React frontend and Hono backend",
   "packageManager": "bun@1.2.16",
   "private": true,
   "scripts": {

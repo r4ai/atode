@@ -34,7 +34,7 @@ export const openApiSpecsOptions = {
       title: "Atode API",
       version: "1.0.0",
       description:
-        "A comprehensive TODO application API with hierarchical projects and tasks, built with Hono, PostgreSQL, and Drizzle ORM",
+        "A comprehensive todo application API with hierarchical projects and tasks, built with Hono, PostgreSQL, and Drizzle ORM",
     },
     servers: [
       {

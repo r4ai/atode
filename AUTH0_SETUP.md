@@ -1,6 +1,6 @@
 # GitHub OAuth Setup Guide for Auth.js
 
-This guide walks you through setting up GitHub OAuth with Auth.js for the TODO application.
+This guide walks you through setting up GitHub OAuth with Auth.js for the atode application.
 
 ## Prerequisites
 
@@ -9,15 +9,17 @@ This guide walks you through setting up GitHub OAuth with Auth.js for the TODO a
 ## Step 1: Create GitHub OAuth App
 
 1. **Log in to GitHub**
+
    - Go to GitHub.com and log in to your account
    - Navigate to Settings → Developer settings → OAuth Apps
 
 2. **Create a New OAuth App**
+
    - Click "New OAuth App"
    - Fill in the application details:
-     - **Application name**: `TODO App`
+     - **Application name**: `atode App`
      - **Homepage URL**: `http://localhost:5173`
-     - **Application description**: `Todo application with Auth.js authentication`
+     - **Application description**: `atode application with Auth.js authentication`
      - **Authorization callback URL**: `http://localhost:3000/api/auth/callback/github`
    - Click "Register application"
 
@@ -29,14 +31,16 @@ This guide walks you through setting up GitHub OAuth with Auth.js for the TODO a
 ## Step 2: Configure Environment Variables
 
 1. **Create backend `.env` file**
+
    ```bash
    cp packages/backend/.env.example packages/backend/.env
    ```
 
 2. **Update the backend `.env` file**
+
    ```env
    # Database
-   DATABASE_URL=postgresql://postgres:password@localhost:5432/todoapp
+   DATABASE_URL=postgresql://postgres:password@localhost:5432/atodeapp
 
    # Server
    PORT=3000
@@ -49,11 +53,13 @@ This guide walks you through setting up GitHub OAuth with Auth.js for the TODO a
    ```
 
    Replace:
+
    - `your-super-secret-32-character-key-for-jwt-signing` with a secure random string (32+ characters)
    - `your-github-oauth-app-client-id` with your GitHub OAuth App Client ID
    - `your-github-oauth-app-client-secret` with your GitHub OAuth App Client Secret
 
 3. **Create frontend `.env` file**
+
    ```bash
    cp packages/frontend/.env.example packages/frontend/.env
    ```
@@ -67,12 +73,14 @@ This guide walks you through setting up GitHub OAuth with Auth.js for the TODO a
 ## Step 3: Test the Configuration
 
 1. **Start the backend server**
+
    ```bash
    cd packages/backend
    bun run dev
    ```
 
 2. **Start the frontend server**
+
    ```bash
    cd packages/frontend
    bun run dev
@@ -89,6 +97,7 @@ This guide walks you through setting up GitHub OAuth with Auth.js for the TODO a
 For production deployment, update the following:
 
 1. **GitHub OAuth App**
+
    - Update the Authorization callback URL to your production domain:
      `https://your-domain.com/api/auth/callback/github`
    - Update the Homepage URL to your production frontend
@@ -104,14 +113,17 @@ For production deployment, update the following:
 ### Common Issues
 
 1. **"Invalid Callback URL"**
+
    - Ensure the callback URL in GitHub OAuth settings matches your application
    - Check that the GitHub OAuth app callback URL is correct: `http://localhost:3000/api/auth/callback/github`
 
 2. **"Access Denied"**
+
    - Verify that your GitHub OAuth application has the correct permissions
    - Check that the GitHub OAuth app is properly configured
 
 3. **"Invalid Client"**
+
    - Double-check your GitHub Client ID and Client Secret in environment variables
    - Ensure the Client Secret is correctly copied (no extra spaces)
 
@@ -122,6 +134,7 @@ For production deployment, update the following:
 ### Debug Mode
 
 To enable debug logging:
+
 1. Set `DEBUG=hono:*` in your environment
 2. Check browser network tab for detailed request/response information
 3. Check backend console logs for Auth.js debug information
@@ -138,6 +151,7 @@ To enable debug logging:
 ## Next Steps
 
 After successful setup:
+
 1. Implement frontend login/logout UI
 2. Add user session management
 3. Implement protected routes

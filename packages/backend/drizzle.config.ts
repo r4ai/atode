@@ -7,7 +7,7 @@ export default defineConfig({
   dbCredentials: {
     url:
       process.env.DATABASE_URL ??
-      "postgresql://postgres:password@localhost:5432/todoapp",
+      "postgresql://postgres:password@localhost:5432/atodeapp",
   },
   verbose: true,
   strict: true,

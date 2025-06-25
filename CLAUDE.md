@@ -1,5 +1,7 @@
 # CLAUDE.md
 
+repo: https://github.com/r4ai/atode
+
 **CRITICAL**:
 
 - Always search web for latest info before ANY implementation/library changes.

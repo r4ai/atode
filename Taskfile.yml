@@ -1,7 +1,7 @@
 version: "3"
 
 vars:
-  PROJECT_NAME: todo-app
+  PROJECT_NAME: atode-app
   DOCKER_COMPOSE_DEV: docker-compose -f docker-compose.yml -f docker-compose.dev.yml
   DOCKER_COMPOSE_PROD: docker-compose -f docker-compose.yml -f docker-compose.prod.yml
 
@@ -203,7 +203,7 @@ tasks:
       Open an interactive PostgreSQL shell connected to the database.
       Useful for direct database queries and administration.
     cmds:
-      - docker-compose exec postgres psql -U postgres -d todoapp
+      - docker-compose exec postgres psql -U postgres -d atodeapp
 
   # Development Shells
   shell:backend:
