@@ -1,6 +1,6 @@
-# TODO Application
+# atode Application
 
-A modern, full-stack TODO application built with React, Hono, and PostgreSQL.
+A modern, full-stack atode application built with React, Hono, and PostgreSQL.
 
 ## Prerequisites
 
@@ -13,11 +13,13 @@ A modern, full-stack TODO application built with React, Hono, and PostgreSQL.
 ### Install Task
 
 **macOS/Linux (via script):**
+
 ```bash
 sh -c "$(curl --location https://taskfile.dev/install.sh)" -- -d -b ~/.local/bin
 ```
 
 **Go users:**
+
 ```bash
 go install github.com/go-task/task/v3/cmd/task@latest
 ```
@@ -27,13 +29,15 @@ go install github.com/go-task/task/v3/cmd/task@latest
 ## Quick Start
 
 1. **Clone and setup:**
+
    ```bash
    git clone <repository-url>
-   cd todo
+   cd atode
    task setup
    ```
 
 2. **Start development environment:**
+
    ```bash
    task dev
    ```
@@ -49,22 +53,26 @@ go install github.com/go-task/task/v3/cmd/task@latest
 Run `task` to see all available commands:
 
 ### Development
+
 - `task dev` - Start development environment
 - `task test` - Run all tests
 - `task typecheck` - Run TypeScript checking
 - `task lint` - Run linting and formatting
 
 ### Database
+
 - `task db:migrate` - Run database migrations
 - `task db:studio` - Open Drizzle Studio
 - `task db:shell` - Open PostgreSQL shell
 
 ### Docker
+
 - `task stop` - Stop all services
 - `task clean` - Clean containers and data
 - `task logs` - Show all service logs
 
 ### Production
+
 - `task prod` - Start production environment
 - `task ci` - Run full CI pipeline
 
@@ -80,7 +88,7 @@ Run `task` to see all available commands:
 ## Project Structure
 
 ```
-todo/
+atode/
 ├── packages/
 │   ├── backend/             # Hono API server
 │   └── frontend/            # React application

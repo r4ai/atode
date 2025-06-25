@@ -1,4 +1,4 @@
--- Enable required PostgreSQL extensions for TODO app
+-- Enable required PostgreSQL extensions for atode app
 CREATE EXTENSION IF NOT EXISTS ltree;
 CREATE EXTENSION IF NOT EXISTS pg_trgm;
 

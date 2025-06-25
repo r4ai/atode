@@ -15,7 +15,7 @@ export const LoginPage = () => {
     <div className="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-gray-900">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <CardTitle className="font-bold text-2xl">Welcome to TODO</CardTitle>
+          <CardTitle className="font-bold text-2xl">Welcome to atode</CardTitle>
           <CardDescription>
             Sign in to manage your tasks and projects
           </CardDescription>

@@ -22,7 +22,7 @@ const Dashboard = () => {
             <div className="flex h-16 items-center justify-between">
               <div className="flex items-center">
                 <h1 className="font-semibold text-gray-900 text-xl dark:text-gray-100">
-                  TODO Dashboard
+                  Atode Dashboard
                 </h1>
               </div>
               <UserMenu />
