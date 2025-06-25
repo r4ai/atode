@@ -22,8 +22,6 @@ const createApp = async ({ deps }: Env, { user }: { user?: User } = {}) => {
   return { app, client, testUser }
 }
 
-const _asJson = <T>(data: T): T => JSON.parse(JSON.stringify(data))
-
 describe("Project Routes Integration Tests", () => {
   describe("GET /projects", () => {
     it("should return empty list when no projects exist", async ({ env }) => {
@@ -40,20 +38,18 @@ describe("Project Routes Integration Tests", () => {
 
     it("should return projects for the authenticated user", async ({ env }) => {
       const user = await env.deps.repository.user.create(createRandomUserData())
-      const _projects = [
-        await env.deps.repository.project.create(
-          createRandomProjectData({
-            userId: user.id,
-            name: "Project 1",
-          }),
-        ),
-        await env.deps.repository.project.create(
-          createRandomProjectData({
-            userId: user.id,
-            name: "Project 2",
-          }),
-        ),
-      ]
+      await env.deps.repository.project.create(
+        createRandomProjectData({
+          userId: user.id,
+          name: "Project 1",
+        }),
+      )
+      await env.deps.repository.project.create(
+        createRandomProjectData({
+          userId: user.id,
+          name: "Project 2",
+        }),
+      )
 
       const { client } = await createApp(env, { user })
 
@@ -317,22 +313,20 @@ describe("Project Routes Integration Tests", () => {
         }),
       )
 
-      const _childProjects = [
-        await env.deps.repository.project.create(
-          createRandomProjectData({
-            userId: testUser.id,
-            parentProjectId: parentProject.id,
-            name: "Child 1",
-          }),
-        ),
-        await env.deps.repository.project.create(
-          createRandomProjectData({
-            userId: testUser.id,
-            parentProjectId: parentProject.id,
-            name: "Child 2",
-          }),
-        ),
-      ]
+      await env.deps.repository.project.create(
+        createRandomProjectData({
+          userId: testUser.id,
+          parentProjectId: parentProject.id,
+          name: "Child 1",
+        }),
+      )
+      await env.deps.repository.project.create(
+        createRandomProjectData({
+          userId: testUser.id,
+          parentProjectId: parentProject.id,
+          name: "Child 2",
+        }),
+      )
 
       const res = await client.projects[":id"].children.$get({
         param: { id: parentProject.id.toString() },
