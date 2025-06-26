@@ -8,6 +8,12 @@ repo: https://github.com/r4ai/atode
 - When encountering issues, SEARCH THE WEB FIRST. DO NOT TRUST YOUR MEMORY.
 - Follow TDD (Test-Driven Development) principles: WRITE TESTS FIRST, then implement code.
 
+For web search, use:
+
+```sh
+gemini -yp "WebSearch: <your_prompt>"
+```
+
 ## Project Overview
 
 Monorepo TODO app: Vite + React + TanStack Router + shadcn/ui frontend, Hono + PostgreSQL + Drizzle backend, Docker Compose deployment, Bun workspaces.
@@ -58,7 +64,9 @@ Story driven development:
 - Component should be as SMALL as possible:
   - Big components should be split into smaller ones
 - Components should be EASY TO TEST in ISOLATION
+
   - PRESENTER / CONTAINER pattern:
+
     - Presenter components: responsible for rendering UI and state management
     - Container components: responsible for data fetching
 

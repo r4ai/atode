@@ -1,4 +1,4 @@
-import { Link, useRouterState } from "@tanstack/react-router"
+import { Link, useLocation, useRouterState } from "@tanstack/react-router"
 import {
   Calendar,
   CheckSquare,
@@ -8,7 +8,7 @@ import {
   Settings,
   Star,
 } from "lucide-react"
-import type * as React from "react"
+import { Suspense } from "react"
 import {
   SidebarContent,
   SidebarFooter,
@@ -17,13 +17,12 @@ import {
   SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
-  SidebarMenuBadge,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarMenuSkeleton,
   Sidebar as SidebarPrimitive,
-  SidebarSeparator,
 } from "@/components/ui/sidebar"
-import { cn } from "@/lib/utils"
+import { api } from "@/lib/api"
 
 const navigationItems = [
   { name: "Home", href: "/home", icon: Home },
@@ -32,11 +31,109 @@ const navigationItems = [
   { name: "Completed", href: "/completed", icon: CheckSquare },
 ]
 
-const projects = [
-  { id: "1", name: "Personal", color: "bg-blue-500", taskCount: 5 },
-  { id: "2", name: "Work", color: "bg-green-500", taskCount: 12 },
-  { id: "3", name: "Shopping", color: "bg-purple-500", taskCount: 3 },
-]
+const NavigationGroup = () => {
+  const pathname = useLocation({ select: (location) => location.pathname })
+
+  return (
+    <SidebarGroup>
+      <SidebarMenu>
+        {navigationItems.map((item) => {
+          const isActive = pathname.startsWith(item.href)
+          return (
+            <SidebarMenuItem key={item.name}>
+              <SidebarMenuButton asChild isActive={isActive}>
+                <Link to={item.href}>
+                  <item.icon />
+                  <span>{item.name}</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          )
+        })}
+      </SidebarMenu>
+    </SidebarGroup>
+  )
+}
+
+const ProjectsGroup = () => {
+  return (
+    <SidebarGroup>
+      <SidebarGroupLabel>
+        <span>Projects</span>
+      </SidebarGroupLabel>
+      <SidebarGroupContent>
+        <Suspense
+          fallback={
+            <>
+              <SidebarMenuSkeleton />
+              <SidebarMenuSkeleton />
+              <SidebarMenuSkeleton />
+            </>
+          }
+        >
+          <ProjectsGroupMenu />
+        </Suspense>
+      </SidebarGroupContent>
+    </SidebarGroup>
+  )
+}
+
+const ProjectsGroupMenu = () => {
+  const pathname = useLocation({ select: (location) => location.pathname })
+  const projects = api.useSuspenseQuery("get", "/api/projects")
+
+  return (
+    <SidebarMenu>
+      {projects.data.data.map((project) => {
+        const projectPath = `/project/${project.id}`
+        const isActive = pathname === projectPath
+        return (
+          <SidebarMenuItem key={project.id}>
+            <SidebarMenuButton asChild isActive={isActive}>
+              <Link to={projectPath}>
+                <div
+                  className="h-2 w-2 rounded-full"
+                  style={{
+                    backgroundColor: project.color ?? "#6b7280",
+                  }}
+                />
+                <span>{project.name}</span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        )
+      })}
+      <SidebarMenuItem>
+        <SidebarMenuButton>
+          <Plus className="h-4 w-4" />
+          <span>Add Project</span>
+        </SidebarMenuButton>
+      </SidebarMenuItem>
+    </SidebarMenu>
+  )
+}
+
+const FavoritesGroup = () => {
+  const pathname = useLocation({ select: (location) => location.pathname })
+
+  return (
+    <SidebarGroup>
+      <SidebarGroupLabel>Favorites</SidebarGroupLabel>
+      <SidebarGroupContent>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild isActive={pathname === "/favorites"}>
+              <Link to="/favorites">
+                <Star className="h-4 w-4" />
+                <span>Starred Tasks</span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarGroupContent>
+    </SidebarGroup>
+  )
+}
 
 export const AppSidebar = ({
   ...props
@@ -65,82 +162,9 @@ export const AppSidebar = ({
       </SidebarHeader>
 
       <SidebarContent>
-        {/* Main Navigation */}
-        <SidebarGroup>
-          <SidebarMenu>
-            {navigationItems.map((item) => {
-              const isActive = currentPath === item.href
-              return (
-                <SidebarMenuItem key={item.name}>
-                  <SidebarMenuButton asChild isActive={isActive}>
-                    <Link to={item.href}>
-                      <item.icon />
-                      <span>{item.name}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              )
-            })}
-          </SidebarMenu>
-        </SidebarGroup>
-
-        <SidebarSeparator />
-
-        {/* Projects Section */}
-        <SidebarGroup>
-          <SidebarGroupLabel>
-            <span>Projects</span>
-          </SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {projects.map((project) => {
-                const projectPath = `/project/${project.id}`
-                const isActive = currentPath === projectPath
-                return (
-                  <SidebarMenuItem key={project.id}>
-                    <SidebarMenuButton asChild isActive={isActive}>
-                      <Link to={projectPath}>
-                        <div
-                          className={cn("h-2 w-2 rounded-full", project.color)}
-                        />
-                        <span>{project.name}</span>
-                      </Link>
-                    </SidebarMenuButton>
-                    <SidebarMenuBadge>{project.taskCount}</SidebarMenuBadge>
-                  </SidebarMenuItem>
-                )
-              })}
-              <SidebarMenuItem>
-                <SidebarMenuButton>
-                  <Plus className="h-4 w-4" />
-                  <span>Add Project</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-
-        <SidebarSeparator />
-
-        {/* Favorites */}
-        <SidebarGroup>
-          <SidebarGroupLabel>Favorites</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  asChild
-                  isActive={currentPath === "/favorites"}
-                >
-                  <Link to="/favorites">
-                    <Star className="h-4 w-4" />
-                    <span>Starred Tasks</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+        <NavigationGroup />
+        <ProjectsGroup />
+        <FavoritesGroup />
       </SidebarContent>
 
       <SidebarFooter>

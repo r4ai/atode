@@ -3,14 +3,16 @@ import type { AuthUser } from "@hono/auth-js"
 import { createMiddleware } from "hono/factory"
 import type { User } from "@/presentation/schema"
 
-export const mockAuth = (user: User) =>
+export const mockAuth = (user?: User) =>
   createMiddleware(async (c, next) => {
-    const adapterUser: AdapterUser = {
-      id: user.id.toString(),
-      email: user.email,
-      emailVerified: null,
-      name: user.displayName,
-    }
+    const adapterUser: AdapterUser | undefined = user
+      ? {
+          id: user.id.toString(),
+          email: user.email,
+          emailVerified: null,
+          name: user.displayName,
+        }
+      : undefined
     const authUser: AuthUser = {
       session: {
         user: adapterUser,

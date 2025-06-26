@@ -5,244 +5,257 @@
 /* eslint-disable */
 /* tslint:disable */
 // @ts-nocheck
+import { HttpResponse, http } from "msw";
+import { faker } from "@faker-js/faker";
 
-import { faker } from "@faker-js/faker"
-import { HttpResponse, http } from "msw"
+faker.seed(1);
 
-faker.seed(1)
-
-const baseURL = ""
-const MAX_ARRAY_LENGTH = 20
+const baseURL = "";
+const MAX_ARRAY_LENGTH = 20;
 
 // Map to store counters for each API endpoint
-const apiCounters = new Map()
+const apiCounters = new Map<string, number>();
 
-const next = (apiKey) => {
-  let currentCount = apiCounters.get(apiKey) ?? 0
+const next = (apiKey: string) => {
+  let currentCount = apiCounters.get(apiKey) ?? 0;
   if (currentCount === Number.MAX_SAFE_INTEGER - 1) {
-    currentCount = 0
+    currentCount = 0;
   }
-  apiCounters.set(apiKey, currentCount + 1)
-  return currentCount
-}
+  apiCounters.set(apiKey, currentCount + 1);
+  return currentCount;
+};
 
 export const handlers = [
   http.get(`${baseURL}/api/health`, async () => {
-    const resultArray = [[getGetApiHealth200Response(), { status: 200 }]]
+    const resultArray = [[getGetApiHealth200Response(), { status: 200 }]] as [
+      any,
+      { status: number },
+    ][];
 
     return HttpResponse.json(
       ...resultArray[next(`get /api/health`) % resultArray.length],
-    )
+    );
   }),
   http.get(`${baseURL}/api/tasks`, async () => {
     const resultArray = [
       [getGetApiTasks200Response(), { status: 200 }],
       [getGetApiTasks400Response(), { status: 400 }],
-    ]
+    ] as [any, { status: number }][];
 
     return HttpResponse.json(
       ...resultArray[next(`get /api/tasks`) % resultArray.length],
-    )
+    );
   }),
   http.post(`${baseURL}/api/tasks`, async () => {
     const resultArray = [
       [getPostApiTasks201Response(), { status: 201 }],
       [getPostApiTasks400Response(), { status: 400 }],
-    ]
+    ] as [any, { status: number }][];
 
     return HttpResponse.json(
       ...resultArray[next(`post /api/tasks`) % resultArray.length],
-    )
+    );
   }),
   http.get(`${baseURL}/api/tasks/:id`, async () => {
     const resultArray = [
       [getGetApiTasksById200Response(), { status: 200 }],
       [getGetApiTasksById404Response(), { status: 404 }],
-    ]
+    ] as [any, { status: number }][];
 
     return HttpResponse.json(
       ...resultArray[next(`get /api/tasks/:id`) % resultArray.length],
-    )
+    );
   }),
   http.put(`${baseURL}/api/tasks/:id`, async () => {
     const resultArray = [
       [getPutApiTasksById200Response(), { status: 200 }],
       [getPutApiTasksById404Response(), { status: 404 }],
-    ]
+    ] as [any, { status: number }][];
 
     return HttpResponse.json(
       ...resultArray[next(`put /api/tasks/:id`) % resultArray.length],
-    )
+    );
   }),
   http.delete(`${baseURL}/api/tasks/:id`, async () => {
     const resultArray = [
       [getDeleteApiTasksById200Response(), { status: 200 }],
       [getDeleteApiTasksById404Response(), { status: 404 }],
-    ]
+    ] as [any, { status: number }][];
 
     return HttpResponse.json(
       ...resultArray[next(`delete /api/tasks/:id`) % resultArray.length],
-    )
+    );
   }),
   http.post(`${baseURL}/api/tasks/:id/complete`, async () => {
     const resultArray = [
       [getPostApiTasksByIdComplete200Response(), { status: 200 }],
       [getPostApiTasksByIdComplete404Response(), { status: 404 }],
-    ]
+    ] as [any, { status: number }][];
 
     return HttpResponse.json(
       ...resultArray[next(`post /api/tasks/:id/complete`) % resultArray.length],
-    )
+    );
   }),
   http.get(`${baseURL}/api/projects`, async () => {
     const resultArray = [
       [getGetApiProjects200Response(), { status: 200 }],
       [getGetApiProjects400Response(), { status: 400 }],
-    ]
+    ] as [any, { status: number }][];
 
     return HttpResponse.json(
       ...resultArray[next(`get /api/projects`) % resultArray.length],
-    )
+    );
   }),
   http.post(`${baseURL}/api/projects`, async () => {
     const resultArray = [
       [getPostApiProjects201Response(), { status: 201 }],
       [getPostApiProjects400Response(), { status: 400 }],
-    ]
+    ] as [any, { status: number }][];
 
     return HttpResponse.json(
       ...resultArray[next(`post /api/projects`) % resultArray.length],
-    )
+    );
   }),
   http.get(`${baseURL}/api/projects/:id`, async () => {
     const resultArray = [
       [getGetApiProjectsById200Response(), { status: 200 }],
       [getGetApiProjectsById404Response(), { status: 404 }],
-    ]
+    ] as [any, { status: number }][];
 
     return HttpResponse.json(
       ...resultArray[next(`get /api/projects/:id`) % resultArray.length],
-    )
+    );
   }),
   http.put(`${baseURL}/api/projects/:id`, async () => {
     const resultArray = [
       [getPutApiProjectsById200Response(), { status: 200 }],
       [getPutApiProjectsById404Response(), { status: 404 }],
-    ]
+    ] as [any, { status: number }][];
 
     return HttpResponse.json(
       ...resultArray[next(`put /api/projects/:id`) % resultArray.length],
-    )
+    );
   }),
   http.delete(`${baseURL}/api/projects/:id`, async () => {
     const resultArray = [
       [getDeleteApiProjectsById200Response(), { status: 200 }],
       [getDeleteApiProjectsById404Response(), { status: 404 }],
-    ]
+    ] as [any, { status: number }][];
 
     return HttpResponse.json(
       ...resultArray[next(`delete /api/projects/:id`) % resultArray.length],
-    )
+    );
   }),
   http.get(`${baseURL}/api/projects/:id/children`, async () => {
     const resultArray = [
       [getGetApiProjectsByIdChildren200Response(), { status: 200 }],
       [getGetApiProjectsByIdChildren404Response(), { status: 404 }],
-    ]
+    ] as [any, { status: number }][];
 
     return HttpResponse.json(
       ...resultArray[
         next(`get /api/projects/:id/children`) % resultArray.length
       ],
-    )
+    );
   }),
   http.get(`${baseURL}/api/auth/signin`, async () => {
-    const resultArray = [[getGetApiAuthSignin200Response(), { status: 200 }]]
+    const resultArray = [
+      [getGetApiAuthSignin200Response(), { status: 200 }],
+    ] as [any, { status: number }][];
 
     return HttpResponse.json(
       ...resultArray[next(`get /api/auth/signin`) % resultArray.length],
-    )
+    );
   }),
   http.post(`${baseURL}/api/auth/signin/github`, async () => {
     const resultArray = [
       [undefined, { status: 302 }],
       [undefined, { status: 400 }],
-    ]
+    ] as [any, { status: number }][];
 
     return HttpResponse.json(
       ...resultArray[next(`post /api/auth/signin/github`) % resultArray.length],
-    )
+    );
   }),
   http.get(`${baseURL}/api/auth/callback/github`, async () => {
     const resultArray = [
       [undefined, { status: 302 }],
       [undefined, { status: 400 }],
-    ]
+    ] as [any, { status: number }][];
 
     return HttpResponse.json(
       ...resultArray[
         next(`get /api/auth/callback/github`) % resultArray.length
       ],
-    )
+    );
   }),
   http.post(`${baseURL}/api/auth/callback/github`, async () => {
     const resultArray = [
       [undefined, { status: 302 }],
       [undefined, { status: 400 }],
-    ]
+    ] as [any, { status: number }][];
 
     return HttpResponse.json(
       ...resultArray[
         next(`post /api/auth/callback/github`) % resultArray.length
       ],
-    )
+    );
   }),
   http.get(`${baseURL}/api/auth/signout`, async () => {
-    const resultArray = [[getGetApiAuthSignout200Response(), { status: 200 }]]
+    const resultArray = [
+      [getGetApiAuthSignout200Response(), { status: 200 }],
+    ] as [any, { status: number }][];
 
     return HttpResponse.json(
       ...resultArray[next(`get /api/auth/signout`) % resultArray.length],
-    )
+    );
   }),
   http.post(`${baseURL}/api/auth/signout`, async () => {
     const resultArray = [
       [undefined, { status: 302 }],
       [undefined, { status: 400 }],
-    ]
+    ] as [any, { status: number }][];
 
     return HttpResponse.json(
       ...resultArray[next(`post /api/auth/signout`) % resultArray.length],
-    )
+    );
   }),
   http.get(`${baseURL}/api/auth/session`, async () => {
-    const resultArray = [[getGetApiAuthSession200Response(), { status: 200 }]]
+    const resultArray = [
+      [getGetApiAuthSession200Response(), { status: 200 }],
+    ] as [any, { status: number }][];
 
     return HttpResponse.json(
       ...resultArray[next(`get /api/auth/session`) % resultArray.length],
-    )
+    );
   }),
   http.get(`${baseURL}/api/auth/csrf`, async () => {
-    const resultArray = [[getGetApiAuthCsrf200Response(), { status: 200 }]]
+    const resultArray = [[getGetApiAuthCsrf200Response(), { status: 200 }]] as [
+      any,
+      { status: number },
+    ][];
 
     return HttpResponse.json(
       ...resultArray[next(`get /api/auth/csrf`) % resultArray.length],
-    )
+    );
   }),
   http.get(`${baseURL}/api/auth/providers`, async () => {
-    const resultArray = [[getGetApiAuthProviders200Response(), { status: 200 }]]
+    const resultArray = [
+      [getGetApiAuthProviders200Response(), { status: 200 }],
+    ] as [any, { status: number }][];
 
     return HttpResponse.json(
       ...resultArray[next(`get /api/auth/providers`) % resultArray.length],
-    )
+    );
   }),
-]
+];
 
 export function getGetApiHealth200Response() {
   return {
     status: faker.lorem.words(),
     timestamp: faker.lorem.words(),
     version: faker.lorem.words(),
-  }
+  };
 }
 
 export function getGetApiTasks200Response() {
@@ -271,7 +284,7 @@ export function getGetApiTasks200Response() {
     limit: 20,
     totalPages: 3,
     success: true,
-  }
+  };
 }
 
 export function getGetApiTasks400Response() {
@@ -280,7 +293,7 @@ export function getGetApiTasks400Response() {
     error: "VALIDATION_ERROR",
     message: "Invalid input provided",
     details: null,
-  }
+  };
 }
 
 export function getPostApiTasks201Response() {
@@ -290,7 +303,7 @@ export function getPostApiTasks201Response() {
     },
     success: true,
     message: "Operation completed successfully",
-  }
+  };
 }
 
 export function getPostApiTasks400Response() {
@@ -299,7 +312,7 @@ export function getPostApiTasks400Response() {
     error: "VALIDATION_ERROR",
     message: "Invalid input provided",
     details: null,
-  }
+  };
 }
 
 export function getGetApiTasksById200Response() {
@@ -309,7 +322,7 @@ export function getGetApiTasksById200Response() {
     },
     success: true,
     message: "Operation completed successfully",
-  }
+  };
 }
 
 export function getGetApiTasksById404Response() {
@@ -318,7 +331,7 @@ export function getGetApiTasksById404Response() {
     error: "VALIDATION_ERROR",
     message: "Invalid input provided",
     details: null,
-  }
+  };
 }
 
 export function getPutApiTasksById200Response() {
@@ -328,7 +341,7 @@ export function getPutApiTasksById200Response() {
     },
     success: true,
     message: "Operation completed successfully",
-  }
+  };
 }
 
 export function getPutApiTasksById404Response() {
@@ -337,7 +350,7 @@ export function getPutApiTasksById404Response() {
     error: "VALIDATION_ERROR",
     message: "Invalid input provided",
     details: null,
-  }
+  };
 }
 
 export function getDeleteApiTasksById200Response() {
@@ -347,7 +360,7 @@ export function getDeleteApiTasksById200Response() {
     },
     success: true,
     message: "Operation completed successfully",
-  }
+  };
 }
 
 export function getDeleteApiTasksById404Response() {
@@ -356,7 +369,7 @@ export function getDeleteApiTasksById404Response() {
     error: "VALIDATION_ERROR",
     message: "Invalid input provided",
     details: null,
-  }
+  };
 }
 
 export function getPostApiTasksByIdComplete200Response() {
@@ -366,7 +379,7 @@ export function getPostApiTasksByIdComplete200Response() {
     },
     success: true,
     message: "Operation completed successfully",
-  }
+  };
 }
 
 export function getPostApiTasksByIdComplete404Response() {
@@ -375,7 +388,7 @@ export function getPostApiTasksByIdComplete404Response() {
     error: "VALIDATION_ERROR",
     message: "Invalid input provided",
     details: null,
-  }
+  };
 }
 
 export function getGetApiProjects200Response() {
@@ -396,7 +409,7 @@ export function getGetApiProjects200Response() {
       deletedAt: faker.helpers.arrayElement(["2025-01-01T00:00:00Z", null]),
     })),
     success: faker.datatype.boolean(),
-  }
+  };
 }
 
 export function getGetApiProjects400Response() {
@@ -405,7 +418,7 @@ export function getGetApiProjects400Response() {
     error: "VALIDATION_ERROR",
     message: "Invalid input provided",
     details: null,
-  }
+  };
 }
 
 export function getPostApiProjects201Response() {
@@ -415,7 +428,7 @@ export function getPostApiProjects201Response() {
     },
     success: true,
     message: "Operation completed successfully",
-  }
+  };
 }
 
 export function getPostApiProjects400Response() {
@@ -424,7 +437,7 @@ export function getPostApiProjects400Response() {
     error: "VALIDATION_ERROR",
     message: "Invalid input provided",
     details: null,
-  }
+  };
 }
 
 export function getGetApiProjectsById200Response() {
@@ -434,7 +447,7 @@ export function getGetApiProjectsById200Response() {
     },
     success: true,
     message: "Operation completed successfully",
-  }
+  };
 }
 
 export function getGetApiProjectsById404Response() {
@@ -443,7 +456,7 @@ export function getGetApiProjectsById404Response() {
     error: "VALIDATION_ERROR",
     message: "Invalid input provided",
     details: null,
-  }
+  };
 }
 
 export function getPutApiProjectsById200Response() {
@@ -453,7 +466,7 @@ export function getPutApiProjectsById200Response() {
     },
     success: true,
     message: "Operation completed successfully",
-  }
+  };
 }
 
 export function getPutApiProjectsById404Response() {
@@ -462,7 +475,7 @@ export function getPutApiProjectsById404Response() {
     error: "VALIDATION_ERROR",
     message: "Invalid input provided",
     details: null,
-  }
+  };
 }
 
 export function getDeleteApiProjectsById200Response() {
@@ -472,7 +485,7 @@ export function getDeleteApiProjectsById200Response() {
     },
     success: true,
     message: "Operation completed successfully",
-  }
+  };
 }
 
 export function getDeleteApiProjectsById404Response() {
@@ -481,7 +494,7 @@ export function getDeleteApiProjectsById404Response() {
     error: "VALIDATION_ERROR",
     message: "Invalid input provided",
     details: null,
-  }
+  };
 }
 
 export function getGetApiProjectsByIdChildren200Response() {
@@ -502,7 +515,7 @@ export function getGetApiProjectsByIdChildren200Response() {
       deletedAt: faker.helpers.arrayElement(["2025-01-01T00:00:00Z", null]),
     })),
     success: faker.datatype.boolean(),
-  }
+  };
 }
 
 export function getGetApiProjectsByIdChildren404Response() {
@@ -511,15 +524,15 @@ export function getGetApiProjectsByIdChildren404Response() {
     error: "VALIDATION_ERROR",
     message: "Invalid input provided",
     details: null,
-  }
+  };
 }
 
 export function getGetApiAuthSignin200Response() {
-  return null
+  return null;
 }
 
 export function getGetApiAuthSignout200Response() {
-  return null
+  return null;
 }
 
 export function getGetApiAuthSession200Response() {
@@ -533,13 +546,13 @@ export function getGetApiAuthSession200Response() {
       expires: faker.date.past(),
     },
     {},
-  ])
+  ]);
 }
 
 export function getGetApiAuthCsrf200Response() {
   return {
     csrfToken: faker.lorem.words(),
-  }
+  };
 }
 
 export function getGetApiAuthProviders200Response() {
@@ -551,5 +564,5 @@ export function getGetApiAuthProviders200Response() {
       signinUrl: "/api/auth/signin/github",
       callbackUrl: "/api/auth/callback/github",
     },
-  }
+  };
 }

@@ -10,12 +10,20 @@ import { mockAuth } from "@/test-helpers/auth"
 import { type Env, it } from "@/test-helpers/db"
 import { createTaskRoutes } from "./task"
 
-const createApp = async ({ deps }: Env, { user }: { user?: User } = {}) => {
+type CreateAppOptions = {
+  user?: User
+  authenticated?: boolean
+}
+
+const createApp = async (
+  { deps }: Env,
+  { user, authenticated = true }: CreateAppOptions = {},
+) => {
   const testUser =
     user ?? (await deps.repository.user.create(createRandomUserData()))
 
   const app = new Hono()
-    .use("*", mockAuth(testUser))
+    .use("*", mockAuth(authenticated ? testUser : undefined))
     .route("/tasks", createTaskRoutes(deps))
 
   const client = testClient(app)
@@ -241,7 +249,7 @@ describe("Task Routes Integration Tests", () => {
     })
 
     it("should return 401 for unauthenticated request", async ({ env }) => {
-      const app = new Hono().route("/tasks", createTaskRoutes(env.deps))
+      const { app } = await createApp(env, { authenticated: false })
       const client = testClient(app)
 
       const res = await client.tasks.$get()
@@ -319,7 +327,7 @@ describe("Task Routes Integration Tests", () => {
     })
 
     it("should return 401 for unauthenticated request", async ({ env }) => {
-      const app = new Hono().route("/tasks", createTaskRoutes(env.deps))
+      const { app } = await createApp(env, { authenticated: false })
       const client = testClient(app)
 
       const res = await client.tasks.$post({
@@ -409,7 +417,7 @@ describe("Task Routes Integration Tests", () => {
         createRandomTaskData({ userId: user.id, projectId: project.id }),
       )
 
-      const app = new Hono().route("/tasks", createTaskRoutes(env.deps))
+      const { app } = await createApp(env, { authenticated: false })
       const client = testClient(app)
 
       const res = await client.tasks[":id"].$get({
@@ -513,7 +521,7 @@ describe("Task Routes Integration Tests", () => {
         createRandomTaskData({ userId: user.id, projectId: project.id }),
       )
 
-      const app = new Hono().route("/tasks", createTaskRoutes(env.deps))
+      const { app } = await createApp(env, { authenticated: false })
       const client = testClient(app)
 
       const res = await client.tasks[":id"].$put({
@@ -602,7 +610,7 @@ describe("Task Routes Integration Tests", () => {
     })
 
     it("should return 401 for unauthenticated request", async ({ env }) => {
-      const app = new Hono().route("/tasks", createTaskRoutes(env.deps))
+      const { app } = await createApp(env, { authenticated: false })
       const client = testClient(app)
 
       const res = await client.tasks[":id"].complete.$post({
@@ -694,7 +702,7 @@ describe("Task Routes Integration Tests", () => {
     })
 
     it("should return 401 for unauthenticated request", async ({ env }) => {
-      const app = new Hono().route("/tasks", createTaskRoutes(env.deps))
+      const { app } = await createApp(env, { authenticated: false })
       const client = testClient(app)
 
       const res = await client.tasks[":id"].$delete({

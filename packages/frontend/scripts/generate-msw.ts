@@ -13,5 +13,4 @@ const schemaPath = path.resolve(
 )
 const outputPath = path.resolve(import.meta.dirname, "../src/mocks")
 
-await $`bun run msw-auto-mock ${schemaPath} --output ${outputPath}`
-await $`bun run biome check --write ${outputPath}`
+await $`bun run msw-auto-mock ${schemaPath} --typescript --output ${outputPath}`
