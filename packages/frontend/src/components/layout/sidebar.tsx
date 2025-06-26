@@ -38,7 +38,7 @@ const NavigationGroup = () => {
     <SidebarGroup>
       <SidebarMenu>
         {navigationItems.map((item) => {
-          const isActive = pathname === item.href
+          const isActive = pathname.startsWith(item.href)
           return (
             <SidebarMenuItem key={item.name}>
               <SidebarMenuButton asChild isActive={isActive}>
