@@ -62,8 +62,8 @@ export const createProjectRoutes = (deps: Dependencies) => {
       zValidator("query", ProjectFilterSchema.optional()),
       async (c) => {
         try {
-          const session = c.get("authUser")
-          if (!session?.user?.email) {
+          const { session } = c.get("authUser")
+          if (!session.user?.email) {
             return c.json(
               {
                 success: false,
@@ -140,7 +140,7 @@ export const createProjectRoutes = (deps: Dependencies) => {
         const data = c.req.valid("json")
 
         try {
-          const session = c.get("authUser")
+          const { session } = c.get("authUser")
           if (!session?.user?.email) {
             return c.json(
               {
@@ -230,7 +230,7 @@ export const createProjectRoutes = (deps: Dependencies) => {
         const { id } = c.req.valid("param")
 
         try {
-          const session = c.get("authUser")
+          const { session } = c.get("authUser")
           if (!session?.user?.email) {
             return c.json(
               {
@@ -324,7 +324,7 @@ export const createProjectRoutes = (deps: Dependencies) => {
         const { id } = c.req.valid("param")
 
         try {
-          const session = c.get("authUser")
+          const { session } = c.get("authUser")
           if (!session?.user?.email) {
             return c.json(
               {
@@ -415,7 +415,7 @@ export const createProjectRoutes = (deps: Dependencies) => {
       zValidator("json", UpdateProjectSchema),
       async (c) => {
         // Check authentication first
-        const session = c.get("authUser")
+        const { session } = c.get("authUser")
         if (!session?.user?.email) {
           return c.json(
             {
@@ -549,7 +549,7 @@ export const createProjectRoutes = (deps: Dependencies) => {
         const { id } = c.req.valid("param")
 
         // Check authentication first
-        const session = c.get("authUser")
+        const { session } = c.get("authUser")
         if (!session?.user?.email) {
           return c.json(
             {

@@ -59,7 +59,7 @@ export const createTaskRoutes = (deps: Dependencies) => {
         const filters = c.req.valid("query")
 
         try {
-          const session = c.get("authUser")
+          const { session } = c.get("authUser")
           if (!session?.user?.email) {
             return c.json(
               {
@@ -162,7 +162,7 @@ export const createTaskRoutes = (deps: Dependencies) => {
         const data = c.req.valid("json")
 
         try {
-          const session = c.get("authUser")
+          const { session } = c.get("authUser")
           if (!session?.user?.email) {
             return c.json(
               {
@@ -254,7 +254,7 @@ export const createTaskRoutes = (deps: Dependencies) => {
         const { id } = c.req.valid("param")
 
         try {
-          const session = c.get("authUser")
+          const { session } = c.get("authUser")
           if (!session?.user?.email) {
             return c.json(
               {
@@ -342,7 +342,7 @@ export const createTaskRoutes = (deps: Dependencies) => {
       zValidator("json", UpdateTaskSchema),
       async (c) => {
         // Check authentication first
-        const session = c.get("authUser")
+        const { session } = c.get("authUser")
         if (!session?.user?.email) {
           return c.json(
             {
@@ -457,7 +457,7 @@ export const createTaskRoutes = (deps: Dependencies) => {
         const { id } = c.req.valid("param")
 
         // Check authentication first
-        const session = c.get("authUser")
+        const { session } = c.get("authUser")
         if (!session?.user?.email) {
           return c.json(
             {
@@ -554,7 +554,7 @@ export const createTaskRoutes = (deps: Dependencies) => {
         const { id } = c.req.valid("param")
 
         // Check authentication first
-        const session = c.get("authUser")
+        const { session } = c.get("authUser")
         if (!session?.user?.email) {
           return c.json(
             {
