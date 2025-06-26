@@ -1,25 +1,39 @@
 import { z } from "zod"
 import "zod-openapi/extend"
 
-// Base schemas
-export const IdSchema = z.coerce
-  .number()
-  .int()
-  .min(1)
-  .openapi({ example: 1, description: "Unique identifier" })
+// Base schemas with ref for reusability
+export const IdSchema = z.coerce.number().int().min(1).openapi({
+  example: 1,
+  description: "Unique identifier",
+  ref: "Id",
+})
 
 export const IdParamSchema = z
   .string()
   .transform((val) => Number(val))
   .pipe(IdSchema)
-  .openapi({ example: "1", description: "Unique identifier as URL parameter" })
+  .openapi({
+    example: "1",
+    description: "Unique identifier as URL parameter",
+    ref: "IdParam",
+  })
+
 export const TimestampSchema = z
   .union([z.date(), z.string().datetime()])
-  .openapi({ example: "2025-01-01T00:00:00Z", description: "ISO timestamp" })
+  .openapi({
+    example: "2025-01-01T00:00:00Z",
+    description: "ISO timestamp",
+    ref: "Timestamp",
+  })
+
 export const ColorSchema = z
   .string()
   .regex(/^#[0-9A-Fa-f]{6}$/)
-  .openapi({ example: "#FF5722", description: "Hex color code" })
+  .openapi({
+    example: "#FF5722",
+    description: "Hex color code",
+    ref: "Color",
+  })
 
 // User schemas
 export const UserSchema = z
@@ -31,14 +45,20 @@ export const UserSchema = z
     updatedAt: TimestampSchema,
     deletedAt: TimestampSchema.nullable().optional(),
   })
-  .openapi({ description: "User entity" })
+  .openapi({
+    description: "User entity",
+    ref: "User",
+  })
 
 export const CreateUserSchema = z
   .object({
     email: z.string().email().openapi({ example: "user@example.com" }),
     displayName: z.string().min(1).max(255).openapi({ example: "John Doe" }),
   })
-  .openapi({ description: "Create user request" })
+  .openapi({
+    description: "Create user request",
+    ref: "CreateUser",
+  })
 
 // Project schemas
 export const ProjectSchema = z
@@ -63,7 +83,10 @@ export const ProjectSchema = z
     updatedAt: TimestampSchema,
     deletedAt: TimestampSchema.nullable().optional(),
   })
-  .openapi({ description: "Project entity" })
+  .openapi({
+    description: "Project entity",
+    ref: "Project",
+  })
 
 export const CreateProjectSchema = z
   .object({
@@ -75,16 +98,24 @@ export const CreateProjectSchema = z
     parentId: IdSchema.optional(),
     color: ColorSchema.optional(),
   })
-  .openapi({ description: "Create project request" })
+  .openapi({
+    description: "Create project request",
+    ref: "CreateProject",
+  })
 
 export const UpdateProjectSchema = CreateProjectSchema.partial().openapi({
   description: "Update project request",
+  ref: "UpdateProject",
 })
 
 // Task schemas
 export const TaskStatusSchema = z
   .enum(["pending", "in_progress", "completed", "cancelled"])
-  .openapi({ example: "pending", description: "Task status" })
+  .openapi({
+    example: "pending",
+    description: "Task status",
+    ref: "TaskStatus",
+  })
 
 export const TaskSchema = z
   .object({
@@ -115,7 +146,10 @@ export const TaskSchema = z
     updatedAt: TimestampSchema,
     deletedAt: TimestampSchema.nullable().optional(),
   })
-  .openapi({ description: "Task entity" })
+  .openapi({
+    description: "Task entity",
+    ref: "Task",
+  })
 
 export const CreateTaskSchema = z
   .object({
@@ -130,11 +164,17 @@ export const CreateTaskSchema = z
       .optional()
       .openapi({ example: ["urgent", "bug"] }),
   })
-  .openapi({ description: "Create task request" })
+  .openapi({
+    description: "Create task request",
+    ref: "CreateTask",
+  })
 
 export const UpdateTaskSchema = CreateTaskSchema.omit({ projectId: true })
   .partial()
-  .openapi({ description: "Update task request" })
+  .openapi({
+    description: "Update task request",
+    ref: "UpdateTask",
+  })
 
 // Label schemas
 export const LabelSchema = z
@@ -145,14 +185,20 @@ export const LabelSchema = z
     color: ColorSchema.optional(),
     createdAt: TimestampSchema,
   })
-  .openapi({ description: "Label entity" })
+  .openapi({
+    description: "Label entity",
+    ref: "Label",
+  })
 
 export const CreateLabelSchema = z
   .object({
     name: z.string().min(1).max(100).openapi({ example: "urgent" }),
     color: ColorSchema.optional(),
   })
-  .openapi({ description: "Create label request" })
+  .openapi({
+    description: "Create label request",
+    ref: "CreateLabel",
+  })
 
 // Comment schemas
 export const CommentSchema = z
@@ -170,14 +216,20 @@ export const CommentSchema = z
     updatedAt: TimestampSchema,
     deletedAt: TimestampSchema.nullable().optional(),
   })
-  .openapi({ description: "Comment entity" })
+  .openapi({
+    description: "Comment entity",
+    ref: "Comment",
+  })
 
 export const CreateCommentSchema = z
   .object({
     content: z.string().min(1).openapi({ example: "This is a comment" }),
     parentId: IdSchema.optional(),
   })
-  .openapi({ description: "Create comment request" })
+  .openapi({
+    description: "Create comment request",
+    ref: "CreateComment",
+  })
 
 // Query parameter schemas
 export const PaginationSchema = z
@@ -196,7 +248,10 @@ export const PaginationSchema = z
       .optional()
       .openapi({ example: 20, description: "Items per page" }),
   })
-  .openapi({ description: "Pagination parameters" })
+  .openapi({
+    description: "Pagination parameters",
+    ref: "Pagination",
+  })
 
 export const TaskFilterSchema = PaginationSchema.extend({
   projectId: IdSchema.optional(),
@@ -211,7 +266,10 @@ export const TaskFilterSchema = PaginationSchema.extend({
   includeCompleted: z.boolean().optional().openapi({ example: false }),
 })
   .optional()
-  .openapi({ description: "Task filter parameters" })
+  .openapi({
+    description: "Task filter parameters",
+    ref: "TaskFilter",
+  })
 
 export const ProjectFilterSchema = PaginationSchema.extend({
   includeArchived: z.boolean().optional().openapi({ example: false }),
@@ -221,7 +279,10 @@ export const ProjectFilterSchema = PaginationSchema.extend({
     .min(1)
     .optional()
     .openapi({ example: 1, description: "Maximum depth to include" }),
-}).openapi({ description: "Project filter parameters" })
+}).openapi({
+  description: "Project filter parameters",
+  ref: "ProjectFilter",
+})
 
 // Response schemas
 export const ApiResponseSchema = <T extends z.ZodTypeAny>(dataSchema: T) =>
@@ -234,7 +295,10 @@ export const ApiResponseSchema = <T extends z.ZodTypeAny>(dataSchema: T) =>
         .optional()
         .openapi({ example: "Operation completed successfully" }),
     })
-    .openapi({ description: "API response wrapper" })
+    .openapi({
+      description: "API response wrapper",
+      ref: "ApiResponse",
+    })
 
 export const ApiErrorSchema = z
   .object({
@@ -243,7 +307,10 @@ export const ApiErrorSchema = z
     message: z.string().openapi({ example: "Invalid input provided" }),
     details: z.unknown().optional(),
   })
-  .openapi({ description: "API error response" })
+  .openapi({
+    description: "API error response",
+    ref: "ApiError",
+  })
 
 export const PaginatedResponseSchema = <T extends z.ZodTypeAny>(
   itemSchema: T,
@@ -273,7 +340,10 @@ export const PaginatedResponseSchema = <T extends z.ZodTypeAny>(
         .openapi({ example: 3, description: "Total number of pages" }),
       success: z.boolean().openapi({ example: true }),
     })
-    .openapi({ description: "Paginated response wrapper" })
+    .openapi({
+      description: "Paginated response wrapper",
+      ref: "PaginatedResponse",
+    })
 
 // Type exports
 export type User = z.infer<typeof UserSchema>

@@ -75,6 +75,320 @@ export const openApiSpecsOptions = {
         description: "Comment management operations",
       },
     ],
+    paths: {
+      // Auth.js authentication endpoints
+      "/api/auth/signin": {
+        get: {
+          summary: "Display sign-in page",
+          description: "Displays the built-in/unbranded sign-in page",
+          tags: ["auth"],
+          responses: {
+            200: {
+              description: "Sign-in page",
+              content: {
+                "text/html": {
+                  schema: {
+                    type: "string",
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+      "/api/auth/signin/github": {
+        post: {
+          summary: "Sign in with GitHub",
+          description:
+            "Starts a GitHub OAuth sign-in flow. Requires CSRF token.",
+          tags: ["auth"],
+          requestBody: {
+            required: true,
+            content: {
+              "application/x-www-form-urlencoded": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    csrfToken: {
+                      type: "string",
+                      description: "CSRF token from /api/auth/csrf",
+                    },
+                    callbackUrl: {
+                      type: "string",
+                      description: "URL to redirect to after sign-in",
+                    },
+                  },
+                  required: ["csrfToken"],
+                },
+              },
+            },
+          },
+          responses: {
+            302: {
+              description: "Redirect to GitHub OAuth authorization",
+            },
+            400: {
+              description: "Invalid request or missing CSRF token",
+            },
+          },
+        },
+      },
+      "/api/auth/callback/github": {
+        get: {
+          summary: "GitHub OAuth callback",
+          description: "Handles OAuth callback from GitHub",
+          tags: ["auth"],
+          parameters: [
+            {
+              name: "code",
+              in: "query",
+              required: true,
+              schema: {
+                type: "string",
+              },
+              description: "Authorization code from GitHub",
+            },
+            {
+              name: "state",
+              in: "query",
+              required: true,
+              schema: {
+                type: "string",
+              },
+              description: "State parameter for CSRF protection",
+            },
+          ],
+          responses: {
+            302: {
+              description: "Redirect after successful authentication",
+            },
+            400: {
+              description: "Invalid callback parameters",
+            },
+          },
+        },
+        post: {
+          summary: "GitHub OAuth callback (POST)",
+          description: "Handles OAuth callback from GitHub via POST",
+          tags: ["auth"],
+          requestBody: {
+            required: true,
+            content: {
+              "application/x-www-form-urlencoded": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    code: {
+                      type: "string",
+                      description: "Authorization code from GitHub",
+                    },
+                    state: {
+                      type: "string",
+                      description: "State parameter for CSRF protection",
+                    },
+                  },
+                  required: ["code", "state"],
+                },
+              },
+            },
+          },
+          responses: {
+            302: {
+              description: "Redirect after successful authentication",
+            },
+            400: {
+              description: "Invalid callback parameters",
+            },
+          },
+        },
+      },
+      "/api/auth/signout": {
+        get: {
+          summary: "Display sign-out page",
+          description: "Displays the built-in/unbranded sign-out page",
+          tags: ["auth"],
+          responses: {
+            200: {
+              description: "Sign-out page",
+              content: {
+                "text/html": {
+                  schema: {
+                    type: "string",
+                  },
+                },
+              },
+            },
+          },
+        },
+        post: {
+          summary: "Sign out",
+          description:
+            "Signs the user out and invalidates the session. Requires CSRF token.",
+          tags: ["auth"],
+          requestBody: {
+            required: true,
+            content: {
+              "application/x-www-form-urlencoded": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    csrfToken: {
+                      type: "string",
+                      description: "CSRF token from /api/auth/csrf",
+                    },
+                    callbackUrl: {
+                      type: "string",
+                      description: "URL to redirect to after sign-out",
+                    },
+                  },
+                  required: ["csrfToken"],
+                },
+              },
+            },
+          },
+          responses: {
+            302: {
+              description: "Redirect after successful sign-out",
+            },
+            400: {
+              description: "Invalid request or missing CSRF token",
+            },
+          },
+        },
+      },
+      "/api/auth/session": {
+        get: {
+          summary: "Get session",
+          description:
+            "Returns client-safe session object or empty object if no session",
+          tags: ["auth"],
+          responses: {
+            200: {
+              description: "Session data",
+              content: {
+                "application/json": {
+                  schema: {
+                    oneOf: [
+                      {
+                        type: "object",
+                        properties: {
+                          user: {
+                            type: "object",
+                            properties: {
+                              name: {
+                                type: "string",
+                                nullable: true,
+                              },
+                              email: {
+                                type: "string",
+                                nullable: true,
+                              },
+                              image: {
+                                type: "string",
+                                nullable: true,
+                              },
+                            },
+                          },
+                          expires: {
+                            type: "string",
+                            format: "date-time",
+                          },
+                        },
+                      },
+                      {
+                        type: "object",
+                        additionalProperties: false,
+                      },
+                    ],
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+      "/api/auth/csrf": {
+        get: {
+          summary: "Get CSRF token",
+          description:
+            "Returns CSRF token required for POST requests to authentication endpoints",
+          tags: ["auth"],
+          responses: {
+            200: {
+              description: "CSRF token",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    properties: {
+                      csrfToken: {
+                        type: "string",
+                        description: "CSRF token for authentication requests",
+                      },
+                    },
+                    required: ["csrfToken"],
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+      "/api/auth/providers": {
+        get: {
+          summary: "Get configured providers",
+          description:
+            "Returns list of configured OAuth providers and their details",
+          tags: ["auth"],
+          responses: {
+            200: {
+              description: "List of configured providers",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    properties: {
+                      github: {
+                        type: "object",
+                        properties: {
+                          id: {
+                            type: "string",
+                            example: "github",
+                          },
+                          name: {
+                            type: "string",
+                            example: "GitHub",
+                          },
+                          type: {
+                            type: "string",
+                            example: "oauth",
+                          },
+                          signinUrl: {
+                            type: "string",
+                            example: "/api/auth/signin/github",
+                          },
+                          callbackUrl: {
+                            type: "string",
+                            example: "/api/auth/callback/github",
+                          },
+                        },
+                        required: [
+                          "id",
+                          "name",
+                          "type",
+                          "signinUrl",
+                          "callbackUrl",
+                        ],
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
   },
 } as const satisfies OpenApiSpecsOptions
 
