@@ -1,20 +1,14 @@
 import { getSession } from "@hono/auth-js/react"
 import { createFileRoute, redirect } from "@tanstack/react-router"
 
-export const Route = createFileRoute("/")({
-  loader: async () => {
+export const Route = createFileRoute("/(app)")({
+  beforeLoad: async ({ location }) => {
     const session = await getSession()
     if (!session?.user) {
-      redirect({
+      throw redirect({
         to: "/login",
-        throw: true,
+        search: { redirect: location.href },
       })
     }
-
-    // TODO: Implement a landing page for external users
-    redirect({
-      to: "/home",
-      throw: true,
-    })
   },
 })

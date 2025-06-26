@@ -9,48 +9,15 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as TodayRouteImport } from './routes/today'
-import { Route as SettingsRouteImport } from './routes/settings'
-import { Route as InboxRouteImport } from './routes/inbox'
-import { Route as HomeRouteImport } from './routes/home'
-import { Route as FavoritesRouteImport } from './routes/favorites'
-import { Route as DashboardRouteImport } from './routes/dashboard'
-import { Route as CompletedRouteImport } from './routes/completed'
+import { Route as appRouteRouteImport } from './routes/(app)/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as LoginIndexRouteImport } from './routes/login/index'
+import { Route as appSettingsIndexRouteImport } from './routes/(app)/settings/index'
+import { Route as appHomeIndexRouteImport } from './routes/(app)/home/index'
+import { Route as appFavoritesIndexRouteImport } from './routes/(app)/favorites/index'
 
-const TodayRoute = TodayRouteImport.update({
-  id: '/today',
-  path: '/today',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SettingsRoute = SettingsRouteImport.update({
-  id: '/settings',
-  path: '/settings',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const InboxRoute = InboxRouteImport.update({
-  id: '/inbox',
-  path: '/inbox',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const HomeRoute = HomeRouteImport.update({
-  id: '/home',
-  path: '/home',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const FavoritesRoute = FavoritesRouteImport.update({
-  id: '/favorites',
-  path: '/favorites',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DashboardRoute = DashboardRouteImport.update({
-  id: '/dashboard',
-  path: '/dashboard',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CompletedRoute = CompletedRouteImport.update({
-  id: '/completed',
-  path: '/completed',
+const appRouteRoute = appRouteRouteImport.update({
+  id: '/(app)',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -58,131 +25,78 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LoginIndexRoute = LoginIndexRouteImport.update({
+  id: '/login/',
+  path: '/login/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const appSettingsIndexRoute = appSettingsIndexRouteImport.update({
+  id: '/settings/',
+  path: '/settings/',
+  getParentRoute: () => appRouteRoute,
+} as any)
+const appHomeIndexRoute = appHomeIndexRouteImport.update({
+  id: '/home/',
+  path: '/home/',
+  getParentRoute: () => appRouteRoute,
+} as any)
+const appFavoritesIndexRoute = appFavoritesIndexRouteImport.update({
+  id: '/favorites/',
+  path: '/favorites/',
+  getParentRoute: () => appRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
-  '/completed': typeof CompletedRoute
-  '/dashboard': typeof DashboardRoute
-  '/favorites': typeof FavoritesRoute
-  '/home': typeof HomeRoute
-  '/inbox': typeof InboxRoute
-  '/settings': typeof SettingsRoute
-  '/today': typeof TodayRoute
+  '/': typeof appRouteRouteWithChildren
+  '/login': typeof LoginIndexRoute
+  '/favorites': typeof appFavoritesIndexRoute
+  '/home': typeof appHomeIndexRoute
+  '/settings': typeof appSettingsIndexRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
-  '/completed': typeof CompletedRoute
-  '/dashboard': typeof DashboardRoute
-  '/favorites': typeof FavoritesRoute
-  '/home': typeof HomeRoute
-  '/inbox': typeof InboxRoute
-  '/settings': typeof SettingsRoute
-  '/today': typeof TodayRoute
+  '/': typeof appRouteRouteWithChildren
+  '/login': typeof LoginIndexRoute
+  '/favorites': typeof appFavoritesIndexRoute
+  '/home': typeof appHomeIndexRoute
+  '/settings': typeof appSettingsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/completed': typeof CompletedRoute
-  '/dashboard': typeof DashboardRoute
-  '/favorites': typeof FavoritesRoute
-  '/home': typeof HomeRoute
-  '/inbox': typeof InboxRoute
-  '/settings': typeof SettingsRoute
-  '/today': typeof TodayRoute
+  '/(app)': typeof appRouteRouteWithChildren
+  '/login/': typeof LoginIndexRoute
+  '/(app)/favorites/': typeof appFavoritesIndexRoute
+  '/(app)/home/': typeof appHomeIndexRoute
+  '/(app)/settings/': typeof appSettingsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths:
-    | '/'
-    | '/completed'
-    | '/dashboard'
-    | '/favorites'
-    | '/home'
-    | '/inbox'
-    | '/settings'
-    | '/today'
+  fullPaths: '/' | '/login' | '/favorites' | '/home' | '/settings'
   fileRoutesByTo: FileRoutesByTo
-  to:
-    | '/'
-    | '/completed'
-    | '/dashboard'
-    | '/favorites'
-    | '/home'
-    | '/inbox'
-    | '/settings'
-    | '/today'
+  to: '/' | '/login' | '/favorites' | '/home' | '/settings'
   id:
     | '__root__'
     | '/'
-    | '/completed'
-    | '/dashboard'
-    | '/favorites'
-    | '/home'
-    | '/inbox'
-    | '/settings'
-    | '/today'
+    | '/(app)'
+    | '/login/'
+    | '/(app)/favorites/'
+    | '/(app)/home/'
+    | '/(app)/settings/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  CompletedRoute: typeof CompletedRoute
-  DashboardRoute: typeof DashboardRoute
-  FavoritesRoute: typeof FavoritesRoute
-  HomeRoute: typeof HomeRoute
-  InboxRoute: typeof InboxRoute
-  SettingsRoute: typeof SettingsRoute
-  TodayRoute: typeof TodayRoute
+  appRouteRoute: typeof appRouteRouteWithChildren
+  LoginIndexRoute: typeof LoginIndexRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/today': {
-      id: '/today'
-      path: '/today'
-      fullPath: '/today'
-      preLoaderRoute: typeof TodayRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/settings': {
-      id: '/settings'
-      path: '/settings'
-      fullPath: '/settings'
-      preLoaderRoute: typeof SettingsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/inbox': {
-      id: '/inbox'
-      path: '/inbox'
-      fullPath: '/inbox'
-      preLoaderRoute: typeof InboxRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/home': {
-      id: '/home'
-      path: '/home'
-      fullPath: '/home'
-      preLoaderRoute: typeof HomeRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/favorites': {
-      id: '/favorites'
-      path: '/favorites'
-      fullPath: '/favorites'
-      preLoaderRoute: typeof FavoritesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/dashboard': {
-      id: '/dashboard'
-      path: '/dashboard'
-      fullPath: '/dashboard'
-      preLoaderRoute: typeof DashboardRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/completed': {
-      id: '/completed'
-      path: '/completed'
-      fullPath: '/completed'
-      preLoaderRoute: typeof CompletedRouteImport
+    '/(app)': {
+      id: '/(app)'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof appRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -192,18 +106,57 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/login/': {
+      id: '/login/'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/(app)/settings/': {
+      id: '/(app)/settings/'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof appSettingsIndexRouteImport
+      parentRoute: typeof appRouteRoute
+    }
+    '/(app)/home/': {
+      id: '/(app)/home/'
+      path: '/home'
+      fullPath: '/home'
+      preLoaderRoute: typeof appHomeIndexRouteImport
+      parentRoute: typeof appRouteRoute
+    }
+    '/(app)/favorites/': {
+      id: '/(app)/favorites/'
+      path: '/favorites'
+      fullPath: '/favorites'
+      preLoaderRoute: typeof appFavoritesIndexRouteImport
+      parentRoute: typeof appRouteRoute
+    }
   }
 }
 
+interface appRouteRouteChildren {
+  appFavoritesIndexRoute: typeof appFavoritesIndexRoute
+  appHomeIndexRoute: typeof appHomeIndexRoute
+  appSettingsIndexRoute: typeof appSettingsIndexRoute
+}
+
+const appRouteRouteChildren: appRouteRouteChildren = {
+  appFavoritesIndexRoute: appFavoritesIndexRoute,
+  appHomeIndexRoute: appHomeIndexRoute,
+  appSettingsIndexRoute: appSettingsIndexRoute,
+}
+
+const appRouteRouteWithChildren = appRouteRoute._addFileChildren(
+  appRouteRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  CompletedRoute: CompletedRoute,
-  DashboardRoute: DashboardRoute,
-  FavoritesRoute: FavoritesRoute,
-  HomeRoute: HomeRoute,
-  InboxRoute: InboxRoute,
-  SettingsRoute: SettingsRoute,
-  TodayRoute: TodayRoute,
+  appRouteRoute: appRouteRouteWithChildren,
+  LoginIndexRoute: LoginIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

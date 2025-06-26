@@ -72,6 +72,8 @@ Story driven development:
     └── index.ts               # exports all components
     ```
 
+- Use shadcn/ui components and design tokens (colors) for consistent UI
+
 ## Code Quality
 
 - Always use Bun commands, never npm/npx (use `bun x` instead of `npx`)
