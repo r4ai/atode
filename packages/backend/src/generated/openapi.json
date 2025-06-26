@@ -79,199 +79,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "data": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "id": {
-                            "type": "integer",
-                            "minimum": 1,
-                            "example": 1,
-                            "description": "Unique identifier"
-                          },
-                          "userId": {
-                            "type": "integer",
-                            "minimum": 1,
-                            "example": 1,
-                            "description": "Unique identifier"
-                          },
-                          "projectId": {
-                            "type": "integer",
-                            "minimum": 1,
-                            "example": 1,
-                            "description": "Unique identifier"
-                          },
-                          "parentTaskId": {
-                            "type": ["integer", "null"],
-                            "minimum": 1,
-                            "example": 1,
-                            "description": "Unique identifier"
-                          },
-                          "title": {
-                            "type": "string",
-                            "minLength": 1,
-                            "maxLength": 500,
-                            "example": "Complete task"
-                          },
-                          "description": {
-                            "type": ["string", "null"],
-                            "example": "Task description"
-                          },
-                          "status": {
-                            "type": "string",
-                            "enum": [
-                              "pending",
-                              "in_progress",
-                              "completed",
-                              "cancelled"
-                            ],
-                            "example": "pending",
-                            "description": "Task status"
-                          },
-                          "priority": {
-                            "type": "integer",
-                            "example": 1,
-                            "description": "Task priority (higher = more important)"
-                          },
-                          "dueDate": {
-                            "anyOf": [
-                              {
-                                "type": "string"
-                              },
-                              {
-                                "type": "string",
-                                "format": "date-time"
-                              },
-                              {
-                                "type": "null"
-                              }
-                            ],
-                            "example": "2025-01-01T00:00:00Z",
-                            "description": "ISO timestamp"
-                          },
-                          "completedAt": {
-                            "anyOf": [
-                              {
-                                "type": "string"
-                              },
-                              {
-                                "type": "string",
-                                "format": "date-time"
-                              },
-                              {
-                                "type": "null"
-                              }
-                            ],
-                            "example": "2025-01-01T00:00:00Z",
-                            "description": "ISO timestamp"
-                          },
-                          "path": {
-                            "type": ["string", "null"],
-                            "example": "/root/subtask"
-                          },
-                          "depth": {
-                            "type": "integer",
-                            "minimum": 0,
-                            "example": 0
-                          },
-                          "createdAt": {
-                            "anyOf": [
-                              {
-                                "type": "string"
-                              },
-                              {
-                                "type": "string",
-                                "format": "date-time"
-                              }
-                            ],
-                            "example": "2025-01-01T00:00:00Z",
-                            "description": "ISO timestamp"
-                          },
-                          "updatedAt": {
-                            "anyOf": [
-                              {
-                                "type": "string"
-                              },
-                              {
-                                "type": "string",
-                                "format": "date-time"
-                              }
-                            ],
-                            "example": "2025-01-01T00:00:00Z",
-                            "description": "ISO timestamp"
-                          },
-                          "deletedAt": {
-                            "anyOf": [
-                              {
-                                "type": "string"
-                              },
-                              {
-                                "type": "string",
-                                "format": "date-time"
-                              },
-                              {
-                                "type": "null"
-                              }
-                            ],
-                            "example": "2025-01-01T00:00:00Z",
-                            "description": "ISO timestamp"
-                          }
-                        },
-                        "required": [
-                          "id",
-                          "userId",
-                          "projectId",
-                          "title",
-                          "status",
-                          "priority",
-                          "depth",
-                          "createdAt",
-                          "updatedAt"
-                        ],
-                        "description": "Task entity"
-                      }
-                    },
-                    "total": {
-                      "type": "integer",
-                      "minimum": 0,
-                      "example": 42,
-                      "description": "Total number of items"
-                    },
-                    "page": {
-                      "type": "integer",
-                      "minimum": 1,
-                      "example": 1,
-                      "description": "Current page number"
-                    },
-                    "limit": {
-                      "type": "integer",
-                      "minimum": 1,
-                      "example": 20,
-                      "description": "Items per page"
-                    },
-                    "totalPages": {
-                      "type": "integer",
-                      "minimum": 0,
-                      "example": 3,
-                      "description": "Total number of pages"
-                    },
-                    "success": {
-                      "type": "boolean",
-                      "example": true
-                    }
-                  },
-                  "required": [
-                    "data",
-                    "total",
-                    "page",
-                    "limit",
-                    "totalPages",
-                    "success"
-                  ],
-                  "description": "Paginated response wrapper"
+                  "$ref": "#/components/schemas/PaginatedResponse"
                 }
               }
             }
@@ -281,24 +89,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "const": false
-                    },
-                    "error": {
-                      "type": "string",
-                      "example": "VALIDATION_ERROR"
-                    },
-                    "message": {
-                      "type": "string",
-                      "example": "Invalid input provided"
-                    },
-                    "details": {}
-                  },
-                  "required": ["success", "error", "message"],
-                  "description": "API error response"
+                  "$ref": "#/components/schemas/ApiError"
                 }
               }
             }
@@ -309,104 +100,9 @@
         "parameters": [
           {
             "in": "query",
-            "name": "page",
+            "name": "#/components/schemas/TaskFilter",
             "schema": {
-              "type": "integer",
-              "minimum": 1,
-              "example": 1,
-              "description": "Page number"
-            }
-          },
-          {
-            "in": "query",
-            "name": "limit",
-            "schema": {
-              "type": "integer",
-              "minimum": 1,
-              "maximum": 100,
-              "example": 20,
-              "description": "Items per page"
-            }
-          },
-          {
-            "in": "query",
-            "name": "projectId",
-            "schema": {
-              "type": "integer",
-              "minimum": 1,
-              "example": 1,
-              "description": "Unique identifier"
-            }
-          },
-          {
-            "in": "query",
-            "name": "status",
-            "schema": {
-              "type": "string",
-              "enum": ["pending", "in_progress", "completed", "cancelled"],
-              "example": "pending",
-              "description": "Task status"
-            }
-          },
-          {
-            "in": "query",
-            "name": "labels",
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              },
-              "example": ["urgent", "bug"]
-            }
-          },
-          {
-            "in": "query",
-            "name": "dueBefore",
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "string",
-                  "format": "date-time"
-                }
-              ],
-              "example": "2025-01-01T00:00:00Z",
-              "description": "ISO timestamp"
-            }
-          },
-          {
-            "in": "query",
-            "name": "dueAfter",
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "string",
-                  "format": "date-time"
-                }
-              ],
-              "example": "2025-01-01T00:00:00Z",
-              "description": "ISO timestamp"
-            }
-          },
-          {
-            "in": "query",
-            "name": "search",
-            "schema": {
-              "type": "string",
-              "example": "search term"
-            }
-          },
-          {
-            "in": "query",
-            "name": "includeCompleted",
-            "schema": {
-              "type": "boolean",
-              "example": false
+              "$ref": "#/components/schemas/TaskFilter"
             }
           }
         ],
@@ -420,169 +116,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "data": {
-                      "type": "object",
-                      "properties": {
-                        "id": {
-                          "type": "integer",
-                          "minimum": 1,
-                          "example": 1,
-                          "description": "Unique identifier"
-                        },
-                        "userId": {
-                          "type": "integer",
-                          "minimum": 1,
-                          "example": 1,
-                          "description": "Unique identifier"
-                        },
-                        "projectId": {
-                          "type": "integer",
-                          "minimum": 1,
-                          "example": 1,
-                          "description": "Unique identifier"
-                        },
-                        "parentTaskId": {
-                          "type": ["integer", "null"],
-                          "minimum": 1,
-                          "example": 1,
-                          "description": "Unique identifier"
-                        },
-                        "title": {
-                          "type": "string",
-                          "minLength": 1,
-                          "maxLength": 500,
-                          "example": "Complete task"
-                        },
-                        "description": {
-                          "type": ["string", "null"],
-                          "example": "Task description"
-                        },
-                        "status": {
-                          "type": "string",
-                          "enum": [
-                            "pending",
-                            "in_progress",
-                            "completed",
-                            "cancelled"
-                          ],
-                          "example": "pending",
-                          "description": "Task status"
-                        },
-                        "priority": {
-                          "type": "integer",
-                          "example": 1,
-                          "description": "Task priority (higher = more important)"
-                        },
-                        "dueDate": {
-                          "anyOf": [
-                            {
-                              "type": "string"
-                            },
-                            {
-                              "type": "string",
-                              "format": "date-time"
-                            },
-                            {
-                              "type": "null"
-                            }
-                          ],
-                          "example": "2025-01-01T00:00:00Z",
-                          "description": "ISO timestamp"
-                        },
-                        "completedAt": {
-                          "anyOf": [
-                            {
-                              "type": "string"
-                            },
-                            {
-                              "type": "string",
-                              "format": "date-time"
-                            },
-                            {
-                              "type": "null"
-                            }
-                          ],
-                          "example": "2025-01-01T00:00:00Z",
-                          "description": "ISO timestamp"
-                        },
-                        "path": {
-                          "type": ["string", "null"],
-                          "example": "/root/subtask"
-                        },
-                        "depth": {
-                          "type": "integer",
-                          "minimum": 0,
-                          "example": 0
-                        },
-                        "createdAt": {
-                          "anyOf": [
-                            {
-                              "type": "string"
-                            },
-                            {
-                              "type": "string",
-                              "format": "date-time"
-                            }
-                          ],
-                          "example": "2025-01-01T00:00:00Z",
-                          "description": "ISO timestamp"
-                        },
-                        "updatedAt": {
-                          "anyOf": [
-                            {
-                              "type": "string"
-                            },
-                            {
-                              "type": "string",
-                              "format": "date-time"
-                            }
-                          ],
-                          "example": "2025-01-01T00:00:00Z",
-                          "description": "ISO timestamp"
-                        },
-                        "deletedAt": {
-                          "anyOf": [
-                            {
-                              "type": "string"
-                            },
-                            {
-                              "type": "string",
-                              "format": "date-time"
-                            },
-                            {
-                              "type": "null"
-                            }
-                          ],
-                          "example": "2025-01-01T00:00:00Z",
-                          "description": "ISO timestamp"
-                        }
-                      },
-                      "required": [
-                        "id",
-                        "userId",
-                        "projectId",
-                        "title",
-                        "status",
-                        "priority",
-                        "depth",
-                        "createdAt",
-                        "updatedAt"
-                      ],
-                      "description": "Task entity"
-                    },
-                    "success": {
-                      "type": "boolean",
-                      "example": true
-                    },
-                    "message": {
-                      "type": "string",
-                      "example": "Operation completed successfully"
-                    }
-                  },
-                  "required": ["data", "success"],
-                  "description": "API response wrapper"
+                  "$ref": "#/components/schemas/ApiResponse"
                 }
               }
             }
@@ -592,24 +126,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "const": false
-                    },
-                    "error": {
-                      "type": "string",
-                      "example": "VALIDATION_ERROR"
-                    },
-                    "message": {
-                      "type": "string",
-                      "example": "Invalid input provided"
-                    },
-                    "details": {}
-                  },
-                  "required": ["success", "error", "message"],
-                  "description": "API error response"
+                  "$ref": "#/components/schemas/ApiError"
                 }
               }
             }
@@ -624,57 +141,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "type": "object",
-                "properties": {
-                  "title": {
-                    "type": "string",
-                    "minLength": 1,
-                    "maxLength": 500,
-                    "example": "Complete task"
-                  },
-                  "projectId": {
-                    "type": "integer",
-                    "minimum": 1,
-                    "example": 1,
-                    "description": "Unique identifier"
-                  },
-                  "parentId": {
-                    "type": "integer",
-                    "minimum": 1,
-                    "example": 1,
-                    "description": "Unique identifier"
-                  },
-                  "description": {
-                    "type": "string",
-                    "example": "Task description"
-                  },
-                  "priority": {
-                    "type": "integer",
-                    "example": 1
-                  },
-                  "dueDate": {
-                    "anyOf": [
-                      {
-                        "type": "string"
-                      },
-                      {
-                        "type": "string",
-                        "format": "date-time"
-                      }
-                    ],
-                    "example": "2025-01-01T00:00:00Z",
-                    "description": "ISO timestamp"
-                  },
-                  "labels": {
-                    "type": "array",
-                    "items": {
-                      "type": "string"
-                    },
-                    "example": ["urgent", "bug"]
-                  }
-                },
-                "required": ["title", "projectId"],
-                "description": "Create task request"
+                "$ref": "#/components/schemas/CreateTask"
               }
             }
           }
@@ -689,169 +156,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "data": {
-                      "type": "object",
-                      "properties": {
-                        "id": {
-                          "type": "integer",
-                          "minimum": 1,
-                          "example": 1,
-                          "description": "Unique identifier"
-                        },
-                        "userId": {
-                          "type": "integer",
-                          "minimum": 1,
-                          "example": 1,
-                          "description": "Unique identifier"
-                        },
-                        "projectId": {
-                          "type": "integer",
-                          "minimum": 1,
-                          "example": 1,
-                          "description": "Unique identifier"
-                        },
-                        "parentTaskId": {
-                          "type": ["integer", "null"],
-                          "minimum": 1,
-                          "example": 1,
-                          "description": "Unique identifier"
-                        },
-                        "title": {
-                          "type": "string",
-                          "minLength": 1,
-                          "maxLength": 500,
-                          "example": "Complete task"
-                        },
-                        "description": {
-                          "type": ["string", "null"],
-                          "example": "Task description"
-                        },
-                        "status": {
-                          "type": "string",
-                          "enum": [
-                            "pending",
-                            "in_progress",
-                            "completed",
-                            "cancelled"
-                          ],
-                          "example": "pending",
-                          "description": "Task status"
-                        },
-                        "priority": {
-                          "type": "integer",
-                          "example": 1,
-                          "description": "Task priority (higher = more important)"
-                        },
-                        "dueDate": {
-                          "anyOf": [
-                            {
-                              "type": "string"
-                            },
-                            {
-                              "type": "string",
-                              "format": "date-time"
-                            },
-                            {
-                              "type": "null"
-                            }
-                          ],
-                          "example": "2025-01-01T00:00:00Z",
-                          "description": "ISO timestamp"
-                        },
-                        "completedAt": {
-                          "anyOf": [
-                            {
-                              "type": "string"
-                            },
-                            {
-                              "type": "string",
-                              "format": "date-time"
-                            },
-                            {
-                              "type": "null"
-                            }
-                          ],
-                          "example": "2025-01-01T00:00:00Z",
-                          "description": "ISO timestamp"
-                        },
-                        "path": {
-                          "type": ["string", "null"],
-                          "example": "/root/subtask"
-                        },
-                        "depth": {
-                          "type": "integer",
-                          "minimum": 0,
-                          "example": 0
-                        },
-                        "createdAt": {
-                          "anyOf": [
-                            {
-                              "type": "string"
-                            },
-                            {
-                              "type": "string",
-                              "format": "date-time"
-                            }
-                          ],
-                          "example": "2025-01-01T00:00:00Z",
-                          "description": "ISO timestamp"
-                        },
-                        "updatedAt": {
-                          "anyOf": [
-                            {
-                              "type": "string"
-                            },
-                            {
-                              "type": "string",
-                              "format": "date-time"
-                            }
-                          ],
-                          "example": "2025-01-01T00:00:00Z",
-                          "description": "ISO timestamp"
-                        },
-                        "deletedAt": {
-                          "anyOf": [
-                            {
-                              "type": "string"
-                            },
-                            {
-                              "type": "string",
-                              "format": "date-time"
-                            },
-                            {
-                              "type": "null"
-                            }
-                          ],
-                          "example": "2025-01-01T00:00:00Z",
-                          "description": "ISO timestamp"
-                        }
-                      },
-                      "required": [
-                        "id",
-                        "userId",
-                        "projectId",
-                        "title",
-                        "status",
-                        "priority",
-                        "depth",
-                        "createdAt",
-                        "updatedAt"
-                      ],
-                      "description": "Task entity"
-                    },
-                    "success": {
-                      "type": "boolean",
-                      "example": true
-                    },
-                    "message": {
-                      "type": "string",
-                      "example": "Operation completed successfully"
-                    }
-                  },
-                  "required": ["data", "success"],
-                  "description": "API response wrapper"
+                  "$ref": "#/components/schemas/ApiResponse"
                 }
               }
             }
@@ -861,24 +166,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "const": false
-                    },
-                    "error": {
-                      "type": "string",
-                      "example": "VALIDATION_ERROR"
-                    },
-                    "message": {
-                      "type": "string",
-                      "example": "Invalid input provided"
-                    },
-                    "details": {}
-                  },
-                  "required": ["success", "error", "message"],
-                  "description": "API error response"
+                  "$ref": "#/components/schemas/ApiError"
                 }
               }
             }
@@ -891,9 +179,7 @@
             "in": "path",
             "name": "id",
             "schema": {
-              "type": "string",
-              "example": "1",
-              "description": "Unique identifier as URL parameter"
+              "$ref": "#/components/schemas/IdParam"
             },
             "required": true
           }
@@ -908,169 +194,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "data": {
-                      "type": "object",
-                      "properties": {
-                        "id": {
-                          "type": "integer",
-                          "minimum": 1,
-                          "example": 1,
-                          "description": "Unique identifier"
-                        },
-                        "userId": {
-                          "type": "integer",
-                          "minimum": 1,
-                          "example": 1,
-                          "description": "Unique identifier"
-                        },
-                        "projectId": {
-                          "type": "integer",
-                          "minimum": 1,
-                          "example": 1,
-                          "description": "Unique identifier"
-                        },
-                        "parentTaskId": {
-                          "type": ["integer", "null"],
-                          "minimum": 1,
-                          "example": 1,
-                          "description": "Unique identifier"
-                        },
-                        "title": {
-                          "type": "string",
-                          "minLength": 1,
-                          "maxLength": 500,
-                          "example": "Complete task"
-                        },
-                        "description": {
-                          "type": ["string", "null"],
-                          "example": "Task description"
-                        },
-                        "status": {
-                          "type": "string",
-                          "enum": [
-                            "pending",
-                            "in_progress",
-                            "completed",
-                            "cancelled"
-                          ],
-                          "example": "pending",
-                          "description": "Task status"
-                        },
-                        "priority": {
-                          "type": "integer",
-                          "example": 1,
-                          "description": "Task priority (higher = more important)"
-                        },
-                        "dueDate": {
-                          "anyOf": [
-                            {
-                              "type": "string"
-                            },
-                            {
-                              "type": "string",
-                              "format": "date-time"
-                            },
-                            {
-                              "type": "null"
-                            }
-                          ],
-                          "example": "2025-01-01T00:00:00Z",
-                          "description": "ISO timestamp"
-                        },
-                        "completedAt": {
-                          "anyOf": [
-                            {
-                              "type": "string"
-                            },
-                            {
-                              "type": "string",
-                              "format": "date-time"
-                            },
-                            {
-                              "type": "null"
-                            }
-                          ],
-                          "example": "2025-01-01T00:00:00Z",
-                          "description": "ISO timestamp"
-                        },
-                        "path": {
-                          "type": ["string", "null"],
-                          "example": "/root/subtask"
-                        },
-                        "depth": {
-                          "type": "integer",
-                          "minimum": 0,
-                          "example": 0
-                        },
-                        "createdAt": {
-                          "anyOf": [
-                            {
-                              "type": "string"
-                            },
-                            {
-                              "type": "string",
-                              "format": "date-time"
-                            }
-                          ],
-                          "example": "2025-01-01T00:00:00Z",
-                          "description": "ISO timestamp"
-                        },
-                        "updatedAt": {
-                          "anyOf": [
-                            {
-                              "type": "string"
-                            },
-                            {
-                              "type": "string",
-                              "format": "date-time"
-                            }
-                          ],
-                          "example": "2025-01-01T00:00:00Z",
-                          "description": "ISO timestamp"
-                        },
-                        "deletedAt": {
-                          "anyOf": [
-                            {
-                              "type": "string"
-                            },
-                            {
-                              "type": "string",
-                              "format": "date-time"
-                            },
-                            {
-                              "type": "null"
-                            }
-                          ],
-                          "example": "2025-01-01T00:00:00Z",
-                          "description": "ISO timestamp"
-                        }
-                      },
-                      "required": [
-                        "id",
-                        "userId",
-                        "projectId",
-                        "title",
-                        "status",
-                        "priority",
-                        "depth",
-                        "createdAt",
-                        "updatedAt"
-                      ],
-                      "description": "Task entity"
-                    },
-                    "success": {
-                      "type": "boolean",
-                      "example": true
-                    },
-                    "message": {
-                      "type": "string",
-                      "example": "Operation completed successfully"
-                    }
-                  },
-                  "required": ["data", "success"],
-                  "description": "API response wrapper"
+                  "$ref": "#/components/schemas/ApiResponse"
                 }
               }
             }
@@ -1080,24 +204,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "const": false
-                    },
-                    "error": {
-                      "type": "string",
-                      "example": "VALIDATION_ERROR"
-                    },
-                    "message": {
-                      "type": "string",
-                      "example": "Invalid input provided"
-                    },
-                    "details": {}
-                  },
-                  "required": ["success", "error", "message"],
-                  "description": "API error response"
+                  "$ref": "#/components/schemas/ApiError"
                 }
               }
             }
@@ -1110,9 +217,7 @@
             "in": "path",
             "name": "id",
             "schema": {
-              "type": "string",
-              "example": "1",
-              "description": "Unique identifier as URL parameter"
+              "$ref": "#/components/schemas/IdParam"
             },
             "required": true
           }
@@ -1123,50 +228,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "type": "object",
-                "properties": {
-                  "title": {
-                    "type": "string",
-                    "minLength": 1,
-                    "maxLength": 500,
-                    "example": "Complete task"
-                  },
-                  "parentId": {
-                    "type": "integer",
-                    "minimum": 1,
-                    "example": 1,
-                    "description": "Unique identifier"
-                  },
-                  "description": {
-                    "type": "string",
-                    "example": "Task description"
-                  },
-                  "priority": {
-                    "type": "integer",
-                    "example": 1
-                  },
-                  "dueDate": {
-                    "anyOf": [
-                      {
-                        "type": "string"
-                      },
-                      {
-                        "type": "string",
-                        "format": "date-time"
-                      }
-                    ],
-                    "example": "2025-01-01T00:00:00Z",
-                    "description": "ISO timestamp"
-                  },
-                  "labels": {
-                    "type": "array",
-                    "items": {
-                      "type": "string"
-                    },
-                    "example": ["urgent", "bug"]
-                  }
-                },
-                "description": "Update task request"
+                "$ref": "#/components/schemas/UpdateTask"
               }
             }
           }
@@ -1179,28 +241,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "data": {
-                      "type": "object",
-                      "properties": {
-                        "success": {
-                          "type": "boolean"
-                        }
-                      },
-                      "required": ["success"]
-                    },
-                    "success": {
-                      "type": "boolean",
-                      "example": true
-                    },
-                    "message": {
-                      "type": "string",
-                      "example": "Operation completed successfully"
-                    }
-                  },
-                  "required": ["data", "success"],
-                  "description": "API response wrapper"
+                  "$ref": "#/components/schemas/ApiResponse"
                 }
               }
             }
@@ -1210,24 +251,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "const": false
-                    },
-                    "error": {
-                      "type": "string",
-                      "example": "VALIDATION_ERROR"
-                    },
-                    "message": {
-                      "type": "string",
-                      "example": "Invalid input provided"
-                    },
-                    "details": {}
-                  },
-                  "required": ["success", "error", "message"],
-                  "description": "API error response"
+                  "$ref": "#/components/schemas/ApiError"
                 }
               }
             }
@@ -1240,9 +264,7 @@
             "in": "path",
             "name": "id",
             "schema": {
-              "type": "string",
-              "example": "1",
-              "description": "Unique identifier as URL parameter"
+              "$ref": "#/components/schemas/IdParam"
             },
             "required": true
           }
@@ -1259,169 +281,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "data": {
-                      "type": "object",
-                      "properties": {
-                        "id": {
-                          "type": "integer",
-                          "minimum": 1,
-                          "example": 1,
-                          "description": "Unique identifier"
-                        },
-                        "userId": {
-                          "type": "integer",
-                          "minimum": 1,
-                          "example": 1,
-                          "description": "Unique identifier"
-                        },
-                        "projectId": {
-                          "type": "integer",
-                          "minimum": 1,
-                          "example": 1,
-                          "description": "Unique identifier"
-                        },
-                        "parentTaskId": {
-                          "type": ["integer", "null"],
-                          "minimum": 1,
-                          "example": 1,
-                          "description": "Unique identifier"
-                        },
-                        "title": {
-                          "type": "string",
-                          "minLength": 1,
-                          "maxLength": 500,
-                          "example": "Complete task"
-                        },
-                        "description": {
-                          "type": ["string", "null"],
-                          "example": "Task description"
-                        },
-                        "status": {
-                          "type": "string",
-                          "enum": [
-                            "pending",
-                            "in_progress",
-                            "completed",
-                            "cancelled"
-                          ],
-                          "example": "pending",
-                          "description": "Task status"
-                        },
-                        "priority": {
-                          "type": "integer",
-                          "example": 1,
-                          "description": "Task priority (higher = more important)"
-                        },
-                        "dueDate": {
-                          "anyOf": [
-                            {
-                              "type": "string"
-                            },
-                            {
-                              "type": "string",
-                              "format": "date-time"
-                            },
-                            {
-                              "type": "null"
-                            }
-                          ],
-                          "example": "2025-01-01T00:00:00Z",
-                          "description": "ISO timestamp"
-                        },
-                        "completedAt": {
-                          "anyOf": [
-                            {
-                              "type": "string"
-                            },
-                            {
-                              "type": "string",
-                              "format": "date-time"
-                            },
-                            {
-                              "type": "null"
-                            }
-                          ],
-                          "example": "2025-01-01T00:00:00Z",
-                          "description": "ISO timestamp"
-                        },
-                        "path": {
-                          "type": ["string", "null"],
-                          "example": "/root/subtask"
-                        },
-                        "depth": {
-                          "type": "integer",
-                          "minimum": 0,
-                          "example": 0
-                        },
-                        "createdAt": {
-                          "anyOf": [
-                            {
-                              "type": "string"
-                            },
-                            {
-                              "type": "string",
-                              "format": "date-time"
-                            }
-                          ],
-                          "example": "2025-01-01T00:00:00Z",
-                          "description": "ISO timestamp"
-                        },
-                        "updatedAt": {
-                          "anyOf": [
-                            {
-                              "type": "string"
-                            },
-                            {
-                              "type": "string",
-                              "format": "date-time"
-                            }
-                          ],
-                          "example": "2025-01-01T00:00:00Z",
-                          "description": "ISO timestamp"
-                        },
-                        "deletedAt": {
-                          "anyOf": [
-                            {
-                              "type": "string"
-                            },
-                            {
-                              "type": "string",
-                              "format": "date-time"
-                            },
-                            {
-                              "type": "null"
-                            }
-                          ],
-                          "example": "2025-01-01T00:00:00Z",
-                          "description": "ISO timestamp"
-                        }
-                      },
-                      "required": [
-                        "id",
-                        "userId",
-                        "projectId",
-                        "title",
-                        "status",
-                        "priority",
-                        "depth",
-                        "createdAt",
-                        "updatedAt"
-                      ],
-                      "description": "Task entity"
-                    },
-                    "success": {
-                      "type": "boolean",
-                      "example": true
-                    },
-                    "message": {
-                      "type": "string",
-                      "example": "Operation completed successfully"
-                    }
-                  },
-                  "required": ["data", "success"],
-                  "description": "API response wrapper"
+                  "$ref": "#/components/schemas/ApiResponse"
                 }
               }
             }
@@ -1431,24 +291,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "const": false
-                    },
-                    "error": {
-                      "type": "string",
-                      "example": "VALIDATION_ERROR"
-                    },
-                    "message": {
-                      "type": "string",
-                      "example": "Invalid input provided"
-                    },
-                    "details": {}
-                  },
-                  "required": ["success", "error", "message"],
-                  "description": "API error response"
+                  "$ref": "#/components/schemas/ApiError"
                 }
               }
             }
@@ -1461,9 +304,7 @@
             "in": "path",
             "name": "id",
             "schema": {
-              "type": "string",
-              "example": "1",
-              "description": "Unique identifier as URL parameter"
+              "$ref": "#/components/schemas/IdParam"
             },
             "required": true
           }
@@ -1485,103 +326,7 @@
                     "data": {
                       "type": "array",
                       "items": {
-                        "type": "object",
-                        "properties": {
-                          "id": {
-                            "type": "integer",
-                            "minimum": 1,
-                            "example": 1,
-                            "description": "Unique identifier"
-                          },
-                          "userId": {
-                            "type": "integer",
-                            "minimum": 1,
-                            "example": 1,
-                            "description": "Unique identifier"
-                          },
-                          "parentProjectId": {
-                            "type": ["integer", "null"],
-                            "minimum": 1,
-                            "example": 1,
-                            "description": "Unique identifier"
-                          },
-                          "name": {
-                            "type": "string",
-                            "minLength": 1,
-                            "maxLength": 255,
-                            "example": "My Project"
-                          },
-                          "description": {
-                            "type": ["string", "null"],
-                            "example": "Project description"
-                          },
-                          "color": {
-                            "type": "string",
-                            "pattern": "^#[0-9A-Fa-f]{6}$",
-                            "example": "#FF5722",
-                            "description": "Hex color code"
-                          },
-                          "path": {
-                            "type": ["string", "null"],
-                            "example": "/root/subproject"
-                          },
-                          "depth": {
-                            "type": "integer",
-                            "minimum": 0,
-                            "example": 0
-                          },
-                          "createdAt": {
-                            "anyOf": [
-                              {
-                                "type": "string"
-                              },
-                              {
-                                "type": "string",
-                                "format": "date-time"
-                              }
-                            ],
-                            "example": "2025-01-01T00:00:00Z",
-                            "description": "ISO timestamp"
-                          },
-                          "updatedAt": {
-                            "anyOf": [
-                              {
-                                "type": "string"
-                              },
-                              {
-                                "type": "string",
-                                "format": "date-time"
-                              }
-                            ],
-                            "example": "2025-01-01T00:00:00Z",
-                            "description": "ISO timestamp"
-                          },
-                          "deletedAt": {
-                            "anyOf": [
-                              {
-                                "type": "string"
-                              },
-                              {
-                                "type": "string",
-                                "format": "date-time"
-                              },
-                              {
-                                "type": "null"
-                              }
-                            ],
-                            "example": "2025-01-01T00:00:00Z",
-                            "description": "ISO timestamp"
-                          }
-                        },
-                        "required": [
-                          "id",
-                          "userId",
-                          "name",
-                          "depth",
-                          "createdAt",
-                          "updatedAt"
-                        ],
-                        "description": "Project entity"
+                        "$ref": "#/components/schemas/Project"
                       }
                     },
                     "success": {
@@ -1598,24 +343,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "const": false
-                    },
-                    "error": {
-                      "type": "string",
-                      "example": "VALIDATION_ERROR"
-                    },
-                    "message": {
-                      "type": "string",
-                      "example": "Invalid input provided"
-                    },
-                    "details": {}
-                  },
-                  "required": ["success", "error", "message"],
-                  "description": "API error response"
+                  "$ref": "#/components/schemas/ApiError"
                 }
               }
             }
@@ -1626,41 +354,9 @@
         "parameters": [
           {
             "in": "query",
-            "name": "page",
+            "name": "#/components/schemas/ProjectFilter",
             "schema": {
-              "type": "integer",
-              "minimum": 1,
-              "example": 1,
-              "description": "Page number"
-            }
-          },
-          {
-            "in": "query",
-            "name": "limit",
-            "schema": {
-              "type": "integer",
-              "minimum": 1,
-              "maximum": 100,
-              "example": 20,
-              "description": "Items per page"
-            }
-          },
-          {
-            "in": "query",
-            "name": "includeArchived",
-            "schema": {
-              "type": "boolean",
-              "example": false
-            }
-          },
-          {
-            "in": "query",
-            "name": "depth",
-            "schema": {
-              "type": "integer",
-              "minimum": 1,
-              "example": 1,
-              "description": "Maximum depth to include"
+              "$ref": "#/components/schemas/ProjectFilter"
             }
           }
         ],
@@ -1674,118 +370,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "data": {
-                      "type": "object",
-                      "properties": {
-                        "id": {
-                          "type": "integer",
-                          "minimum": 1,
-                          "example": 1,
-                          "description": "Unique identifier"
-                        },
-                        "userId": {
-                          "type": "integer",
-                          "minimum": 1,
-                          "example": 1,
-                          "description": "Unique identifier"
-                        },
-                        "parentProjectId": {
-                          "type": ["integer", "null"],
-                          "minimum": 1,
-                          "example": 1,
-                          "description": "Unique identifier"
-                        },
-                        "name": {
-                          "type": "string",
-                          "minLength": 1,
-                          "maxLength": 255,
-                          "example": "My Project"
-                        },
-                        "description": {
-                          "type": ["string", "null"],
-                          "example": "Project description"
-                        },
-                        "color": {
-                          "type": "string",
-                          "pattern": "^#[0-9A-Fa-f]{6}$",
-                          "example": "#FF5722",
-                          "description": "Hex color code"
-                        },
-                        "path": {
-                          "type": ["string", "null"],
-                          "example": "/root/subproject"
-                        },
-                        "depth": {
-                          "type": "integer",
-                          "minimum": 0,
-                          "example": 0
-                        },
-                        "createdAt": {
-                          "anyOf": [
-                            {
-                              "type": "string"
-                            },
-                            {
-                              "type": "string",
-                              "format": "date-time"
-                            }
-                          ],
-                          "example": "2025-01-01T00:00:00Z",
-                          "description": "ISO timestamp"
-                        },
-                        "updatedAt": {
-                          "anyOf": [
-                            {
-                              "type": "string"
-                            },
-                            {
-                              "type": "string",
-                              "format": "date-time"
-                            }
-                          ],
-                          "example": "2025-01-01T00:00:00Z",
-                          "description": "ISO timestamp"
-                        },
-                        "deletedAt": {
-                          "anyOf": [
-                            {
-                              "type": "string"
-                            },
-                            {
-                              "type": "string",
-                              "format": "date-time"
-                            },
-                            {
-                              "type": "null"
-                            }
-                          ],
-                          "example": "2025-01-01T00:00:00Z",
-                          "description": "ISO timestamp"
-                        }
-                      },
-                      "required": [
-                        "id",
-                        "userId",
-                        "name",
-                        "depth",
-                        "createdAt",
-                        "updatedAt"
-                      ],
-                      "description": "Project entity"
-                    },
-                    "success": {
-                      "type": "boolean",
-                      "example": true
-                    },
-                    "message": {
-                      "type": "string",
-                      "example": "Operation completed successfully"
-                    }
-                  },
-                  "required": ["data", "success"],
-                  "description": "API response wrapper"
+                  "$ref": "#/components/schemas/ApiResponse"
                 }
               }
             }
@@ -1795,24 +380,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "const": false
-                    },
-                    "error": {
-                      "type": "string",
-                      "example": "VALIDATION_ERROR"
-                    },
-                    "message": {
-                      "type": "string",
-                      "example": "Invalid input provided"
-                    },
-                    "details": {}
-                  },
-                  "required": ["success", "error", "message"],
-                  "description": "API error response"
+                  "$ref": "#/components/schemas/ApiError"
                 }
               }
             }
@@ -1827,33 +395,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "type": "object",
-                "properties": {
-                  "name": {
-                    "type": "string",
-                    "minLength": 1,
-                    "maxLength": 255,
-                    "example": "My Project"
-                  },
-                  "description": {
-                    "type": "string",
-                    "example": "Project description"
-                  },
-                  "parentId": {
-                    "type": "integer",
-                    "minimum": 1,
-                    "example": 1,
-                    "description": "Unique identifier"
-                  },
-                  "color": {
-                    "type": "string",
-                    "pattern": "^#[0-9A-Fa-f]{6}$",
-                    "example": "#FF5722",
-                    "description": "Hex color code"
-                  }
-                },
-                "required": ["name"],
-                "description": "Create project request"
+                "$ref": "#/components/schemas/CreateProject"
               }
             }
           }
@@ -1868,118 +410,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "data": {
-                      "type": "object",
-                      "properties": {
-                        "id": {
-                          "type": "integer",
-                          "minimum": 1,
-                          "example": 1,
-                          "description": "Unique identifier"
-                        },
-                        "userId": {
-                          "type": "integer",
-                          "minimum": 1,
-                          "example": 1,
-                          "description": "Unique identifier"
-                        },
-                        "parentProjectId": {
-                          "type": ["integer", "null"],
-                          "minimum": 1,
-                          "example": 1,
-                          "description": "Unique identifier"
-                        },
-                        "name": {
-                          "type": "string",
-                          "minLength": 1,
-                          "maxLength": 255,
-                          "example": "My Project"
-                        },
-                        "description": {
-                          "type": ["string", "null"],
-                          "example": "Project description"
-                        },
-                        "color": {
-                          "type": "string",
-                          "pattern": "^#[0-9A-Fa-f]{6}$",
-                          "example": "#FF5722",
-                          "description": "Hex color code"
-                        },
-                        "path": {
-                          "type": ["string", "null"],
-                          "example": "/root/subproject"
-                        },
-                        "depth": {
-                          "type": "integer",
-                          "minimum": 0,
-                          "example": 0
-                        },
-                        "createdAt": {
-                          "anyOf": [
-                            {
-                              "type": "string"
-                            },
-                            {
-                              "type": "string",
-                              "format": "date-time"
-                            }
-                          ],
-                          "example": "2025-01-01T00:00:00Z",
-                          "description": "ISO timestamp"
-                        },
-                        "updatedAt": {
-                          "anyOf": [
-                            {
-                              "type": "string"
-                            },
-                            {
-                              "type": "string",
-                              "format": "date-time"
-                            }
-                          ],
-                          "example": "2025-01-01T00:00:00Z",
-                          "description": "ISO timestamp"
-                        },
-                        "deletedAt": {
-                          "anyOf": [
-                            {
-                              "type": "string"
-                            },
-                            {
-                              "type": "string",
-                              "format": "date-time"
-                            },
-                            {
-                              "type": "null"
-                            }
-                          ],
-                          "example": "2025-01-01T00:00:00Z",
-                          "description": "ISO timestamp"
-                        }
-                      },
-                      "required": [
-                        "id",
-                        "userId",
-                        "name",
-                        "depth",
-                        "createdAt",
-                        "updatedAt"
-                      ],
-                      "description": "Project entity"
-                    },
-                    "success": {
-                      "type": "boolean",
-                      "example": true
-                    },
-                    "message": {
-                      "type": "string",
-                      "example": "Operation completed successfully"
-                    }
-                  },
-                  "required": ["data", "success"],
-                  "description": "API response wrapper"
+                  "$ref": "#/components/schemas/ApiResponse"
                 }
               }
             }
@@ -1989,24 +420,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "const": false
-                    },
-                    "error": {
-                      "type": "string",
-                      "example": "VALIDATION_ERROR"
-                    },
-                    "message": {
-                      "type": "string",
-                      "example": "Invalid input provided"
-                    },
-                    "details": {}
-                  },
-                  "required": ["success", "error", "message"],
-                  "description": "API error response"
+                  "$ref": "#/components/schemas/ApiError"
                 }
               }
             }
@@ -2019,9 +433,7 @@
             "in": "path",
             "name": "id",
             "schema": {
-              "type": "string",
-              "example": "1",
-              "description": "Unique identifier as URL parameter"
+              "$ref": "#/components/schemas/IdParam"
             },
             "required": true
           }
@@ -2036,118 +448,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "data": {
-                      "type": "object",
-                      "properties": {
-                        "id": {
-                          "type": "integer",
-                          "minimum": 1,
-                          "example": 1,
-                          "description": "Unique identifier"
-                        },
-                        "userId": {
-                          "type": "integer",
-                          "minimum": 1,
-                          "example": 1,
-                          "description": "Unique identifier"
-                        },
-                        "parentProjectId": {
-                          "type": ["integer", "null"],
-                          "minimum": 1,
-                          "example": 1,
-                          "description": "Unique identifier"
-                        },
-                        "name": {
-                          "type": "string",
-                          "minLength": 1,
-                          "maxLength": 255,
-                          "example": "My Project"
-                        },
-                        "description": {
-                          "type": ["string", "null"],
-                          "example": "Project description"
-                        },
-                        "color": {
-                          "type": "string",
-                          "pattern": "^#[0-9A-Fa-f]{6}$",
-                          "example": "#FF5722",
-                          "description": "Hex color code"
-                        },
-                        "path": {
-                          "type": ["string", "null"],
-                          "example": "/root/subproject"
-                        },
-                        "depth": {
-                          "type": "integer",
-                          "minimum": 0,
-                          "example": 0
-                        },
-                        "createdAt": {
-                          "anyOf": [
-                            {
-                              "type": "string"
-                            },
-                            {
-                              "type": "string",
-                              "format": "date-time"
-                            }
-                          ],
-                          "example": "2025-01-01T00:00:00Z",
-                          "description": "ISO timestamp"
-                        },
-                        "updatedAt": {
-                          "anyOf": [
-                            {
-                              "type": "string"
-                            },
-                            {
-                              "type": "string",
-                              "format": "date-time"
-                            }
-                          ],
-                          "example": "2025-01-01T00:00:00Z",
-                          "description": "ISO timestamp"
-                        },
-                        "deletedAt": {
-                          "anyOf": [
-                            {
-                              "type": "string"
-                            },
-                            {
-                              "type": "string",
-                              "format": "date-time"
-                            },
-                            {
-                              "type": "null"
-                            }
-                          ],
-                          "example": "2025-01-01T00:00:00Z",
-                          "description": "ISO timestamp"
-                        }
-                      },
-                      "required": [
-                        "id",
-                        "userId",
-                        "name",
-                        "depth",
-                        "createdAt",
-                        "updatedAt"
-                      ],
-                      "description": "Project entity"
-                    },
-                    "success": {
-                      "type": "boolean",
-                      "example": true
-                    },
-                    "message": {
-                      "type": "string",
-                      "example": "Operation completed successfully"
-                    }
-                  },
-                  "required": ["data", "success"],
-                  "description": "API response wrapper"
+                  "$ref": "#/components/schemas/ApiResponse"
                 }
               }
             }
@@ -2157,24 +458,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "const": false
-                    },
-                    "error": {
-                      "type": "string",
-                      "example": "VALIDATION_ERROR"
-                    },
-                    "message": {
-                      "type": "string",
-                      "example": "Invalid input provided"
-                    },
-                    "details": {}
-                  },
-                  "required": ["success", "error", "message"],
-                  "description": "API error response"
+                  "$ref": "#/components/schemas/ApiError"
                 }
               }
             }
@@ -2187,9 +471,7 @@
             "in": "path",
             "name": "id",
             "schema": {
-              "type": "string",
-              "example": "1",
-              "description": "Unique identifier as URL parameter"
+              "$ref": "#/components/schemas/IdParam"
             },
             "required": true
           }
@@ -2200,32 +482,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "type": "object",
-                "properties": {
-                  "name": {
-                    "type": "string",
-                    "minLength": 1,
-                    "maxLength": 255,
-                    "example": "My Project"
-                  },
-                  "description": {
-                    "type": "string",
-                    "example": "Project description"
-                  },
-                  "parentId": {
-                    "type": "integer",
-                    "minimum": 1,
-                    "example": 1,
-                    "description": "Unique identifier"
-                  },
-                  "color": {
-                    "type": "string",
-                    "pattern": "^#[0-9A-Fa-f]{6}$",
-                    "example": "#FF5722",
-                    "description": "Hex color code"
-                  }
-                },
-                "description": "Update project request"
+                "$ref": "#/components/schemas/UpdateProject"
               }
             }
           }
@@ -2238,28 +495,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "data": {
-                      "type": "object",
-                      "properties": {
-                        "success": {
-                          "type": "boolean"
-                        }
-                      },
-                      "required": ["success"]
-                    },
-                    "success": {
-                      "type": "boolean",
-                      "example": true
-                    },
-                    "message": {
-                      "type": "string",
-                      "example": "Operation completed successfully"
-                    }
-                  },
-                  "required": ["data", "success"],
-                  "description": "API response wrapper"
+                  "$ref": "#/components/schemas/ApiResponse"
                 }
               }
             }
@@ -2269,24 +505,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "const": false
-                    },
-                    "error": {
-                      "type": "string",
-                      "example": "VALIDATION_ERROR"
-                    },
-                    "message": {
-                      "type": "string",
-                      "example": "Invalid input provided"
-                    },
-                    "details": {}
-                  },
-                  "required": ["success", "error", "message"],
-                  "description": "API error response"
+                  "$ref": "#/components/schemas/ApiError"
                 }
               }
             }
@@ -2299,9 +518,7 @@
             "in": "path",
             "name": "id",
             "schema": {
-              "type": "string",
-              "example": "1",
-              "description": "Unique identifier as URL parameter"
+              "$ref": "#/components/schemas/IdParam"
             },
             "required": true
           }
@@ -2323,103 +540,7 @@
                     "data": {
                       "type": "array",
                       "items": {
-                        "type": "object",
-                        "properties": {
-                          "id": {
-                            "type": "integer",
-                            "minimum": 1,
-                            "example": 1,
-                            "description": "Unique identifier"
-                          },
-                          "userId": {
-                            "type": "integer",
-                            "minimum": 1,
-                            "example": 1,
-                            "description": "Unique identifier"
-                          },
-                          "parentProjectId": {
-                            "type": ["integer", "null"],
-                            "minimum": 1,
-                            "example": 1,
-                            "description": "Unique identifier"
-                          },
-                          "name": {
-                            "type": "string",
-                            "minLength": 1,
-                            "maxLength": 255,
-                            "example": "My Project"
-                          },
-                          "description": {
-                            "type": ["string", "null"],
-                            "example": "Project description"
-                          },
-                          "color": {
-                            "type": "string",
-                            "pattern": "^#[0-9A-Fa-f]{6}$",
-                            "example": "#FF5722",
-                            "description": "Hex color code"
-                          },
-                          "path": {
-                            "type": ["string", "null"],
-                            "example": "/root/subproject"
-                          },
-                          "depth": {
-                            "type": "integer",
-                            "minimum": 0,
-                            "example": 0
-                          },
-                          "createdAt": {
-                            "anyOf": [
-                              {
-                                "type": "string"
-                              },
-                              {
-                                "type": "string",
-                                "format": "date-time"
-                              }
-                            ],
-                            "example": "2025-01-01T00:00:00Z",
-                            "description": "ISO timestamp"
-                          },
-                          "updatedAt": {
-                            "anyOf": [
-                              {
-                                "type": "string"
-                              },
-                              {
-                                "type": "string",
-                                "format": "date-time"
-                              }
-                            ],
-                            "example": "2025-01-01T00:00:00Z",
-                            "description": "ISO timestamp"
-                          },
-                          "deletedAt": {
-                            "anyOf": [
-                              {
-                                "type": "string"
-                              },
-                              {
-                                "type": "string",
-                                "format": "date-time"
-                              },
-                              {
-                                "type": "null"
-                              }
-                            ],
-                            "example": "2025-01-01T00:00:00Z",
-                            "description": "ISO timestamp"
-                          }
-                        },
-                        "required": [
-                          "id",
-                          "userId",
-                          "name",
-                          "depth",
-                          "createdAt",
-                          "updatedAt"
-                        ],
-                        "description": "Project entity"
+                        "$ref": "#/components/schemas/Project"
                       }
                     },
                     "success": {
@@ -2436,24 +557,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "const": false
-                    },
-                    "error": {
-                      "type": "string",
-                      "example": "VALIDATION_ERROR"
-                    },
-                    "message": {
-                      "type": "string",
-                      "example": "Invalid input provided"
-                    },
-                    "details": {}
-                  },
-                  "required": ["success", "error", "message"],
-                  "description": "API error response"
+                  "$ref": "#/components/schemas/ApiError"
                 }
               }
             }
@@ -2466,9 +570,7 @@
             "in": "path",
             "name": "id",
             "schema": {
-              "type": "string",
-              "example": "1",
-              "description": "Unique identifier as URL parameter"
+              "$ref": "#/components/schemas/IdParam"
             },
             "required": true
           }
@@ -2785,6 +887,479 @@
     }
   },
   "components": {
-    "schemas": {}
+    "schemas": {
+      "PaginatedResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Task"
+            }
+          },
+          "total": {
+            "type": "integer",
+            "minimum": 0,
+            "example": 42,
+            "description": "Total number of items"
+          },
+          "page": {
+            "type": "integer",
+            "minimum": 1,
+            "example": 1,
+            "description": "Current page number"
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "example": 20,
+            "description": "Items per page"
+          },
+          "totalPages": {
+            "type": "integer",
+            "minimum": 0,
+            "example": 3,
+            "description": "Total number of pages"
+          },
+          "success": {
+            "type": "boolean",
+            "example": true
+          }
+        },
+        "required": ["data", "total", "page", "limit", "totalPages", "success"],
+        "description": "Paginated response wrapper"
+      },
+      "Task": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/Id"
+          },
+          "userId": {
+            "$ref": "#/components/schemas/Id"
+          },
+          "projectId": {
+            "$ref": "#/components/schemas/Id"
+          },
+          "parentTaskId": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/Id"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500,
+            "example": "Complete task"
+          },
+          "description": {
+            "type": ["string", "null"],
+            "example": "Task description"
+          },
+          "status": {
+            "$ref": "#/components/schemas/TaskStatus"
+          },
+          "priority": {
+            "type": "integer",
+            "example": 1,
+            "description": "Task priority (higher = more important)"
+          },
+          "dueDate": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/Timestamp"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "completedAt": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/Timestamp"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "path": {
+            "type": ["string", "null"],
+            "example": "/root/subtask"
+          },
+          "depth": {
+            "type": "integer",
+            "minimum": 0,
+            "example": 0
+          },
+          "createdAt": {
+            "$ref": "#/components/schemas/Timestamp"
+          },
+          "updatedAt": {
+            "$ref": "#/components/schemas/Timestamp"
+          },
+          "deletedAt": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/Timestamp"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "userId",
+          "projectId",
+          "title",
+          "status",
+          "priority",
+          "depth",
+          "createdAt",
+          "updatedAt"
+        ],
+        "description": "Task entity"
+      },
+      "Id": {
+        "type": "integer",
+        "minimum": 1,
+        "example": 1,
+        "description": "Unique identifier"
+      },
+      "TaskStatus": {
+        "type": "string",
+        "enum": ["pending", "in_progress", "completed", "cancelled"],
+        "example": "pending",
+        "description": "Task status"
+      },
+      "Timestamp": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "string",
+            "format": "date-time"
+          }
+        ],
+        "example": "2025-01-01T00:00:00Z",
+        "description": "ISO timestamp"
+      },
+      "ApiError": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "const": false
+          },
+          "error": {
+            "type": "string",
+            "example": "VALIDATION_ERROR"
+          },
+          "message": {
+            "type": "string",
+            "example": "Invalid input provided"
+          },
+          "details": {}
+        },
+        "required": ["success", "error", "message"],
+        "description": "API error response"
+      },
+      "TaskFilter": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Pagination"
+          }
+        ],
+        "properties": {
+          "projectId": {
+            "$ref": "#/components/schemas/Id"
+          },
+          "status": {
+            "$ref": "#/components/schemas/TaskStatus"
+          },
+          "labels": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "example": ["urgent", "bug"]
+          },
+          "dueBefore": {
+            "$ref": "#/components/schemas/Timestamp"
+          },
+          "dueAfter": {
+            "$ref": "#/components/schemas/Timestamp"
+          },
+          "search": {
+            "type": "string",
+            "example": "search term"
+          },
+          "includeCompleted": {
+            "type": "boolean",
+            "example": false
+          }
+        },
+        "description": "Task filter parameters"
+      },
+      "Pagination": {
+        "type": "object",
+        "properties": {
+          "page": {
+            "type": "integer",
+            "minimum": 1,
+            "example": 1,
+            "description": "Page number"
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100,
+            "example": 20,
+            "description": "Items per page"
+          }
+        },
+        "description": "Pagination parameters"
+      },
+      "ApiResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "object",
+            "properties": {
+              "success": {
+                "type": "boolean"
+              }
+            },
+            "required": ["success"]
+          },
+          "success": {
+            "type": "boolean",
+            "example": true
+          },
+          "message": {
+            "type": "string",
+            "example": "Operation completed successfully"
+          }
+        },
+        "required": ["data", "success"],
+        "description": "API response wrapper"
+      },
+      "CreateTask": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500,
+            "example": "Complete task"
+          },
+          "projectId": {
+            "$ref": "#/components/schemas/Id"
+          },
+          "parentId": {
+            "$ref": "#/components/schemas/Id"
+          },
+          "description": {
+            "type": "string",
+            "example": "Task description"
+          },
+          "priority": {
+            "type": "integer",
+            "example": 1
+          },
+          "dueDate": {
+            "$ref": "#/components/schemas/Timestamp"
+          },
+          "labels": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "example": ["urgent", "bug"]
+          }
+        },
+        "required": ["title", "projectId"],
+        "description": "Create task request"
+      },
+      "IdParam": {
+        "type": "string",
+        "example": "1",
+        "description": "Unique identifier as URL parameter"
+      },
+      "UpdateTask": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500,
+            "example": "Complete task"
+          },
+          "parentId": {
+            "$ref": "#/components/schemas/Id"
+          },
+          "description": {
+            "type": "string",
+            "example": "Task description"
+          },
+          "priority": {
+            "type": "integer",
+            "example": 1
+          },
+          "dueDate": {
+            "$ref": "#/components/schemas/Timestamp"
+          },
+          "labels": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "example": ["urgent", "bug"]
+          }
+        },
+        "description": "Update task request"
+      },
+      "Project": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/Id"
+          },
+          "userId": {
+            "$ref": "#/components/schemas/Id"
+          },
+          "parentProjectId": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/Id"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255,
+            "example": "My Project"
+          },
+          "description": {
+            "type": ["string", "null"],
+            "example": "Project description"
+          },
+          "color": {
+            "$ref": "#/components/schemas/Color"
+          },
+          "path": {
+            "type": ["string", "null"],
+            "example": "/root/subproject"
+          },
+          "depth": {
+            "type": "integer",
+            "minimum": 0,
+            "example": 0
+          },
+          "createdAt": {
+            "$ref": "#/components/schemas/Timestamp"
+          },
+          "updatedAt": {
+            "$ref": "#/components/schemas/Timestamp"
+          },
+          "deletedAt": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/Timestamp"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": ["id", "userId", "name", "depth", "createdAt", "updatedAt"],
+        "description": "Project entity"
+      },
+      "Color": {
+        "type": "string",
+        "pattern": "^#[0-9A-Fa-f]{6}$",
+        "example": "#FF5722",
+        "description": "Hex color code"
+      },
+      "ProjectFilter": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Pagination"
+          }
+        ],
+        "properties": {
+          "includeArchived": {
+            "type": "boolean",
+            "example": false
+          },
+          "depth": {
+            "type": "integer",
+            "minimum": 1,
+            "example": 1,
+            "description": "Maximum depth to include"
+          }
+        },
+        "description": "Project filter parameters"
+      },
+      "CreateProject": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255,
+            "example": "My Project"
+          },
+          "description": {
+            "type": "string",
+            "example": "Project description"
+          },
+          "parentId": {
+            "$ref": "#/components/schemas/Id"
+          },
+          "color": {
+            "$ref": "#/components/schemas/Color"
+          }
+        },
+        "required": ["name"],
+        "description": "Create project request"
+      },
+      "UpdateProject": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255,
+            "example": "My Project"
+          },
+          "description": {
+            "type": "string",
+            "example": "Project description"
+          },
+          "parentId": {
+            "$ref": "#/components/schemas/Id"
+          },
+          "color": {
+            "$ref": "#/components/schemas/Color"
+          }
+        },
+        "description": "Update project request"
+      }
+    }
   }
 }

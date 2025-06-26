@@ -565,13 +565,237 @@ export interface paths {
 }
 export type webhooks = Record<string, never>
 export interface components {
-  schemas: never
+  schemas: {
+    /** @description Paginated response wrapper */
+    PaginatedResponse: {
+      data: components["schemas"]["Task"][]
+      /**
+       * @description Total number of items
+       * @example 42
+       */
+      total: number
+      /**
+       * @description Current page number
+       * @example 1
+       */
+      page: number
+      /**
+       * @description Items per page
+       * @example 20
+       */
+      limit: number
+      /**
+       * @description Total number of pages
+       * @example 3
+       */
+      totalPages: number
+      /** @example true */
+      success: boolean
+    }
+    /** @description Task entity */
+    Task: {
+      id: components["schemas"]["Id"]
+      userId: components["schemas"]["Id"]
+      projectId: components["schemas"]["Id"]
+      parentTaskId?: components["schemas"]["Id"] | null
+      /** @example Complete task */
+      title: string
+      /** @example Task description */
+      description?: string | null
+      status: components["schemas"]["TaskStatus"]
+      /**
+       * @description Task priority (higher = more important)
+       * @example 1
+       */
+      priority: number
+      dueDate?: components["schemas"]["Timestamp"] | null
+      completedAt?: components["schemas"]["Timestamp"] | null
+      /** @example /root/subtask */
+      path?: string | null
+      /** @example 0 */
+      depth: number
+      createdAt: components["schemas"]["Timestamp"]
+      updatedAt: components["schemas"]["Timestamp"]
+      deletedAt?: components["schemas"]["Timestamp"] | null
+    }
+    /**
+     * @description Unique identifier
+     * @example 1
+     */
+    Id: number
+    /**
+     * @description Task status
+     * @example pending
+     * @enum {string}
+     */
+    TaskStatus: "pending" | "in_progress" | "completed" | "cancelled"
+    /**
+     * @description ISO timestamp
+     * @example 2025-01-01T00:00:00Z
+     */
+    Timestamp: string
+    /** @description API error response */
+    ApiError: {
+      /** @constant */
+      success: false
+      /** @example VALIDATION_ERROR */
+      error: string
+      /** @example Invalid input provided */
+      message: string
+      details?: unknown
+    }
+    /** @description Task filter parameters */
+    TaskFilter: {
+      projectId?: components["schemas"]["Id"]
+      status?: components["schemas"]["TaskStatus"]
+      /** @example [
+       *       "urgent",
+       *       "bug"
+       *     ] */
+      labels?: string[]
+      dueBefore?: components["schemas"]["Timestamp"]
+      dueAfter?: components["schemas"]["Timestamp"]
+      /** @example search term */
+      search?: string
+      /** @example false */
+      includeCompleted?: boolean
+    } & components["schemas"]["Pagination"]
+    /** @description Pagination parameters */
+    Pagination: {
+      /**
+       * @description Page number
+       * @example 1
+       */
+      page?: number
+      /**
+       * @description Items per page
+       * @example 20
+       */
+      limit?: number
+    }
+    /** @description API response wrapper */
+    ApiResponse: {
+      data: {
+        success: boolean
+      }
+      /** @example true */
+      success: boolean
+      /** @example Operation completed successfully */
+      message?: string
+    }
+    /** @description Create task request */
+    CreateTask: {
+      /** @example Complete task */
+      title: string
+      projectId: components["schemas"]["Id"]
+      parentId?: components["schemas"]["Id"]
+      /** @example Task description */
+      description?: string
+      /** @example 1 */
+      priority?: number
+      dueDate?: components["schemas"]["Timestamp"]
+      /** @example [
+       *       "urgent",
+       *       "bug"
+       *     ] */
+      labels?: string[]
+    }
+    /**
+     * @description Unique identifier as URL parameter
+     * @example 1
+     */
+    IdParam: string
+    /** @description Update task request */
+    UpdateTask: {
+      /** @example Complete task */
+      title?: string
+      parentId?: components["schemas"]["Id"]
+      /** @example Task description */
+      description?: string
+      /** @example 1 */
+      priority?: number
+      dueDate?: components["schemas"]["Timestamp"]
+      /** @example [
+       *       "urgent",
+       *       "bug"
+       *     ] */
+      labels?: string[]
+    }
+    /** @description Project entity */
+    Project: {
+      id: components["schemas"]["Id"]
+      userId: components["schemas"]["Id"]
+      parentProjectId?: components["schemas"]["Id"] | null
+      /** @example My Project */
+      name: string
+      /** @example Project description */
+      description?: string | null
+      color?: components["schemas"]["Color"]
+      /** @example /root/subproject */
+      path?: string | null
+      /** @example 0 */
+      depth: number
+      createdAt: components["schemas"]["Timestamp"]
+      updatedAt: components["schemas"]["Timestamp"]
+      deletedAt?: components["schemas"]["Timestamp"] | null
+    }
+    /**
+     * @description Hex color code
+     * @example #FF5722
+     */
+    Color: string
+    /** @description Project filter parameters */
+    ProjectFilter: {
+      /** @example false */
+      includeArchived?: boolean
+      /**
+       * @description Maximum depth to include
+       * @example 1
+       */
+      depth?: number
+    } & components["schemas"]["Pagination"]
+    /** @description Create project request */
+    CreateProject: {
+      /** @example My Project */
+      name: string
+      /** @example Project description */
+      description?: string
+      parentId?: components["schemas"]["Id"]
+      color?: components["schemas"]["Color"]
+    }
+    /** @description Update project request */
+    UpdateProject: {
+      /** @example My Project */
+      name?: string
+      /** @example Project description */
+      description?: string
+      parentId?: components["schemas"]["Id"]
+      color?: components["schemas"]["Color"]
+    }
+  }
   responses: never
   parameters: never
   requestBodies: never
   headers: never
   pathItems: never
 }
+export type PaginatedResponse = components["schemas"]["PaginatedResponse"]
+export type Task = components["schemas"]["Task"]
+export type Id = components["schemas"]["Id"]
+export type TaskStatus = components["schemas"]["TaskStatus"]
+export type Timestamp = components["schemas"]["Timestamp"]
+export type ApiError = components["schemas"]["ApiError"]
+export type TaskFilter = components["schemas"]["TaskFilter"]
+export type Pagination = components["schemas"]["Pagination"]
+export type ApiResponse = components["schemas"]["ApiResponse"]
+export type CreateTask = components["schemas"]["CreateTask"]
+export type IdParam = components["schemas"]["IdParam"]
+export type UpdateTask = components["schemas"]["UpdateTask"]
+export type Project = components["schemas"]["Project"]
+export type Color = components["schemas"]["Color"]
+export type ProjectFilter = components["schemas"]["ProjectFilter"]
+export type CreateProject = components["schemas"]["CreateProject"]
+export type UpdateProject = components["schemas"]["UpdateProject"]
 export type $defs = Record<string, never>
 export interface operations {
   getApiHealth: {
@@ -602,15 +826,7 @@ export interface operations {
   getApiTasks: {
     parameters: {
       query?: {
-        page?: number
-        limit?: number
-        projectId?: number
-        status?: "pending" | "in_progress" | "completed" | "cancelled"
-        labels?: string[]
-        dueBefore?: string
-        dueAfter?: string
-        search?: string
-        includeCompleted?: boolean
+        "#/components/schemas/TaskFilter"?: components["schemas"]["TaskFilter"]
       }
       header?: never
       path?: never
@@ -624,96 +840,7 @@ export interface operations {
           [name: string]: unknown
         }
         content: {
-          "application/json": {
-            data: {
-              /**
-               * @description Unique identifier
-               * @example 1
-               */
-              id: number
-              /**
-               * @description Unique identifier
-               * @example 1
-               */
-              userId: number
-              /**
-               * @description Unique identifier
-               * @example 1
-               */
-              projectId: number
-              /**
-               * @description Unique identifier
-               * @example 1
-               */
-              parentTaskId?: number | null
-              /** @example Complete task */
-              title: string
-              /** @example Task description */
-              description?: string | null
-              /**
-               * @description Task status
-               * @example pending
-               * @enum {string}
-               */
-              status: "pending" | "in_progress" | "completed" | "cancelled"
-              /**
-               * @description Task priority (higher = more important)
-               * @example 1
-               */
-              priority: number
-              /**
-               * @description ISO timestamp
-               * @example 2025-01-01T00:00:00Z
-               */
-              dueDate?: string | null
-              /**
-               * @description ISO timestamp
-               * @example 2025-01-01T00:00:00Z
-               */
-              completedAt?: string | null
-              /** @example /root/subtask */
-              path?: string | null
-              /** @example 0 */
-              depth: number
-              /**
-               * @description ISO timestamp
-               * @example 2025-01-01T00:00:00Z
-               */
-              createdAt: string
-              /**
-               * @description ISO timestamp
-               * @example 2025-01-01T00:00:00Z
-               */
-              updatedAt: string
-              /**
-               * @description ISO timestamp
-               * @example 2025-01-01T00:00:00Z
-               */
-              deletedAt?: string | null
-            }[]
-            /**
-             * @description Total number of items
-             * @example 42
-             */
-            total: number
-            /**
-             * @description Current page number
-             * @example 1
-             */
-            page: number
-            /**
-             * @description Items per page
-             * @example 20
-             */
-            limit: number
-            /**
-             * @description Total number of pages
-             * @example 3
-             */
-            totalPages: number
-            /** @example true */
-            success: boolean
-          }
+          "application/json": components["schemas"]["PaginatedResponse"]
         }
       }
       /** @description Invalid request parameters */
@@ -722,15 +849,7 @@ export interface operations {
           [name: string]: unknown
         }
         content: {
-          "application/json": {
-            /** @constant */
-            success: false
-            /** @example VALIDATION_ERROR */
-            error: string
-            /** @example Invalid input provided */
-            message: string
-            details?: unknown
-          }
+          "application/json": components["schemas"]["ApiError"]
         }
       }
     }
@@ -744,34 +863,7 @@ export interface operations {
     }
     requestBody?: {
       content: {
-        "application/json": {
-          /** @example Complete task */
-          title: string
-          /**
-           * @description Unique identifier
-           * @example 1
-           */
-          projectId: number
-          /**
-           * @description Unique identifier
-           * @example 1
-           */
-          parentId?: number
-          /** @example Task description */
-          description?: string
-          /** @example 1 */
-          priority?: number
-          /**
-           * @description ISO timestamp
-           * @example 2025-01-01T00:00:00Z
-           */
-          dueDate?: string
-          /** @example [
-           *       "urgent",
-           *       "bug"
-           *     ] */
-          labels?: string[]
-        }
+        "application/json": components["schemas"]["CreateTask"]
       }
     }
     responses: {
@@ -781,79 +873,7 @@ export interface operations {
           [name: string]: unknown
         }
         content: {
-          "application/json": {
-            /** @description Task entity */
-            data: {
-              /**
-               * @description Unique identifier
-               * @example 1
-               */
-              id: number
-              /**
-               * @description Unique identifier
-               * @example 1
-               */
-              userId: number
-              /**
-               * @description Unique identifier
-               * @example 1
-               */
-              projectId: number
-              /**
-               * @description Unique identifier
-               * @example 1
-               */
-              parentTaskId?: number | null
-              /** @example Complete task */
-              title: string
-              /** @example Task description */
-              description?: string | null
-              /**
-               * @description Task status
-               * @example pending
-               * @enum {string}
-               */
-              status: "pending" | "in_progress" | "completed" | "cancelled"
-              /**
-               * @description Task priority (higher = more important)
-               * @example 1
-               */
-              priority: number
-              /**
-               * @description ISO timestamp
-               * @example 2025-01-01T00:00:00Z
-               */
-              dueDate?: string | null
-              /**
-               * @description ISO timestamp
-               * @example 2025-01-01T00:00:00Z
-               */
-              completedAt?: string | null
-              /** @example /root/subtask */
-              path?: string | null
-              /** @example 0 */
-              depth: number
-              /**
-               * @description ISO timestamp
-               * @example 2025-01-01T00:00:00Z
-               */
-              createdAt: string
-              /**
-               * @description ISO timestamp
-               * @example 2025-01-01T00:00:00Z
-               */
-              updatedAt: string
-              /**
-               * @description ISO timestamp
-               * @example 2025-01-01T00:00:00Z
-               */
-              deletedAt?: string | null
-            }
-            /** @example true */
-            success: boolean
-            /** @example Operation completed successfully */
-            message?: string
-          }
+          "application/json": components["schemas"]["ApiResponse"]
         }
       }
       /** @description Invalid request data */
@@ -862,15 +882,7 @@ export interface operations {
           [name: string]: unknown
         }
         content: {
-          "application/json": {
-            /** @constant */
-            success: false
-            /** @example VALIDATION_ERROR */
-            error: string
-            /** @example Invalid input provided */
-            message: string
-            details?: unknown
-          }
+          "application/json": components["schemas"]["ApiError"]
         }
       }
     }
@@ -880,7 +892,7 @@ export interface operations {
       query?: never
       header?: never
       path: {
-        id: string
+        id: components["schemas"]["IdParam"]
       }
       cookie?: never
     }
@@ -892,79 +904,7 @@ export interface operations {
           [name: string]: unknown
         }
         content: {
-          "application/json": {
-            /** @description Task entity */
-            data: {
-              /**
-               * @description Unique identifier
-               * @example 1
-               */
-              id: number
-              /**
-               * @description Unique identifier
-               * @example 1
-               */
-              userId: number
-              /**
-               * @description Unique identifier
-               * @example 1
-               */
-              projectId: number
-              /**
-               * @description Unique identifier
-               * @example 1
-               */
-              parentTaskId?: number | null
-              /** @example Complete task */
-              title: string
-              /** @example Task description */
-              description?: string | null
-              /**
-               * @description Task status
-               * @example pending
-               * @enum {string}
-               */
-              status: "pending" | "in_progress" | "completed" | "cancelled"
-              /**
-               * @description Task priority (higher = more important)
-               * @example 1
-               */
-              priority: number
-              /**
-               * @description ISO timestamp
-               * @example 2025-01-01T00:00:00Z
-               */
-              dueDate?: string | null
-              /**
-               * @description ISO timestamp
-               * @example 2025-01-01T00:00:00Z
-               */
-              completedAt?: string | null
-              /** @example /root/subtask */
-              path?: string | null
-              /** @example 0 */
-              depth: number
-              /**
-               * @description ISO timestamp
-               * @example 2025-01-01T00:00:00Z
-               */
-              createdAt: string
-              /**
-               * @description ISO timestamp
-               * @example 2025-01-01T00:00:00Z
-               */
-              updatedAt: string
-              /**
-               * @description ISO timestamp
-               * @example 2025-01-01T00:00:00Z
-               */
-              deletedAt?: string | null
-            }
-            /** @example true */
-            success: boolean
-            /** @example Operation completed successfully */
-            message?: string
-          }
+          "application/json": components["schemas"]["ApiResponse"]
         }
       }
       /** @description Task not found */
@@ -973,15 +913,7 @@ export interface operations {
           [name: string]: unknown
         }
         content: {
-          "application/json": {
-            /** @constant */
-            success: false
-            /** @example VALIDATION_ERROR */
-            error: string
-            /** @example Invalid input provided */
-            message: string
-            details?: unknown
-          }
+          "application/json": components["schemas"]["ApiError"]
         }
       }
     }
@@ -991,35 +923,13 @@ export interface operations {
       query?: never
       header?: never
       path: {
-        id: string
+        id: components["schemas"]["IdParam"]
       }
       cookie?: never
     }
     requestBody?: {
       content: {
-        "application/json": {
-          /** @example Complete task */
-          title?: string
-          /**
-           * @description Unique identifier
-           * @example 1
-           */
-          parentId?: number
-          /** @example Task description */
-          description?: string
-          /** @example 1 */
-          priority?: number
-          /**
-           * @description ISO timestamp
-           * @example 2025-01-01T00:00:00Z
-           */
-          dueDate?: string
-          /** @example [
-           *       "urgent",
-           *       "bug"
-           *     ] */
-          labels?: string[]
-        }
+        "application/json": components["schemas"]["UpdateTask"]
       }
     }
     responses: {
@@ -1029,79 +939,7 @@ export interface operations {
           [name: string]: unknown
         }
         content: {
-          "application/json": {
-            /** @description Task entity */
-            data: {
-              /**
-               * @description Unique identifier
-               * @example 1
-               */
-              id: number
-              /**
-               * @description Unique identifier
-               * @example 1
-               */
-              userId: number
-              /**
-               * @description Unique identifier
-               * @example 1
-               */
-              projectId: number
-              /**
-               * @description Unique identifier
-               * @example 1
-               */
-              parentTaskId?: number | null
-              /** @example Complete task */
-              title: string
-              /** @example Task description */
-              description?: string | null
-              /**
-               * @description Task status
-               * @example pending
-               * @enum {string}
-               */
-              status: "pending" | "in_progress" | "completed" | "cancelled"
-              /**
-               * @description Task priority (higher = more important)
-               * @example 1
-               */
-              priority: number
-              /**
-               * @description ISO timestamp
-               * @example 2025-01-01T00:00:00Z
-               */
-              dueDate?: string | null
-              /**
-               * @description ISO timestamp
-               * @example 2025-01-01T00:00:00Z
-               */
-              completedAt?: string | null
-              /** @example /root/subtask */
-              path?: string | null
-              /** @example 0 */
-              depth: number
-              /**
-               * @description ISO timestamp
-               * @example 2025-01-01T00:00:00Z
-               */
-              createdAt: string
-              /**
-               * @description ISO timestamp
-               * @example 2025-01-01T00:00:00Z
-               */
-              updatedAt: string
-              /**
-               * @description ISO timestamp
-               * @example 2025-01-01T00:00:00Z
-               */
-              deletedAt?: string | null
-            }
-            /** @example true */
-            success: boolean
-            /** @example Operation completed successfully */
-            message?: string
-          }
+          "application/json": components["schemas"]["ApiResponse"]
         }
       }
       /** @description Task not found */
@@ -1110,15 +948,7 @@ export interface operations {
           [name: string]: unknown
         }
         content: {
-          "application/json": {
-            /** @constant */
-            success: false
-            /** @example VALIDATION_ERROR */
-            error: string
-            /** @example Invalid input provided */
-            message: string
-            details?: unknown
-          }
+          "application/json": components["schemas"]["ApiError"]
         }
       }
     }
@@ -1128,7 +958,7 @@ export interface operations {
       query?: never
       header?: never
       path: {
-        id: string
+        id: components["schemas"]["IdParam"]
       }
       cookie?: never
     }
@@ -1140,15 +970,7 @@ export interface operations {
           [name: string]: unknown
         }
         content: {
-          "application/json": {
-            data: {
-              success: boolean
-            }
-            /** @example true */
-            success: boolean
-            /** @example Operation completed successfully */
-            message?: string
-          }
+          "application/json": components["schemas"]["ApiResponse"]
         }
       }
       /** @description Task not found */
@@ -1157,15 +979,7 @@ export interface operations {
           [name: string]: unknown
         }
         content: {
-          "application/json": {
-            /** @constant */
-            success: false
-            /** @example VALIDATION_ERROR */
-            error: string
-            /** @example Invalid input provided */
-            message: string
-            details?: unknown
-          }
+          "application/json": components["schemas"]["ApiError"]
         }
       }
     }
@@ -1175,7 +989,7 @@ export interface operations {
       query?: never
       header?: never
       path: {
-        id: string
+        id: components["schemas"]["IdParam"]
       }
       cookie?: never
     }
@@ -1187,79 +1001,7 @@ export interface operations {
           [name: string]: unknown
         }
         content: {
-          "application/json": {
-            /** @description Task entity */
-            data: {
-              /**
-               * @description Unique identifier
-               * @example 1
-               */
-              id: number
-              /**
-               * @description Unique identifier
-               * @example 1
-               */
-              userId: number
-              /**
-               * @description Unique identifier
-               * @example 1
-               */
-              projectId: number
-              /**
-               * @description Unique identifier
-               * @example 1
-               */
-              parentTaskId?: number | null
-              /** @example Complete task */
-              title: string
-              /** @example Task description */
-              description?: string | null
-              /**
-               * @description Task status
-               * @example pending
-               * @enum {string}
-               */
-              status: "pending" | "in_progress" | "completed" | "cancelled"
-              /**
-               * @description Task priority (higher = more important)
-               * @example 1
-               */
-              priority: number
-              /**
-               * @description ISO timestamp
-               * @example 2025-01-01T00:00:00Z
-               */
-              dueDate?: string | null
-              /**
-               * @description ISO timestamp
-               * @example 2025-01-01T00:00:00Z
-               */
-              completedAt?: string | null
-              /** @example /root/subtask */
-              path?: string | null
-              /** @example 0 */
-              depth: number
-              /**
-               * @description ISO timestamp
-               * @example 2025-01-01T00:00:00Z
-               */
-              createdAt: string
-              /**
-               * @description ISO timestamp
-               * @example 2025-01-01T00:00:00Z
-               */
-              updatedAt: string
-              /**
-               * @description ISO timestamp
-               * @example 2025-01-01T00:00:00Z
-               */
-              deletedAt?: string | null
-            }
-            /** @example true */
-            success: boolean
-            /** @example Operation completed successfully */
-            message?: string
-          }
+          "application/json": components["schemas"]["ApiResponse"]
         }
       }
       /** @description Task not found */
@@ -1268,15 +1010,7 @@ export interface operations {
           [name: string]: unknown
         }
         content: {
-          "application/json": {
-            /** @constant */
-            success: false
-            /** @example VALIDATION_ERROR */
-            error: string
-            /** @example Invalid input provided */
-            message: string
-            details?: unknown
-          }
+          "application/json": components["schemas"]["ApiError"]
         }
       }
     }
@@ -1284,10 +1018,7 @@ export interface operations {
   getApiProjects: {
     parameters: {
       query?: {
-        page?: number
-        limit?: number
-        includeArchived?: boolean
-        depth?: number
+        "#/components/schemas/ProjectFilter"?: components["schemas"]["ProjectFilter"]
       }
       header?: never
       path?: never
@@ -1302,51 +1033,7 @@ export interface operations {
         }
         content: {
           "application/json": {
-            data: {
-              /**
-               * @description Unique identifier
-               * @example 1
-               */
-              id: number
-              /**
-               * @description Unique identifier
-               * @example 1
-               */
-              userId: number
-              /**
-               * @description Unique identifier
-               * @example 1
-               */
-              parentProjectId?: number | null
-              /** @example My Project */
-              name: string
-              /** @example Project description */
-              description?: string | null
-              /**
-               * @description Hex color code
-               * @example #FF5722
-               */
-              color?: string
-              /** @example /root/subproject */
-              path?: string | null
-              /** @example 0 */
-              depth: number
-              /**
-               * @description ISO timestamp
-               * @example 2025-01-01T00:00:00Z
-               */
-              createdAt: string
-              /**
-               * @description ISO timestamp
-               * @example 2025-01-01T00:00:00Z
-               */
-              updatedAt: string
-              /**
-               * @description ISO timestamp
-               * @example 2025-01-01T00:00:00Z
-               */
-              deletedAt?: string | null
-            }[]
+            data: components["schemas"]["Project"][]
             success: boolean
           }
         }
@@ -1357,15 +1044,7 @@ export interface operations {
           [name: string]: unknown
         }
         content: {
-          "application/json": {
-            /** @constant */
-            success: false
-            /** @example VALIDATION_ERROR */
-            error: string
-            /** @example Invalid input provided */
-            message: string
-            details?: unknown
-          }
+          "application/json": components["schemas"]["ApiError"]
         }
       }
     }
@@ -1379,22 +1058,7 @@ export interface operations {
     }
     requestBody?: {
       content: {
-        "application/json": {
-          /** @example My Project */
-          name: string
-          /** @example Project description */
-          description?: string
-          /**
-           * @description Unique identifier
-           * @example 1
-           */
-          parentId?: number
-          /**
-           * @description Hex color code
-           * @example #FF5722
-           */
-          color?: string
-        }
+        "application/json": components["schemas"]["CreateProject"]
       }
     }
     responses: {
@@ -1404,58 +1068,7 @@ export interface operations {
           [name: string]: unknown
         }
         content: {
-          "application/json": {
-            /** @description Project entity */
-            data: {
-              /**
-               * @description Unique identifier
-               * @example 1
-               */
-              id: number
-              /**
-               * @description Unique identifier
-               * @example 1
-               */
-              userId: number
-              /**
-               * @description Unique identifier
-               * @example 1
-               */
-              parentProjectId?: number | null
-              /** @example My Project */
-              name: string
-              /** @example Project description */
-              description?: string | null
-              /**
-               * @description Hex color code
-               * @example #FF5722
-               */
-              color?: string
-              /** @example /root/subproject */
-              path?: string | null
-              /** @example 0 */
-              depth: number
-              /**
-               * @description ISO timestamp
-               * @example 2025-01-01T00:00:00Z
-               */
-              createdAt: string
-              /**
-               * @description ISO timestamp
-               * @example 2025-01-01T00:00:00Z
-               */
-              updatedAt: string
-              /**
-               * @description ISO timestamp
-               * @example 2025-01-01T00:00:00Z
-               */
-              deletedAt?: string | null
-            }
-            /** @example true */
-            success: boolean
-            /** @example Operation completed successfully */
-            message?: string
-          }
+          "application/json": components["schemas"]["ApiResponse"]
         }
       }
       /** @description Invalid request data */
@@ -1464,15 +1077,7 @@ export interface operations {
           [name: string]: unknown
         }
         content: {
-          "application/json": {
-            /** @constant */
-            success: false
-            /** @example VALIDATION_ERROR */
-            error: string
-            /** @example Invalid input provided */
-            message: string
-            details?: unknown
-          }
+          "application/json": components["schemas"]["ApiError"]
         }
       }
     }
@@ -1482,7 +1087,7 @@ export interface operations {
       query?: never
       header?: never
       path: {
-        id: string
+        id: components["schemas"]["IdParam"]
       }
       cookie?: never
     }
@@ -1494,58 +1099,7 @@ export interface operations {
           [name: string]: unknown
         }
         content: {
-          "application/json": {
-            /** @description Project entity */
-            data: {
-              /**
-               * @description Unique identifier
-               * @example 1
-               */
-              id: number
-              /**
-               * @description Unique identifier
-               * @example 1
-               */
-              userId: number
-              /**
-               * @description Unique identifier
-               * @example 1
-               */
-              parentProjectId?: number | null
-              /** @example My Project */
-              name: string
-              /** @example Project description */
-              description?: string | null
-              /**
-               * @description Hex color code
-               * @example #FF5722
-               */
-              color?: string
-              /** @example /root/subproject */
-              path?: string | null
-              /** @example 0 */
-              depth: number
-              /**
-               * @description ISO timestamp
-               * @example 2025-01-01T00:00:00Z
-               */
-              createdAt: string
-              /**
-               * @description ISO timestamp
-               * @example 2025-01-01T00:00:00Z
-               */
-              updatedAt: string
-              /**
-               * @description ISO timestamp
-               * @example 2025-01-01T00:00:00Z
-               */
-              deletedAt?: string | null
-            }
-            /** @example true */
-            success: boolean
-            /** @example Operation completed successfully */
-            message?: string
-          }
+          "application/json": components["schemas"]["ApiResponse"]
         }
       }
       /** @description Project not found */
@@ -1554,15 +1108,7 @@ export interface operations {
           [name: string]: unknown
         }
         content: {
-          "application/json": {
-            /** @constant */
-            success: false
-            /** @example VALIDATION_ERROR */
-            error: string
-            /** @example Invalid input provided */
-            message: string
-            details?: unknown
-          }
+          "application/json": components["schemas"]["ApiError"]
         }
       }
     }
@@ -1572,28 +1118,13 @@ export interface operations {
       query?: never
       header?: never
       path: {
-        id: string
+        id: components["schemas"]["IdParam"]
       }
       cookie?: never
     }
     requestBody?: {
       content: {
-        "application/json": {
-          /** @example My Project */
-          name?: string
-          /** @example Project description */
-          description?: string
-          /**
-           * @description Unique identifier
-           * @example 1
-           */
-          parentId?: number
-          /**
-           * @description Hex color code
-           * @example #FF5722
-           */
-          color?: string
-        }
+        "application/json": components["schemas"]["UpdateProject"]
       }
     }
     responses: {
@@ -1603,58 +1134,7 @@ export interface operations {
           [name: string]: unknown
         }
         content: {
-          "application/json": {
-            /** @description Project entity */
-            data: {
-              /**
-               * @description Unique identifier
-               * @example 1
-               */
-              id: number
-              /**
-               * @description Unique identifier
-               * @example 1
-               */
-              userId: number
-              /**
-               * @description Unique identifier
-               * @example 1
-               */
-              parentProjectId?: number | null
-              /** @example My Project */
-              name: string
-              /** @example Project description */
-              description?: string | null
-              /**
-               * @description Hex color code
-               * @example #FF5722
-               */
-              color?: string
-              /** @example /root/subproject */
-              path?: string | null
-              /** @example 0 */
-              depth: number
-              /**
-               * @description ISO timestamp
-               * @example 2025-01-01T00:00:00Z
-               */
-              createdAt: string
-              /**
-               * @description ISO timestamp
-               * @example 2025-01-01T00:00:00Z
-               */
-              updatedAt: string
-              /**
-               * @description ISO timestamp
-               * @example 2025-01-01T00:00:00Z
-               */
-              deletedAt?: string | null
-            }
-            /** @example true */
-            success: boolean
-            /** @example Operation completed successfully */
-            message?: string
-          }
+          "application/json": components["schemas"]["ApiResponse"]
         }
       }
       /** @description Project not found */
@@ -1663,15 +1143,7 @@ export interface operations {
           [name: string]: unknown
         }
         content: {
-          "application/json": {
-            /** @constant */
-            success: false
-            /** @example VALIDATION_ERROR */
-            error: string
-            /** @example Invalid input provided */
-            message: string
-            details?: unknown
-          }
+          "application/json": components["schemas"]["ApiError"]
         }
       }
     }
@@ -1681,7 +1153,7 @@ export interface operations {
       query?: never
       header?: never
       path: {
-        id: string
+        id: components["schemas"]["IdParam"]
       }
       cookie?: never
     }
@@ -1693,15 +1165,7 @@ export interface operations {
           [name: string]: unknown
         }
         content: {
-          "application/json": {
-            data: {
-              success: boolean
-            }
-            /** @example true */
-            success: boolean
-            /** @example Operation completed successfully */
-            message?: string
-          }
+          "application/json": components["schemas"]["ApiResponse"]
         }
       }
       /** @description Project not found */
@@ -1710,15 +1174,7 @@ export interface operations {
           [name: string]: unknown
         }
         content: {
-          "application/json": {
-            /** @constant */
-            success: false
-            /** @example VALIDATION_ERROR */
-            error: string
-            /** @example Invalid input provided */
-            message: string
-            details?: unknown
-          }
+          "application/json": components["schemas"]["ApiError"]
         }
       }
     }
@@ -1728,7 +1184,7 @@ export interface operations {
       query?: never
       header?: never
       path: {
-        id: string
+        id: components["schemas"]["IdParam"]
       }
       cookie?: never
     }
@@ -1741,51 +1197,7 @@ export interface operations {
         }
         content: {
           "application/json": {
-            data: {
-              /**
-               * @description Unique identifier
-               * @example 1
-               */
-              id: number
-              /**
-               * @description Unique identifier
-               * @example 1
-               */
-              userId: number
-              /**
-               * @description Unique identifier
-               * @example 1
-               */
-              parentProjectId?: number | null
-              /** @example My Project */
-              name: string
-              /** @example Project description */
-              description?: string | null
-              /**
-               * @description Hex color code
-               * @example #FF5722
-               */
-              color?: string
-              /** @example /root/subproject */
-              path?: string | null
-              /** @example 0 */
-              depth: number
-              /**
-               * @description ISO timestamp
-               * @example 2025-01-01T00:00:00Z
-               */
-              createdAt: string
-              /**
-               * @description ISO timestamp
-               * @example 2025-01-01T00:00:00Z
-               */
-              updatedAt: string
-              /**
-               * @description ISO timestamp
-               * @example 2025-01-01T00:00:00Z
-               */
-              deletedAt?: string | null
-            }[]
+            data: components["schemas"]["Project"][]
             success: boolean
           }
         }
@@ -1796,15 +1208,7 @@ export interface operations {
           [name: string]: unknown
         }
         content: {
-          "application/json": {
-            /** @constant */
-            success: false
-            /** @example VALIDATION_ERROR */
-            error: string
-            /** @example Invalid input provided */
-            message: string
-            details?: unknown
-          }
+          "application/json": components["schemas"]["ApiError"]
         }
       }
     }

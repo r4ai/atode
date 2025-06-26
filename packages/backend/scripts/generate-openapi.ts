@@ -15,7 +15,7 @@ const typesOutputPath = path.resolve(
 )
 
 await fs.writeFile(specsOutputPath, JSON.stringify(specs, null, 2))
-await $`bun x openapi-typescript ${specsOutputPath} --output ${typesOutputPath}`
+await $`bun x openapi-typescript ${specsOutputPath} --root-types --root-types-no-schema-prefix --output ${typesOutputPath}`
 
 await $`bun x biome check --write ${specsOutputPath} ${typesOutputPath}`
 
