@@ -1,4 +1,4 @@
-import { Link, useRouterState } from "@tanstack/react-router"
+import { Link, useLocation, useRouterState } from "@tanstack/react-router"
 import {
   Calendar,
   CheckSquare,
@@ -8,7 +8,7 @@ import {
   Settings,
   Star,
 } from "lucide-react"
-import type * as React from "react"
+import { Suspense } from "react"
 import {
   SidebarContent,
   SidebarFooter,
@@ -17,12 +17,10 @@ import {
   SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
-  SidebarMenuBadge,
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarMenuSkeleton,
   Sidebar as SidebarPrimitive,
-  SidebarSeparator,
 } from "@/components/ui/sidebar"
 import { api } from "@/lib/api"
 
@@ -33,30 +31,108 @@ const navigationItems = [
   { name: "Completed", href: "/completed", icon: CheckSquare },
 ]
 
-type ProjectWithTaskCount = {
-  id: number
-  name: string
-  color?: string
-  taskCount: number
+const NavigationGroup = () => {
+  const pathname = useLocation({ select: (location) => location.pathname })
+
+  return (
+    <SidebarGroup>
+      <SidebarMenu>
+        {navigationItems.map((item) => {
+          const isActive = pathname === item.href
+          return (
+            <SidebarMenuItem key={item.name}>
+              <SidebarMenuButton asChild isActive={isActive}>
+                <Link to={item.href}>
+                  <item.icon />
+                  <span>{item.name}</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          )
+        })}
+      </SidebarMenu>
+    </SidebarGroup>
+  )
 }
 
-const useProjectsWithTaskCounts = () => {
-  const { data: projectsData, isLoading: projectsLoading } = api.useQuery(
-    "get",
-    "/api/projects",
+const ProjectsGroup = () => {
+  return (
+    <SidebarGroup>
+      <SidebarGroupLabel>
+        <span>Projects</span>
+      </SidebarGroupLabel>
+      <SidebarGroupContent>
+        <Suspense
+          fallback={
+            <>
+              <SidebarMenuSkeleton />
+              <SidebarMenuSkeleton />
+              <SidebarMenuSkeleton />
+            </>
+          }
+        >
+          <ProjectsGroupMenu />
+        </Suspense>
+      </SidebarGroupContent>
+    </SidebarGroup>
   )
-  const projects = projectsData?.data ?? []
+}
 
-  // For now, just return projects without task counts to avoid hooks rule violation
-  // TODO: Implement proper task count fetching with a separate query
-  const projectsWithCounts = projects.map((project) => ({
-    id: project.id,
-    name: project.name,
-    color: project.color,
-    taskCount: 0, // TODO: Fetch actual task counts
-  })) satisfies ProjectWithTaskCount[]
+const ProjectsGroupMenu = () => {
+  const pathname = useLocation({ select: (location) => location.pathname })
+  const projects = api.useSuspenseQuery("get", "/api/projects")
 
-  return { data: projectsWithCounts, isLoading: projectsLoading }
+  return (
+    <SidebarMenu>
+      {projects.data.data.map((project) => {
+        const projectPath = `/project/${project.id}`
+        const isActive = pathname === projectPath
+        return (
+          <SidebarMenuItem key={project.id}>
+            <SidebarMenuButton asChild isActive={isActive}>
+              <Link to={projectPath}>
+                <div
+                  className="h-2 w-2 rounded-full"
+                  style={{
+                    backgroundColor: project.color ?? "#6b7280",
+                  }}
+                />
+                <span>{project.name}</span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        )
+      })}
+      <SidebarMenuItem>
+        <SidebarMenuButton>
+          <Plus className="h-4 w-4" />
+          <span>Add Project</span>
+        </SidebarMenuButton>
+      </SidebarMenuItem>
+    </SidebarMenu>
+  )
+}
+
+const FavoritesGroup = () => {
+  const pathname = useLocation({ select: (location) => location.pathname })
+
+  return (
+    <SidebarGroup>
+      <SidebarGroupLabel>Favorites</SidebarGroupLabel>
+      <SidebarGroupContent>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild isActive={pathname === "/favorites"}>
+              <Link to="/favorites">
+                <Star className="h-4 w-4" />
+                <span>Starred Tasks</span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarGroupContent>
+    </SidebarGroup>
+  )
 }
 
 export const AppSidebar = ({
@@ -64,8 +140,6 @@ export const AppSidebar = ({
 }: React.ComponentProps<typeof SidebarPrimitive>) => {
   const routerState = useRouterState()
   const currentPath = routerState.location.pathname
-  const { data: projects, isLoading: projectsLoading } =
-    useProjectsWithTaskCounts()
 
   return (
     <SidebarPrimitive collapsible="offcanvas" {...props}>
@@ -88,93 +162,9 @@ export const AppSidebar = ({
       </SidebarHeader>
 
       <SidebarContent>
-        {/* Main Navigation */}
-        <SidebarGroup>
-          <SidebarMenu>
-            {navigationItems.map((item) => {
-              const isActive = currentPath === item.href
-              return (
-                <SidebarMenuItem key={item.name}>
-                  <SidebarMenuButton asChild isActive={isActive}>
-                    <Link to={item.href}>
-                      <item.icon />
-                      <span>{item.name}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              )
-            })}
-          </SidebarMenu>
-        </SidebarGroup>
-
-        <SidebarSeparator />
-
-        {/* Projects Section */}
-        <SidebarGroup>
-          <SidebarGroupLabel>
-            <span>Projects</span>
-          </SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {projectsLoading ? (
-                <>
-                  <SidebarMenuSkeleton showIcon />
-                  <SidebarMenuSkeleton showIcon />
-                  <SidebarMenuSkeleton showIcon />
-                </>
-              ) : (
-                projects.map((project) => {
-                  const projectPath = `/project/${project.id}`
-                  const isActive = currentPath === projectPath
-                  return (
-                    <SidebarMenuItem key={project.id}>
-                      <SidebarMenuButton asChild isActive={isActive}>
-                        <Link to={projectPath}>
-                          <div
-                            className="h-2 w-2 rounded-full"
-                            style={{
-                              backgroundColor: project.color ?? "#6b7280",
-                            }}
-                          />
-                          <span>{project.name}</span>
-                        </Link>
-                      </SidebarMenuButton>
-                      <SidebarMenuBadge>{project.taskCount}</SidebarMenuBadge>
-                    </SidebarMenuItem>
-                  )
-                })
-              )}
-              <SidebarMenuItem>
-                <SidebarMenuButton>
-                  <Plus className="h-4 w-4" />
-                  <span>Add Project</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-
-        <SidebarSeparator />
-
-        {/* Favorites */}
-        <SidebarGroup>
-          <SidebarGroupLabel>Favorites</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  asChild
-                  isActive={currentPath === "/favorites"}
-                >
-                  <Link to="/favorites">
-                    <Star className="h-4 w-4" />
-                    <span>Starred Tasks</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+        <NavigationGroup />
+        <ProjectsGroup />
+        <FavoritesGroup />
       </SidebarContent>
 
       <SidebarFooter>

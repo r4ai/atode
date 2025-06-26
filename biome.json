@@ -12,6 +12,7 @@
       "!packages/frontend/src/routeTree.gen.ts",
       "!packages/frontend/.tanstack/**",
       "!packages/frontend/public/mockServiceWorker.js",
+      "!packages/frontend/src/mocks/*.ts",
       "!coverage/**"
     ]
   },

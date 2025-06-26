@@ -3,9 +3,7 @@ import type { paths } from "backend/openapi"
 import createFetchClient from "openapi-fetch"
 import createClient from "openapi-react-query"
 
-const fetchClient = createFetchClient<paths>({
-  baseUrl: "https://myapi.dev/v1/",
-})
+const fetchClient = createFetchClient<paths>()
 
 /**
  * API client for interacting with the backend.

@@ -1,5 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react"
 import { expect, userEvent, within } from "@storybook/test"
+import type { paths } from "backend/openapi"
+import { HttpResponse, http } from "msw"
 import { SidebarInset, SidebarProvider } from "../ui/sidebar"
 import { AppHeader } from "./header"
 import { AppSidebar } from "./sidebar"
@@ -18,9 +20,18 @@ export default meta
 type Story = StoryObj<typeof meta>
 
 export const Default: Story = {
-  args: {},
+  args: {
+    variant: "sidebar",
+  },
   render: (args) => (
-    <SidebarProvider>
+    <SidebarProvider
+      style={
+        {
+          "--sidebar-width": "calc(var(--spacing) * 72)",
+          "--header-height": "calc(var(--spacing) * 12)",
+        } as React.CSSProperties
+      }
+    >
       <AppSidebar {...args} />
       <SidebarInset>
         <AppHeader />
@@ -101,5 +112,53 @@ export const Default: Story = {
 
     const taskManagerText = canvas.getByText("Task Manager")
     await expect(taskManagerText).toBeInTheDocument()
+  },
+  parameters: {
+    msw: {
+      handlers: [
+        http.get("/api/projects", () =>
+          HttpResponse.json<
+            paths["/api/projects"]["get"]["responses"]["200"]["content"]["application/json"]
+          >(
+            {
+              success: true,
+              data: [
+                {
+                  id: 1,
+                  name: "Shopping List",
+                  description: "Items to buy for the week",
+                  userId: 1,
+                  depth: 1,
+                  color: "#FF5733",
+                  createdAt: new Date().toISOString(),
+                  updatedAt: new Date().toISOString(),
+                },
+                {
+                  id: 2,
+                  name: "Work Projects",
+                  description: "Ongoing work-related projects",
+                  userId: 1,
+                  depth: 1,
+                  color: "#33FF57",
+                  createdAt: new Date().toISOString(),
+                  updatedAt: new Date().toISOString(),
+                },
+                {
+                  id: 3,
+                  name: "Personal Goals",
+                  description: "Goals for personal development",
+                  userId: 1,
+                  depth: 1,
+                  color: "#3357FF",
+                  createdAt: new Date().toISOString(),
+                  updatedAt: new Date().toISOString(),
+                },
+              ],
+            },
+            { status: 200 },
+          ),
+        ),
+      ],
+    },
   },
 }
