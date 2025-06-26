@@ -90,9 +90,14 @@ export const Default: Story = {
     const projectsHeading = canvas.getByText("Projects")
     await expect(projectsHeading).toBeInTheDocument()
 
-    const addProjectButton = canvas.getByRole("button", {
-      name: /add project/i,
-    })
+    // Wait for the suspense to resolve and find the Add Project button
+    const addProjectButton = await canvas.findByRole(
+      "button",
+      {
+        name: /add project/i,
+      },
+      { timeout: 3000 },
+    )
     await expect(addProjectButton).toBeInTheDocument()
 
     // Check Favorites section
