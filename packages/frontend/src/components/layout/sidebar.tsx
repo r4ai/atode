@@ -20,10 +20,11 @@ import {
   SidebarMenuBadge,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarMenuSkeleton,
   Sidebar as SidebarPrimitive,
   SidebarSeparator,
 } from "@/components/ui/sidebar"
-import { cn } from "@/lib/utils"
+import { api } from "@/lib/api"
 
 const navigationItems = [
   { name: "Home", href: "/home", icon: Home },
@@ -32,17 +33,39 @@ const navigationItems = [
   { name: "Completed", href: "/completed", icon: CheckSquare },
 ]
 
-const projects = [
-  { id: "1", name: "Personal", color: "bg-blue-500", taskCount: 5 },
-  { id: "2", name: "Work", color: "bg-green-500", taskCount: 12 },
-  { id: "3", name: "Shopping", color: "bg-purple-500", taskCount: 3 },
-]
+type ProjectWithTaskCount = {
+  id: number
+  name: string
+  color?: string
+  taskCount: number
+}
+
+const useProjectsWithTaskCounts = () => {
+  const { data: projectsData, isLoading: projectsLoading } = api.useQuery(
+    "get",
+    "/api/projects",
+  )
+  const projects = projectsData?.data ?? []
+
+  // For now, just return projects without task counts to avoid hooks rule violation
+  // TODO: Implement proper task count fetching with a separate query
+  const projectsWithCounts = projects.map((project) => ({
+    id: project.id,
+    name: project.name,
+    color: project.color,
+    taskCount: 0, // TODO: Fetch actual task counts
+  })) satisfies ProjectWithTaskCount[]
+
+  return { data: projectsWithCounts, isLoading: projectsLoading }
+}
 
 export const AppSidebar = ({
   ...props
 }: React.ComponentProps<typeof SidebarPrimitive>) => {
   const routerState = useRouterState()
   const currentPath = routerState.location.pathname
+  const { data: projects, isLoading: projectsLoading } =
+    useProjectsWithTaskCounts()
 
   return (
     <SidebarPrimitive collapsible="offcanvas" {...props}>
@@ -93,23 +116,34 @@ export const AppSidebar = ({
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {projects.map((project) => {
-                const projectPath = `/project/${project.id}`
-                const isActive = currentPath === projectPath
-                return (
-                  <SidebarMenuItem key={project.id}>
-                    <SidebarMenuButton asChild isActive={isActive}>
-                      <Link to={projectPath}>
-                        <div
-                          className={cn("h-2 w-2 rounded-full", project.color)}
-                        />
-                        <span>{project.name}</span>
-                      </Link>
-                    </SidebarMenuButton>
-                    <SidebarMenuBadge>{project.taskCount}</SidebarMenuBadge>
-                  </SidebarMenuItem>
-                )
-              })}
+              {projectsLoading ? (
+                <>
+                  <SidebarMenuSkeleton showIcon />
+                  <SidebarMenuSkeleton showIcon />
+                  <SidebarMenuSkeleton showIcon />
+                </>
+              ) : (
+                projects.map((project) => {
+                  const projectPath = `/project/${project.id}`
+                  const isActive = currentPath === projectPath
+                  return (
+                    <SidebarMenuItem key={project.id}>
+                      <SidebarMenuButton asChild isActive={isActive}>
+                        <Link to={projectPath}>
+                          <div
+                            className="h-2 w-2 rounded-full"
+                            style={{
+                              backgroundColor: project.color ?? "#6b7280",
+                            }}
+                          />
+                          <span>{project.name}</span>
+                        </Link>
+                      </SidebarMenuButton>
+                      <SidebarMenuBadge>{project.taskCount}</SidebarMenuBadge>
+                    </SidebarMenuItem>
+                  )
+                })
+              )}
               <SidebarMenuItem>
                 <SidebarMenuButton>
                   <Plus className="h-4 w-4" />

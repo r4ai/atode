@@ -1,5 +1,6 @@
 import type { Decorator, Preview } from "@storybook/react-vite"
 import "../src/globals.css"
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import {
   createRootRoute,
   createRouter,
@@ -8,10 +9,22 @@ import {
 import { initialize, mswLoader } from "msw-storybook-addon"
 import { handlers } from "../src/mocks/handlers"
 
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: false,
+    },
+  },
+})
+
 const RouterDecorator: Decorator = (Story) => {
   const rootRoute = createRootRoute({ component: () => <Story /> })
   const router = createRouter({ routeTree: rootRoute })
-  return <RouterProvider router={router} />
+  return (
+    <QueryClientProvider client={queryClient}>
+      <RouterProvider router={router} />
+    </QueryClientProvider>
+  )
 }
 
 initialize()
