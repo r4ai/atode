@@ -13,5 +13,9 @@ pre-commit:
     generate-schema:
       root: packages/backend
       glob: src/**/*
-      run: bun run generate-schema
+      run: bun run generate
+      stage_fixed: true
+    generate-msw:
+      root: packages/frontend
+      run: bun run generate
       stage_fixed: true
