@@ -165,6 +165,403 @@ export interface paths {
     patch?: never
     trace?: never
   }
+  "/api/auth/signin": {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /**
+     * Display sign-in page
+     * @description Displays the built-in/unbranded sign-in page
+     */
+    get: {
+      parameters: {
+        query?: never
+        header?: never
+        path?: never
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description Sign-in page */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            "text/html": string
+          }
+        }
+      }
+    }
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/auth/signin/github": {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /**
+     * Sign in with GitHub
+     * @description Starts a GitHub OAuth sign-in flow. Requires CSRF token.
+     */
+    post: {
+      parameters: {
+        query?: never
+        header?: never
+        path?: never
+        cookie?: never
+      }
+      requestBody: {
+        content: {
+          "application/x-www-form-urlencoded": {
+            /** @description CSRF token from /api/auth/csrf */
+            csrfToken: string
+            /** @description URL to redirect to after sign-in */
+            callbackUrl?: string
+          }
+        }
+      }
+      responses: {
+        /** @description Redirect to GitHub OAuth authorization */
+        302: {
+          headers: {
+            [name: string]: unknown
+          }
+          content?: never
+        }
+        /** @description Invalid request or missing CSRF token */
+        400: {
+          headers: {
+            [name: string]: unknown
+          }
+          content?: never
+        }
+      }
+    }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/auth/callback/github": {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /**
+     * GitHub OAuth callback
+     * @description Handles OAuth callback from GitHub
+     */
+    get: {
+      parameters: {
+        query: {
+          /** @description Authorization code from GitHub */
+          code: string
+          /** @description State parameter for CSRF protection */
+          state: string
+        }
+        header?: never
+        path?: never
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description Redirect after successful authentication */
+        302: {
+          headers: {
+            [name: string]: unknown
+          }
+          content?: never
+        }
+        /** @description Invalid callback parameters */
+        400: {
+          headers: {
+            [name: string]: unknown
+          }
+          content?: never
+        }
+      }
+    }
+    put?: never
+    /**
+     * GitHub OAuth callback (POST)
+     * @description Handles OAuth callback from GitHub via POST
+     */
+    post: {
+      parameters: {
+        query?: never
+        header?: never
+        path?: never
+        cookie?: never
+      }
+      requestBody: {
+        content: {
+          "application/x-www-form-urlencoded": {
+            /** @description Authorization code from GitHub */
+            code: string
+            /** @description State parameter for CSRF protection */
+            state: string
+          }
+        }
+      }
+      responses: {
+        /** @description Redirect after successful authentication */
+        302: {
+          headers: {
+            [name: string]: unknown
+          }
+          content?: never
+        }
+        /** @description Invalid callback parameters */
+        400: {
+          headers: {
+            [name: string]: unknown
+          }
+          content?: never
+        }
+      }
+    }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/auth/signout": {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /**
+     * Display sign-out page
+     * @description Displays the built-in/unbranded sign-out page
+     */
+    get: {
+      parameters: {
+        query?: never
+        header?: never
+        path?: never
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description Sign-out page */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            "text/html": string
+          }
+        }
+      }
+    }
+    put?: never
+    /**
+     * Sign out
+     * @description Signs the user out and invalidates the session. Requires CSRF token.
+     */
+    post: {
+      parameters: {
+        query?: never
+        header?: never
+        path?: never
+        cookie?: never
+      }
+      requestBody: {
+        content: {
+          "application/x-www-form-urlencoded": {
+            /** @description CSRF token from /api/auth/csrf */
+            csrfToken: string
+            /** @description URL to redirect to after sign-out */
+            callbackUrl?: string
+          }
+        }
+      }
+      responses: {
+        /** @description Redirect after successful sign-out */
+        302: {
+          headers: {
+            [name: string]: unknown
+          }
+          content?: never
+        }
+        /** @description Invalid request or missing CSRF token */
+        400: {
+          headers: {
+            [name: string]: unknown
+          }
+          content?: never
+        }
+      }
+    }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/auth/session": {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /**
+     * Get session
+     * @description Returns client-safe session object or empty object if no session
+     */
+    get: {
+      parameters: {
+        query?: never
+        header?: never
+        path?: never
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description Session data */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            "application/json":
+              | {
+                  user?: {
+                    name?: string | null
+                    email?: string | null
+                    image?: string | null
+                  }
+                  /** Format: date-time */
+                  expires?: string
+                }
+              | Record<string, never>
+          }
+        }
+      }
+    }
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/auth/csrf": {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /**
+     * Get CSRF token
+     * @description Returns CSRF token required for POST requests to authentication endpoints
+     */
+    get: {
+      parameters: {
+        query?: never
+        header?: never
+        path?: never
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description CSRF token */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            "application/json": {
+              /** @description CSRF token for authentication requests */
+              csrfToken: string
+            }
+          }
+        }
+      }
+    }
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/auth/providers": {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /**
+     * Get configured providers
+     * @description Returns list of configured OAuth providers and their details
+     */
+    get: {
+      parameters: {
+        query?: never
+        header?: never
+        path?: never
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description List of configured providers */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            "application/json": {
+              github?: {
+                /** @example github */
+                id: string
+                /** @example GitHub */
+                name: string
+                /** @example oauth */
+                type: string
+                /** @example /api/auth/signin/github */
+                signinUrl: string
+                /** @example /api/auth/callback/github */
+                callbackUrl: string
+              }
+            }
+          }
+        }
+      }
+    }
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
 }
 export type webhooks = Record<string, never>
 export interface components {
